@@ -50,7 +50,13 @@ func BuildContainer() *dig.Container {
 	if err := container.Provide(repositories.InitTestRepository); err != nil {
 		log.Fatalf("Provide container was error, error %v", err)
 	}
+	if err := container.Provide(repositories.InitQuestionRepository); err != nil {
+		log.Fatalf("Provide container was error, error %v", err)
+	}
 	if err := container.Provide(services.InitTestService); err != nil {
+		log.Fatalf("Provide container was error, error %v", err)
+	}
+	if err := container.Provide(services.InitQuestionService); err != nil {
 		log.Fatalf("Provide container was error, error %v", err)
 	}
 
@@ -59,7 +65,11 @@ func BuildContainer() *dig.Container {
 
 func migrate(di *dig.Container) {
 	err := di.Invoke(func(db *db.Db) {
-		db.GetConn().AutoMigrate(&models.TestModel{})
+		db.GetConn().AutoMigrate(
+			&models.Test{},
+			&models.Question{},
+			&models.Answer{},
+		)
 	})
 
 	if err != nil {

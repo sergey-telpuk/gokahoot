@@ -2,26 +2,24 @@
 
 package graphql
 
-type Answers struct {
-	First  string `json:"first"`
-	Second string `json:"second"`
-	Third  string `json:"third"`
-	Fourth string `json:"fourth"`
+type Answer struct {
+	Text   string  `json:"text"`
+	ImgURL *string `json:"imgURL"`
 }
 
-type InputAnswers struct {
-	First  string `json:"first"`
-	Second string `json:"second"`
-	Third  string `json:"third"`
-	Fourth string `json:"fourth"`
+type InputAnswer struct {
+	Sequential int     `json:"sequential"`
+	Text       string  `json:"text"`
+	ImgURL     *string `json:"imgURL"`
 }
 
 type NewQuestion struct {
-	Name    string          `json:"name"`
-	TestID  string          `json:"testID"`
-	Text    string          `json:"text"`
-	ImgURL  *string         `json:"imgURL"`
-	Answers []*InputAnswers `json:"answers"`
+	Name        string         `json:"name"`
+	TestID      int            `json:"testID"`
+	Text        string         `json:"text"`
+	ImgURL      *string        `json:"imgURL"`
+	RightAnswer int            `json:"rightAnswer"`
+	Answers     []*InputAnswer `json:"answers"`
 }
 
 type NewTest struct {
@@ -29,15 +27,18 @@ type NewTest struct {
 }
 
 type Question struct {
-	ID          string   `json:"id"`
-	TestID      string   `json:"testID"`
-	Text        string   `json:"text"`
-	ImgURL      *string  `json:"imgURL"`
-	Answers     *Answers `json:"answers"`
-	RightAnswer string   `json:"rightAnswer"`
+	ID          int       `json:"ID"`
+	UUID        string    `json:"UUID"`
+	TestID      int       `json:"testID"`
+	Text        string    `json:"text"`
+	ImgURL      *string   `json:"imgURL"`
+	RightAnswer int       `json:"rightAnswer"`
+	Answers     []*Answer `json:"answers"`
 }
 
 type Test struct {
+	ID        int         `json:"ID"`
+	UUID      string      `json:"UUID"`
 	Code      string      `json:"code"`
 	Name      string      `json:"name"`
 	Questions []*Question `json:"questions"`

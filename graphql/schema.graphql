@@ -3,49 +3,50 @@
 # https://gqlgen.com/getting-started/
 
 type Question {
-    id: String!
-    testID: String!
-    text: String!
-    imgURL: String
-    answers: Answers!
-    rightAnswer: String!
+  ID: Int!
+  UUID: String!
+  testID: Int!
+  text: String!
+  imgURL: String
+  rightAnswer: Int!
+  answers: [Answer!]!
 }
 
 type Test {
-    code: String!
-    name: String!
-    questions: [Question!]
+  ID: Int!
+  UUID: String!
+  code: String!
+  name: String!
+  questions: [Question!]
 }
 
-type Answers {
-    first: String!
-    second: String!
-    third: String!
-    fourth: String!
+type Answer {
+  text: String!
+  imgURL: String
 }
 #inputs
 input NewTest {
-    name: String!
+  name: String!
 }
-input InputAnswers {
-    first: String!
-    second: String!
-    third: String!
-    fourth: String!
+input InputAnswer {
+  sequential: Int!
+  text: String!
+  imgURL: String
 }
 input NewQuestion {
-    name: String!
-    testID: String!
-    text: String!
-    imgURL: String
-    answers: [InputAnswers!]!
+  name: String!
+  testID: Int!
+  text: String!
+  imgURL: String
+  rightAnswer: Int!
+  answers: [InputAnswer!]!
 }
 
 type Query {
-    tests: [Test!]!
+  tests: [Test!]!
 }
 
 type Mutation {
-    createNewTest(input: NewTest!): Test!
-    createNewQuestion(input: NewQuestion!): Question!
+  createNewTest(input: NewTest!): Test!
+  createNewQuestion(input: NewQuestion!): Question!
 }

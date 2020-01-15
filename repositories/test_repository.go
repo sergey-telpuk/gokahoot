@@ -16,21 +16,21 @@ func InitTestRepository(db *db.Db) *TestRepository {
 	}
 }
 
-func (r TestRepository) Create(model *models.TestModel) {
+func (r TestRepository) Create(model *models.Test) {
 	con := r.db.GetConn()
 
 	con.Create(model)
 }
-func (r TestRepository) FindOne(query interface{}, args ...interface{}) models.TestModel {
-	var test models.TestModel
+func (r TestRepository) FindOne(query interface{}, args ...interface{}) models.Test {
+	var test models.Test
 
 	r.db.GetConn().Where(query, args).First(&test)
 
 	return test
 }
 
-func (r TestRepository) FindAll() []models.TestModel {
-	var tests []models.TestModel
+func (r TestRepository) FindAll() []models.Test {
+	var tests []models.Test
 
 	r.db.GetConn().Find(&tests).Limit(1000)
 

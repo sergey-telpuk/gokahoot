@@ -42,11 +42,9 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	Answers struct {
-		First  func(childComplexity int) int
-		Fourth func(childComplexity int) int
-		Second func(childComplexity int) int
-		Third  func(childComplexity int) int
+	Answer struct {
+		ImgURL func(childComplexity int) int
+		Text   func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -65,12 +63,15 @@ type ComplexityRoot struct {
 		RightAnswer func(childComplexity int) int
 		TestID      func(childComplexity int) int
 		Text        func(childComplexity int) int
+		UUID        func(childComplexity int) int
 	}
 
 	Test struct {
 		Code      func(childComplexity int) int
+		ID        func(childComplexity int) int
 		Name      func(childComplexity int) int
 		Questions func(childComplexity int) int
+		UUID      func(childComplexity int) int
 	}
 }
 
@@ -97,33 +98,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Answers.first":
-		if e.complexity.Answers.First == nil {
+	case "Answer.imgURL":
+		if e.complexity.Answer.ImgURL == nil {
 			break
 		}
 
-		return e.complexity.Answers.First(childComplexity), true
+		return e.complexity.Answer.ImgURL(childComplexity), true
 
-	case "Answers.fourth":
-		if e.complexity.Answers.Fourth == nil {
+	case "Answer.text":
+		if e.complexity.Answer.Text == nil {
 			break
 		}
 
-		return e.complexity.Answers.Fourth(childComplexity), true
-
-	case "Answers.second":
-		if e.complexity.Answers.Second == nil {
-			break
-		}
-
-		return e.complexity.Answers.Second(childComplexity), true
-
-	case "Answers.third":
-		if e.complexity.Answers.Third == nil {
-			break
-		}
-
-		return e.complexity.Answers.Third(childComplexity), true
+		return e.complexity.Answer.Text(childComplexity), true
 
 	case "Mutation.createNewQuestion":
 		if e.complexity.Mutation.CreateNewQuestion == nil {
@@ -163,7 +150,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Question.Answers(childComplexity), true
 
-	case "Question.id":
+	case "Question.ID":
 		if e.complexity.Question.ID == nil {
 			break
 		}
@@ -198,12 +185,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Question.Text(childComplexity), true
 
+	case "Question.UUID":
+		if e.complexity.Question.UUID == nil {
+			break
+		}
+
+		return e.complexity.Question.UUID(childComplexity), true
+
 	case "Test.code":
 		if e.complexity.Test.Code == nil {
 			break
 		}
 
 		return e.complexity.Test.Code(childComplexity), true
+
+	case "Test.ID":
+		if e.complexity.Test.ID == nil {
+			break
+		}
+
+		return e.complexity.Test.ID(childComplexity), true
 
 	case "Test.name":
 		if e.complexity.Test.Name == nil {
@@ -218,6 +219,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Test.Questions(childComplexity), true
+
+	case "Test.UUID":
+		if e.complexity.Test.UUID == nil {
+			break
+		}
+
+		return e.complexity.Test.UUID(childComplexity), true
 
 	}
 	return 0, false
@@ -286,52 +294,54 @@ var parsedSchema = gqlparser.MustLoadSchema(
 # https://gqlgen.com/getting-started/
 
 type Question {
-    id: String!
-    testID: String!
-    text: String!
-    imgURL: String
-    answers: Answers!
-    rightAnswer: String!
+  ID: Int!
+  UUID: String!
+  testID: Int!
+  text: String!
+  imgURL: String
+  rightAnswer: Int!
+  answers: [Answer!]!
 }
 
 type Test {
-    code: String!
-    name: String!
-    questions: [Question!]
+  ID: Int!
+  UUID: String!
+  code: String!
+  name: String!
+  questions: [Question!]
 }
 
-type Answers {
-    first: String!
-    second: String!
-    third: String!
-    fourth: String!
+type Answer {
+  text: String!
+  imgURL: String
 }
 #inputs
 input NewTest {
-    name: String!
+  name: String!
 }
-input InputAnswers {
-    first: String!
-    second: String!
-    third: String!
-    fourth: String!
+input InputAnswer {
+  sequential: Int!
+  text: String!
+  imgURL: String
 }
 input NewQuestion {
-    name: String!
-    testID: String!
-    text: String!
-    imgURL: String
-    answers: [InputAnswers!]!
+  name: String!
+  testID: Int!
+  text: String!
+  imgURL: String
+  rightAnswer: Int!
+  answers: [InputAnswer!]!
 }
 
 type Query {
-    tests: [Test!]!
+  tests: [Test!]!
 }
 
 type Mutation {
-    createNewTest(input: NewTest!): Test!
-    createNewQuestion(input: NewQuestion!): Question!
-}`},
+  createNewTest(input: NewTest!): Test!
+  createNewQuestion(input: NewQuestion!): Question!
+}
+`},
 )
 
 // endregion ************************** generated!.gotpl **************************
@@ -416,7 +426,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Answers_first(ctx context.Context, field graphql.CollectedField, obj *Answers) (ret graphql.Marshaler) {
+func (ec *executionContext) _Answer_text(ctx context.Context, field graphql.CollectedField, obj *Answer) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -426,7 +436,7 @@ func (ec *executionContext) _Answers_first(ctx context.Context, field graphql.Co
 		ec.Tracer.EndFieldExecution(ctx)
 	}()
 	rctx := &graphql.ResolverContext{
-		Object:   "Answers",
+		Object:   "Answer",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -435,7 +445,7 @@ func (ec *executionContext) _Answers_first(ctx context.Context, field graphql.Co
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.First, nil
+		return obj.Text, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -453,7 +463,7 @@ func (ec *executionContext) _Answers_first(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Answers_second(ctx context.Context, field graphql.CollectedField, obj *Answers) (ret graphql.Marshaler) {
+func (ec *executionContext) _Answer_imgURL(ctx context.Context, field graphql.CollectedField, obj *Answer) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -463,7 +473,7 @@ func (ec *executionContext) _Answers_second(ctx context.Context, field graphql.C
 		ec.Tracer.EndFieldExecution(ctx)
 	}()
 	rctx := &graphql.ResolverContext{
-		Object:   "Answers",
+		Object:   "Answer",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -472,96 +482,19 @@ func (ec *executionContext) _Answers_second(ctx context.Context, field graphql.C
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Second, nil
+		return obj.ImgURL, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Answers_third(ctx context.Context, field graphql.CollectedField, obj *Answers) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Answers",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Third, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Answers_fourth(ctx context.Context, field graphql.CollectedField, obj *Answers) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Answers",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Fourth, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createNewTest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -764,7 +697,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Question_id(ctx context.Context, field graphql.CollectedField, obj *Question) (ret graphql.Marshaler) {
+func (ec *executionContext) _Question_ID(ctx context.Context, field graphql.CollectedField, obj *Question) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -784,6 +717,43 @@ func (ec *executionContext) _Question_id(ctx context.Context, field graphql.Coll
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Question_UUID(ctx context.Context, field graphql.CollectedField, obj *Question) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Question",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UUID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -832,10 +802,10 @@ func (ec *executionContext) _Question_testID(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Question_text(ctx context.Context, field graphql.CollectedField, obj *Question) (ret graphql.Marshaler) {
@@ -909,6 +879,43 @@ func (ec *executionContext) _Question_imgURL(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Question_rightAnswer(ctx context.Context, field graphql.CollectedField, obj *Question) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Question",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RightAnswer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Question_answers(ctx context.Context, field graphql.CollectedField, obj *Question) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -940,13 +947,13 @@ func (ec *executionContext) _Question_answers(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Answers)
+	res := resTmp.([]*Answer)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNAnswers2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐAnswers(ctx, field.Selections, res)
+	return ec.marshalNAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐAnswerᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Question_rightAnswer(ctx context.Context, field graphql.CollectedField, obj *Question) (ret graphql.Marshaler) {
+func (ec *executionContext) _Test_ID(ctx context.Context, field graphql.CollectedField, obj *Test) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -956,7 +963,7 @@ func (ec *executionContext) _Question_rightAnswer(ctx context.Context, field gra
 		ec.Tracer.EndFieldExecution(ctx)
 	}()
 	rctx := &graphql.ResolverContext{
-		Object:   "Question",
+		Object:   "Test",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -965,7 +972,44 @@ func (ec *executionContext) _Question_rightAnswer(ctx context.Context, field gra
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.RightAnswer, nil
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Test_UUID(ctx context.Context, field graphql.CollectedField, obj *Test) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Test",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UUID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2242,33 +2286,27 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputInputAnswers(ctx context.Context, obj interface{}) (InputAnswers, error) {
-	var it InputAnswers
+func (ec *executionContext) unmarshalInputInputAnswer(ctx context.Context, obj interface{}) (InputAnswer, error) {
+	var it InputAnswer
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
 		switch k {
-		case "first":
+		case "sequential":
 			var err error
-			it.First, err = ec.unmarshalNString2string(ctx, v)
+			it.Sequential, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "second":
+		case "text":
 			var err error
-			it.Second, err = ec.unmarshalNString2string(ctx, v)
+			it.Text, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "third":
+		case "imgURL":
 			var err error
-			it.Third, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "fourth":
-			var err error
-			it.Fourth, err = ec.unmarshalNString2string(ctx, v)
+			it.ImgURL, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2292,7 +2330,7 @@ func (ec *executionContext) unmarshalInputNewQuestion(ctx context.Context, obj i
 			}
 		case "testID":
 			var err error
-			it.TestID, err = ec.unmarshalNString2string(ctx, v)
+			it.TestID, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2308,9 +2346,15 @@ func (ec *executionContext) unmarshalInputNewQuestion(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "rightAnswer":
+			var err error
+			it.RightAnswer, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "answers":
 			var err error
-			it.Answers, err = ec.unmarshalNInputAnswers2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputAnswersᚄ(ctx, v)
+			it.Answers, err = ec.unmarshalNInputAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputAnswerᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2346,37 +2390,24 @@ func (ec *executionContext) unmarshalInputNewTest(ctx context.Context, obj inter
 
 // region    **************************** object.gotpl ****************************
 
-var answersImplementors = []string{"Answers"}
+var answerImplementors = []string{"Answer"}
 
-func (ec *executionContext) _Answers(ctx context.Context, sel ast.SelectionSet, obj *Answers) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.RequestContext, sel, answersImplementors)
+func (ec *executionContext) _Answer(ctx context.Context, sel ast.SelectionSet, obj *Answer) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, answerImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Answers")
-		case "first":
-			out.Values[i] = ec._Answers_first(ctx, field, obj)
+			out.Values[i] = graphql.MarshalString("Answer")
+		case "text":
+			out.Values[i] = ec._Answer_text(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "second":
-			out.Values[i] = ec._Answers_second(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "third":
-			out.Values[i] = ec._Answers_third(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "fourth":
-			out.Values[i] = ec._Answers_fourth(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+		case "imgURL":
+			out.Values[i] = ec._Answer_imgURL(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2479,8 +2510,13 @@ func (ec *executionContext) _Question(ctx context.Context, sel ast.SelectionSet,
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Question")
-		case "id":
-			out.Values[i] = ec._Question_id(ctx, field, obj)
+		case "ID":
+			out.Values[i] = ec._Question_ID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "UUID":
+			out.Values[i] = ec._Question_UUID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2496,13 +2532,13 @@ func (ec *executionContext) _Question(ctx context.Context, sel ast.SelectionSet,
 			}
 		case "imgURL":
 			out.Values[i] = ec._Question_imgURL(ctx, field, obj)
-		case "answers":
-			out.Values[i] = ec._Question_answers(ctx, field, obj)
+		case "rightAnswer":
+			out.Values[i] = ec._Question_rightAnswer(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "rightAnswer":
-			out.Values[i] = ec._Question_rightAnswer(ctx, field, obj)
+		case "answers":
+			out.Values[i] = ec._Question_answers(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2528,6 +2564,16 @@ func (ec *executionContext) _Test(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Test")
+		case "ID":
+			out.Values[i] = ec._Test_ID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "UUID":
+			out.Values[i] = ec._Test_UUID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "code":
 			out.Values[i] = ec._Test_code(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -2796,18 +2842,55 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAnswers2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐAnswers(ctx context.Context, sel ast.SelectionSet, v Answers) graphql.Marshaler {
-	return ec._Answers(ctx, sel, &v)
+func (ec *executionContext) marshalNAnswer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐAnswer(ctx context.Context, sel ast.SelectionSet, v Answer) graphql.Marshaler {
+	return ec._Answer(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAnswers2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐAnswers(ctx context.Context, sel ast.SelectionSet, v *Answers) graphql.Marshaler {
+func (ec *executionContext) marshalNAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐAnswerᚄ(ctx context.Context, sel ast.SelectionSet, v []*Answer) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		rctx := &graphql.ResolverContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithResolverContext(ctx, rctx)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐAnswer(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐAnswer(ctx context.Context, sel ast.SelectionSet, v *Answer) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
 		}
 		return graphql.Null
 	}
-	return ec._Answers(ctx, sel, v)
+	return ec._Answer(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
@@ -2824,11 +2907,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNInputAnswers2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputAnswers(ctx context.Context, v interface{}) (InputAnswers, error) {
-	return ec.unmarshalInputInputAnswers(ctx, v)
+func (ec *executionContext) unmarshalNInputAnswer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputAnswer(ctx context.Context, v interface{}) (InputAnswer, error) {
+	return ec.unmarshalInputInputAnswer(ctx, v)
 }
 
-func (ec *executionContext) unmarshalNInputAnswers2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputAnswersᚄ(ctx context.Context, v interface{}) ([]*InputAnswers, error) {
+func (ec *executionContext) unmarshalNInputAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputAnswerᚄ(ctx context.Context, v interface{}) ([]*InputAnswer, error) {
 	var vSlice []interface{}
 	if v != nil {
 		if tmp1, ok := v.([]interface{}); ok {
@@ -2838,9 +2921,9 @@ func (ec *executionContext) unmarshalNInputAnswers2ᚕᚖgithubᚗcomᚋsergey�
 		}
 	}
 	var err error
-	res := make([]*InputAnswers, len(vSlice))
+	res := make([]*InputAnswer, len(vSlice))
 	for i := range vSlice {
-		res[i], err = ec.unmarshalNInputAnswers2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputAnswers(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNInputAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputAnswer(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -2848,12 +2931,26 @@ func (ec *executionContext) unmarshalNInputAnswers2ᚕᚖgithubᚗcomᚋsergey�
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNInputAnswers2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputAnswers(ctx context.Context, v interface{}) (*InputAnswers, error) {
+func (ec *executionContext) unmarshalNInputAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputAnswer(ctx context.Context, v interface{}) (*InputAnswer, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalNInputAnswers2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputAnswers(ctx, v)
+	res, err := ec.unmarshalNInputAnswer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputAnswer(ctx, v)
 	return &res, err
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	return graphql.UnmarshalInt(v)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNNewQuestion2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐNewQuestion(ctx context.Context, v interface{}) (NewQuestion, error) {

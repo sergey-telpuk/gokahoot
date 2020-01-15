@@ -7,26 +7,29 @@ import (
 )
 
 type TestService struct {
-	repository *repositories.TestRepository
+	r *repositories.TestRepository
 }
 
-func (s *TestService) CreateNewTest(name string, id guuid.UUID) {
-	model := &models.TestModel{
-		Code: id.String(),
+func (s *TestService) CreateNewTest(uuid guuid.UUID, name string, code guuid.UUID) {
+	model := &models.Test{
+		UUID: uuid.String(),
+		Code: code.String(),
 		Name: name,
 	}
 
-	s.repository.Create(model)
-}
-func (s *TestService) FindByUuid(id guuid.UUID) models.TestModel {
-	return s.repository.FindOne("code = ?", id)
-}
-func (s *TestService) FindAll() []models.TestModel {
-	return s.repository.FindAll()
+	s.r.Create(model)
 }
 
-func InitTestService(repository *repositories.TestRepository) *TestService {
+func (s *TestService) FindByUuid(id guuid.UUID) models.Test {
+	return s.r.FindOne("uuid = ?", id.String())
+}
+
+func (s *TestService) FindAll() []models.Test {
+	return s.r.FindAll()
+}
+
+func InitTestService(r *repositories.TestRepository) *TestService {
 	return &TestService{
-		repository: repository,
+		r: r,
 	}
 }
