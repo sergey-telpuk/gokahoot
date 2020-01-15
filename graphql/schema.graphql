@@ -1,0 +1,51 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Question {
+    id: String!
+    testID: String!
+    text: String!
+    imgURL: String
+    answers: Answers!
+    rightAnswer: String!
+}
+
+type Test {
+    code: String!
+    name: String!
+    questions: [Question!]
+}
+
+type Answers {
+    first: String!
+    second: String!
+    third: String!
+    fourth: String!
+}
+#inputs
+input NewTest {
+    name: String!
+}
+input InputAnswers {
+    first: String!
+    second: String!
+    third: String!
+    fourth: String!
+}
+input NewQuestion {
+    name: String!
+    testID: String!
+    text: String!
+    imgURL: String
+    answers: [InputAnswers!]!
+}
+
+type Query {
+    tests: [Test!]!
+}
+
+type Mutation {
+    createNewTest(input: NewTest!): Test!
+    createNewQuestion(input: NewQuestion!): Question!
+}
