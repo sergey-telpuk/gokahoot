@@ -15,17 +15,23 @@ func InitAnswerRepository(db *db.Db) *AnswerRepository {
 	}
 }
 
-func (r AnswerRepository) Create(model *models.Answer) {
+func (r AnswerRepository) Create(model *models.Answer) error {
 	con := r.db.GetConn()
 
-	con.Create(model)
+	if err := con.Create(model).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (r AnswerRepository) FindByQuestionID(id int) []*models.Answer {
+func (r AnswerRepository) FindByQuestionID(id int) ([]*models.Answer, error) {
 	var answers []*models.Answer
 	con := r.db.GetConn()
 
-	con.Where("question_id = ?", id).Find(&answers)
+	if err := con.Where("question_id = ?", id).Find(&answers).Error; err != nil {
+		return nil, err
+	}
 
-	return answers
+	return answers, nil
 }

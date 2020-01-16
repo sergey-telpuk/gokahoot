@@ -14,6 +14,10 @@ models:
     fields:
       answers:
         resolver: true # force a resolver to be generated
+  Test:
+    fields:
+      questions:
+        resolver: true # force a resolver to be generated
 resolver:
   filename: resolver.go
   type: Resolver

@@ -37,6 +37,7 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Question() QuestionResolver
+	Test() TestResolver
 }
 
 type DirectiveRoot struct {
@@ -86,6 +87,9 @@ type QueryResolver interface {
 }
 type QuestionResolver interface {
 	Answers(ctx context.Context, obj *Question) ([]*Answer, error)
+}
+type TestResolver interface {
+	Questions(ctx context.Context, obj *Test) ([]*Question, error)
 }
 
 type executableSchema struct {
@@ -1164,13 +1168,13 @@ func (ec *executionContext) _Test_questions(ctx context.Context, field graphql.C
 		Object:   "Test",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Questions, nil
+		return ec.resolvers.Test().Questions(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2631,25 +2635,34 @@ func (ec *executionContext) _Test(ctx context.Context, sel ast.SelectionSet, obj
 		case "ID":
 			out.Values[i] = ec._Test_ID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "UUID":
 			out.Values[i] = ec._Test_UUID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "code":
 			out.Values[i] = ec._Test_code(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Test_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "questions":
-			out.Values[i] = ec._Test_questions(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Test_questions(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

@@ -52,16 +52,20 @@ func (s *QuestionService) CreateNewQuestion(
 	})
 }
 
-func (s *QuestionService) FindByUuid(id uuid.UUID) models.Question {
+func (s *QuestionService) FindByUuid(id uuid.UUID) (*models.Question, error) {
 	return s.rq.FindOne("uuid = ?", id.String())
 }
 
-func (s *QuestionService) FindAll() []models.Question {
+func (s *QuestionService) FindAll() ([]*models.Question, error) {
 	return s.rq.FindAll()
 }
 
-func (s *QuestionService) FindAnswersBelongToQuestion(id int) []*models.Answer {
+func (s *QuestionService) FindAnswersBelongToQuestion(id int) ([]*models.Answer, error) {
 	return s.ra.FindByQuestionID(id)
+}
+
+func (s *QuestionService) FindQuestionBelongToTest(id int) ([]*models.Question, error) {
+	return s.rq.FindQuestionBelongToTest(id)
 }
 
 func InitQuestionService(

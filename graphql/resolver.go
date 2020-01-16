@@ -3,11 +3,12 @@ package graphql
 //go:generate go run github.com/99designs/gqlgen
 import (
 	"context"
+	"errors"
+	"fmt"
 	guuid "github.com/google/uuid"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/services"
 	"go.uber.org/dig"
-	"log"
 ) // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
 type Resolver struct {
@@ -26,19 +27,35 @@ func (r *Resolver) Question() QuestionResolver {
 	return &questionResolver{r}
 }
 
+func (r *Resolver) Test() TestResolver {
+	return &testResolver{r}
+}
+
 type questionResolver struct{ *Resolver }
+
+type testResolver struct{ *Resolver }
 
 type mutationResolver struct{ *Resolver }
 
 func (r *mutationResolver) CreateNewTest(ctx context.Context, input NewTest) (*Test, error) {
-	var test models.Test
+	var test *models.Test
 	uuid := guuid.New()
 
-	if err := r.Di.Invoke(func(s *services.TestService) {
-		s.CreateNewTest(uuid, input.Name, guuid.New())
-		test = s.FindByUuid(uuid)
+	if err := r.Di.Invoke(func(s *services.TestService) error {
+		if err := s.CreateNewTest(uuid, input.Name, guuid.New()); err != nil {
+			return err
+		}
+		var err error
+		test, err = s.FindByUuid(uuid)
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+
 	}); err != nil {
-		log.Fatalf("Provide container was error, error %v", err)
+		return nil, errors.New(fmt.Sprintf("Provide container was error, error %v", err))
 	}
 
 	if test.ID != 0 {
@@ -55,9 +72,9 @@ func (r *mutationResolver) CreateNewTest(ctx context.Context, input NewTest) (*T
 }
 
 func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuestion) (*Question, error) {
-	var question models.Question
+	var question *models.Question
 	uuid := guuid.New()
-	if err := r.Di.Invoke(func(s *services.QuestionService) {
+	if err := r.Di.Invoke(func(s *services.QuestionService) error {
 		var answers []*models.Answer
 		for _, answer := range input.Answers {
 			answers = append(answers, &models.Answer{
@@ -73,13 +90,18 @@ func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuest
 			input.RightAnswer,
 			answers,
 		); err != nil {
-			log.Fatalf("Craeting question was failed, error %v", err)
+			return errors.New(fmt.Sprintf("Craeting question was failed, error %v", err))
+		}
+		var err error
+		question, err = s.FindByUuid(uuid)
+
+		if err != nil {
+			return err
 		}
 
-		question = s.FindByUuid(uuid)
-
+		return nil
 	}); err != nil {
-		log.Fatalf("Provide container was error, error %v", err)
+		return nil, errors.New(fmt.Sprintf("Provide container was error, error %v", err))
 	}
 
 	if question.ID == 0 {
@@ -102,18 +124,24 @@ func (r *queryResolver) Tests(ctx context.Context) ([]*Test, error) {
 	var mTests []models.Test
 	var rTests []*Test
 
-	if err := r.Di.Invoke(func(s *services.TestService) {
-		mTests = s.FindAll()
+	if err := r.Di.Invoke(func(s *services.TestService) error {
+		var err error
+		mTests, err = s.FindAll()
+		if err != nil {
+			return err
+		}
+
+		return nil
+
 	}); err != nil {
-		log.Fatalf("Provide container was error, error %v", err)
+		return nil, errors.New(fmt.Sprintf("Provide container was error, error %v", err))
 	}
 
 	for _, test := range mTests {
 		rTests = append(rTests, &Test{
-			ID:        test.ID,
-			Code:      test.Code,
-			Name:      test.Name,
-			Questions: nil,
+			ID:   test.ID,
+			Code: test.Code,
+			Name: test.Name,
 		})
 	}
 
@@ -123,10 +151,16 @@ func (r *queryResolver) Tests(ctx context.Context) ([]*Test, error) {
 func (r *questionResolver) Answers(ctx context.Context, obj *Question) ([]*Answer, error) {
 	var rAnswer []*Answer
 	var mAnswer []*models.Answer
-	if err := r.Di.Invoke(func(s *services.QuestionService) {
-		mAnswer = s.FindAnswersBelongToQuestion(obj.ID)
+	if err := r.Di.Invoke(func(s *services.QuestionService) error {
+		var err error
+		mAnswer, err = s.FindAnswersBelongToQuestion(obj.ID)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}); err != nil {
-		log.Fatalf("Provide container was error, error %v", err)
+		return nil, errors.New(fmt.Sprintf("Provide container was error, error %v", err))
 	}
 
 	for _, answer := range mAnswer {
@@ -138,4 +172,33 @@ func (r *questionResolver) Answers(ctx context.Context, obj *Question) ([]*Answe
 	}
 
 	return rAnswer, nil
+}
+
+func (r *testResolver) Questions(ctx context.Context, obj *Test) ([]*Question, error) {
+	var rQuestion []*Question
+	var mQuestion []*models.Question
+	if err := r.Di.Invoke(func(s *services.QuestionService) error {
+		var err error
+		mQuestion, err = s.FindQuestionBelongToTest(obj.ID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, errors.New(fmt.Sprintf("Provide container was error, error %v", err))
+	}
+
+	for _, q := range mQuestion {
+		rQuestion = append(rQuestion, &Question{
+			ID:          q.ID,
+			UUID:        q.UUID,
+			TestID:      q.TestID,
+			Text:        q.Text,
+			ImgURL:      q.ImgURL,
+			RightAnswer: q.RightAnswer,
+		})
+	}
+
+	return rQuestion, nil
 }

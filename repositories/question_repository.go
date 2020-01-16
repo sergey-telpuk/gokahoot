@@ -20,18 +20,42 @@ func (r QuestionRepository) Create(model *models.Question) {
 
 	con.Create(model)
 }
-func (r QuestionRepository) FindOne(query interface{}, args ...interface{}) models.Question {
-	var test models.Question
+func (r QuestionRepository) FindOne(query interface{}, args ...interface{}) (*models.Question, error) {
+	var question models.Question
 
-	r.db.GetConn().Where(query, args).First(&test)
+	if err := r.db.GetConn().Where(query, args).First(&question).Error; err != nil {
+		return nil, err
+	}
 
-	return test
+	return &question, nil
 }
 
-func (r QuestionRepository) FindAll() []models.Question {
+func (r QuestionRepository) Find(query interface{}, args ...interface{}) ([]models.Question, error) {
 	var questions []models.Question
 
-	r.db.GetConn().Find(&questions).Limit(1000)
+	if err := r.db.GetConn().Where(query, args).Find(&questions).Limit(10000).Error; err != nil {
+		return nil, err
+	}
 
-	return questions
+	return questions, nil
+}
+
+func (r QuestionRepository) FindQuestionBelongToTest(id int) ([]*models.Question, error) {
+	var questions []*models.Question
+
+	if err := r.db.GetConn().Where("test_id = ?", id).Find(&questions).Limit(10000).Error; err != nil {
+		return nil, err
+	}
+
+	return questions, nil
+}
+
+func (r QuestionRepository) FindAll() ([]*models.Question, error) {
+	var questions []*models.Question
+
+	if err := r.db.GetConn().Find(&questions).Limit(10000).Error; err != nil {
+		return nil, err
+	}
+
+	return questions, nil
 }
