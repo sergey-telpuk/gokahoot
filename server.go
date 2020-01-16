@@ -28,7 +28,13 @@ func main() {
 	migrate(di)
 
 	http.Handle("/", handler.Playground("GraphQL playground", "/query"))
-	http.Handle("/query", handler.GraphQL(graphql.NewExecutableSchema(graphql.Config{Resolvers: &graphql.Resolver{Di: di}})))
+	http.Handle("/query", handler.GraphQL(
+		graphql.NewExecutableSchema(
+			graphql.Config{
+				Resolvers: &graphql.Resolver{Di: di},
+			},
+		),
+	))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 
@@ -53,6 +59,9 @@ func BuildContainer() *dig.Container {
 	if err := container.Provide(repositories.InitQuestionRepository); err != nil {
 		log.Fatalf("Provide container was error, error %v", err)
 	}
+	if err := container.Provide(repositories.InitAnswerRepository); err != nil {
+		log.Fatalf("Provide container was error, error %v", err)
+	}
 	if err := container.Provide(services.InitTestService); err != nil {
 		log.Fatalf("Provide container was error, error %v", err)
 	}
@@ -65,6 +74,10 @@ func BuildContainer() *dig.Container {
 
 func migrate(di *dig.Container) {
 	err := di.Invoke(func(db *db.Db) {
+		if err := db.GetConn().Exec("PRAGMA foreign_keys=ON").Error; err != nil {
+			log.Fatalf("Connection was failed %v", err)
+		}
+
 		db.GetConn().AutoMigrate(
 			&models.Test{},
 			&models.Question{},

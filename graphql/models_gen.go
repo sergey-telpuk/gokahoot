@@ -3,8 +3,9 @@
 package graphql
 
 type Answer struct {
-	Text   string  `json:"text"`
-	ImgURL *string `json:"imgURL"`
+	Text       string  `json:"text"`
+	Sequential int     `json:"sequential"`
+	ImgURL     *string `json:"imgURL"`
 }
 
 type InputAnswer struct {

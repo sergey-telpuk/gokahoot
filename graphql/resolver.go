@@ -17,9 +17,16 @@ type Resolver struct {
 func (r *Resolver) Mutation() MutationResolver {
 	return &mutationResolver{r}
 }
+
 func (r *Resolver) Query() QueryResolver {
 	return &queryResolver{r}
 }
+
+func (r *Resolver) Question() QuestionResolver {
+	return &questionResolver{r}
+}
+
+type questionResolver struct{ *Resolver }
 
 type mutationResolver struct{ *Resolver }
 
@@ -51,13 +58,23 @@ func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuest
 	var question models.Question
 	uuid := guuid.New()
 	if err := r.Di.Invoke(func(s *services.QuestionService) {
-		s.CreateNewQuestion(
+		var answers []*models.Answer
+		for _, answer := range input.Answers {
+			answers = append(answers, &models.Answer{
+				Text:   answer.Text,
+				ImgURL: answer.ImgURL,
+			})
+		}
+		if err := s.CreateNewQuestion(
 			uuid,
 			input.TestID,
 			input.Text,
 			input.ImgURL,
 			input.RightAnswer,
-		)
+			answers,
+		); err != nil {
+			log.Fatalf("Craeting question was failed, error %v", err)
+		}
 
 		question = s.FindByUuid(uuid)
 
@@ -65,18 +82,18 @@ func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuest
 		log.Fatalf("Provide container was error, error %v", err)
 	}
 
-	if question.ID != 0 {
-		return &Question{
-			ID:          question.ID,
-			TestID:      question.TestID,
-			Text:        question.Text,
-			ImgURL:      question.ImgURL,
-			RightAnswer: question.RightAnswer,
-			Answers:     nil,
-		}, nil
+	if question.ID == 0 {
+		return nil, nil
 	}
 
-	return nil, nil
+	return &Question{
+		ID:          question.ID,
+		TestID:      question.TestID,
+		UUID:        question.UUID,
+		Text:        question.Text,
+		ImgURL:      question.ImgURL,
+		RightAnswer: question.RightAnswer,
+	}, nil
 }
 
 type queryResolver struct{ *Resolver }
@@ -85,22 +102,40 @@ func (r *queryResolver) Tests(ctx context.Context) ([]*Test, error) {
 	var mTests []models.Test
 	var rTests []*Test
 
-	if err := r.Di.Invoke(func(testService *services.TestService) {
-		mTests = testService.FindAll()
+	if err := r.Di.Invoke(func(s *services.TestService) {
+		mTests = s.FindAll()
 	}); err != nil {
 		log.Fatalf("Provide container was error, error %v", err)
 	}
-	if len(mTests) != 0 {
-		for _, test := range mTests {
-			rTests = append(rTests, &Test{
-				ID:        test.ID,
-				Code:      test.Code,
-				Name:      test.Name,
-				Questions: nil,
-			})
-		}
-		return rTests, nil
+
+	for _, test := range mTests {
+		rTests = append(rTests, &Test{
+			ID:        test.ID,
+			Code:      test.Code,
+			Name:      test.Name,
+			Questions: nil,
+		})
 	}
 
-	return nil, nil
+	return rTests, nil
+}
+
+func (r *questionResolver) Answers(ctx context.Context, obj *Question) ([]*Answer, error) {
+	var rAnswer []*Answer
+	var mAnswer []*models.Answer
+	if err := r.Di.Invoke(func(s *services.QuestionService) {
+		mAnswer = s.FindAnswersBelongToQuestion(obj.ID)
+	}); err != nil {
+		log.Fatalf("Provide container was error, error %v", err)
+	}
+
+	for _, answer := range mAnswer {
+		rAnswer = append(rAnswer, &Answer{
+			Text:       answer.Text,
+			Sequential: answer.Sequential,
+			ImgURL:     answer.ImgURL,
+		})
+	}
+
+	return rAnswer, nil
 }

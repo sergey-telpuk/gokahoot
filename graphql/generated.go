@@ -36,6 +36,7 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Question() QuestionResolver
 }
 
 type DirectiveRoot struct {
@@ -43,8 +44,9 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Answer struct {
-		ImgURL func(childComplexity int) int
-		Text   func(childComplexity int) int
+		ImgURL     func(childComplexity int) int
+		Sequential func(childComplexity int) int
+		Text       func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -82,6 +84,9 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Tests(ctx context.Context) ([]*Test, error)
 }
+type QuestionResolver interface {
+	Answers(ctx context.Context, obj *Question) ([]*Answer, error)
+}
 
 type executableSchema struct {
 	resolvers  ResolverRoot
@@ -104,6 +109,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Answer.ImgURL(childComplexity), true
+
+	case "Answer.sequential":
+		if e.complexity.Answer.Sequential == nil {
+			break
+		}
+
+		return e.complexity.Answer.Sequential(childComplexity), true
 
 	case "Answer.text":
 		if e.complexity.Answer.Text == nil {
@@ -294,52 +306,53 @@ var parsedSchema = gqlparser.MustLoadSchema(
 # https://gqlgen.com/getting-started/
 
 type Question {
-  ID: Int!
-  UUID: String!
-  testID: Int!
-  text: String!
-  imgURL: String
-  rightAnswer: Int!
-  answers: [Answer!]!
+    ID: Int!
+    UUID: String!
+    testID: Int!
+    text: String!
+    imgURL: String
+    rightAnswer: Int!
+    answers: [Answer!]!
 }
 
 type Test {
-  ID: Int!
-  UUID: String!
-  code: String!
-  name: String!
-  questions: [Question!]
+    ID: Int!
+    UUID: String!
+    code: String!
+    name: String!
+    questions: [Question!]
 }
 
 type Answer {
-  text: String!
-  imgURL: String
+    text: String!
+    sequential: Int!
+    imgURL: String
 }
 #inputs
 input NewTest {
-  name: String!
+    name: String!
 }
 input InputAnswer {
-  sequential: Int!
-  text: String!
-  imgURL: String
+    sequential: Int!
+    text: String!
+    imgURL: String
 }
 input NewQuestion {
-  name: String!
-  testID: Int!
-  text: String!
-  imgURL: String
-  rightAnswer: Int!
-  answers: [InputAnswer!]!
+    name: String!
+    testID: Int!
+    text: String!
+    imgURL: String
+    rightAnswer: Int!
+    answers: [InputAnswer!]!
 }
 
 type Query {
-  tests: [Test!]!
+    tests: [Test!]!
 }
 
 type Mutation {
-  createNewTest(input: NewTest!): Test!
-  createNewQuestion(input: NewQuestion!): Question!
+    createNewTest(input: NewTest!): Test!
+    createNewQuestion(input: NewQuestion!): Question!
 }
 `},
 )
@@ -461,6 +474,43 @@ func (ec *executionContext) _Answer_text(ctx context.Context, field graphql.Coll
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Answer_sequential(ctx context.Context, field graphql.CollectedField, obj *Answer) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Answer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Sequential, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Answer_imgURL(ctx context.Context, field graphql.CollectedField, obj *Answer) (ret graphql.Marshaler) {
@@ -929,13 +979,13 @@ func (ec *executionContext) _Question_answers(ctx context.Context, field graphql
 		Object:   "Question",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Answers, nil
+		return ec.resolvers.Question().Answers(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2406,6 +2456,11 @@ func (ec *executionContext) _Answer(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "sequential":
+			out.Values[i] = ec._Answer_sequential(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "imgURL":
 			out.Values[i] = ec._Answer_imgURL(ctx, field, obj)
 		default:
@@ -2513,35 +2568,44 @@ func (ec *executionContext) _Question(ctx context.Context, sel ast.SelectionSet,
 		case "ID":
 			out.Values[i] = ec._Question_ID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "UUID":
 			out.Values[i] = ec._Question_UUID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "testID":
 			out.Values[i] = ec._Question_testID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "text":
 			out.Values[i] = ec._Question_text(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "imgURL":
 			out.Values[i] = ec._Question_imgURL(ctx, field, obj)
 		case "rightAnswer":
 			out.Values[i] = ec._Question_rightAnswer(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "answers":
-			out.Values[i] = ec._Question_answers(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Question_answers(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
