@@ -16,8 +16,9 @@ func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuest
 		var answers []*models.Answer
 		for _, answer := range input.Answers {
 			answers = append(answers, &models.Answer{
-				Text:   answer.Text,
-				ImgURL: answer.ImgURL,
+				Text:       answer.Text,
+				ImgURL:     answer.ImgURL,
+				Sequential: answer.Sequential,
 			})
 		}
 		if err := s.CreateNewQuestion(
