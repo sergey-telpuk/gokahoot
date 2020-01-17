@@ -22,3 +22,18 @@ func (r *mutationResolver) CreateNewTest(ctx context.Context, input NewTest) (*T
 
 	return mapTest(test)
 }
+
+func (r *mutationResolver) DeleteTestByID(ctx context.Context, ids []int) (bool, error) {
+	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
+	if err := service.DeleteByIDs(ids...); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+func (r *mutationResolver) DeleteTestByUUID(ctx context.Context, ids []string) (bool, error) {
+	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
+	if err := service.DeleteByUUIDs(ids...); err != nil {
+		return false, err
+	}
+	return true, nil
+}

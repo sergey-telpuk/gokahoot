@@ -30,6 +30,14 @@ func (s *TestService) FindByID(id int) (*models.Test, error) {
 	return s.r.FindOne("id = ?", id)
 }
 
+func (s *TestService) DeleteByUUIDs(id ...string) error {
+	return s.r.Delete("uuid IN (?)", id)
+}
+
+func (s *TestService) DeleteByIDs(id ...int) error {
+	return s.r.Delete("id IN (?)", id)
+}
+
 func (s *TestService) FindAll() ([]*models.Test, error) {
 	return s.r.FindAll()
 }

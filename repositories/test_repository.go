@@ -38,6 +38,14 @@ func (r TestRepository) FindOne(query interface{}, args ...interface{}) (*models
 	return &test, nil
 }
 
+func (r TestRepository) Delete(query interface{}, args ...interface{}) error {
+	if err := r.db.GetConn().Where(query, args...).Delete(models.Question{}).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r TestRepository) FindAll() ([]*models.Test, error) {
 	var tests []*models.Test
 

@@ -59,6 +59,8 @@ type Query {
 type Mutation {
     createNewTest(input: NewTest!): Test!
     createNewQuestion(input: NewQuestion!): Question!
+    deleteTestByID(id: [Int!]!): Boolean!
+    deleteTestByUUID(id: [String!]!): Boolean!
     deleteQuestionByID(id: [Int!]!): Boolean!
     deleteQuestionByUUID(id: [String!]!): Boolean!
 }
