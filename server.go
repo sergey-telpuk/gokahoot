@@ -1,18 +1,18 @@
 package main
 
 import (
+	"github.com/99designs/gqlgen/handler"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/sergey-telpuk/gokahoot/db"
+	"github.com/sergey-telpuk/gokahoot/graphql"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/repositories"
 	"github.com/sergey-telpuk/gokahoot/services"
-	"log"
-	"net/http"
-	"os"
-
-	"github.com/99designs/gqlgen/handler"
-	"github.com/sergey-telpuk/gokahoot/graphql"
 	"go.uber.org/dig"
+	"log"
+	"os"
 )
 
 const defaultPort = "8080"
@@ -27,24 +27,47 @@ func main() {
 
 	migrate(di)
 
-	http.Handle("/", handler.Playground("GraphQL playground", "/query"))
-	http.Handle("/query", handler.GraphQL(
-		graphql.NewExecutableSchema(
-			graphql.Config{
-				Resolvers: &graphql.Resolver{Di: di},
-			},
-		),
-	))
+	r := gin.Default()
+	r.Use(cors.Default())
+
+	r.POST("/query", graphqlHandler(di))
+	r.GET("/", playgroundHandler())
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Http server was failed %v", err)
 	}
 
 	defer di.Invoke(func(db *gorm.DB) {
 		_ = db.Close()
 	})
+}
+
+// Defining the Graphql handler
+func graphqlHandler(di *dig.Container) gin.HandlerFunc {
+	// NewExecutableSchema and Config are in the generated.go file
+	// Resolver is in the resolver.go file
+	h := handler.GraphQL(
+		graphql.NewExecutableSchema(
+			graphql.Config{
+				Resolvers: &graphql.Resolver{Di: di},
+			},
+		),
+	)
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
+// Defining the Playground handler
+func playgroundHandler() gin.HandlerFunc {
+	h := handler.Playground("GraphQL", "/query")
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
 }
 
 func BuildContainer() *dig.Container {
