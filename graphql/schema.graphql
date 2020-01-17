@@ -45,6 +45,10 @@ input NewQuestion {
 
 type Query {
     tests: [Test!]!
+    testByID(id: Int!): Test!
+    testByUUID(id: String!): Test!
+    questionByID(id: Int!): Question!
+    questionByUUID(id: String!): Question!
 }
 
 type Mutation {

@@ -52,8 +52,12 @@ func (s *QuestionService) CreateNewQuestion(
 	})
 }
 
-func (s *QuestionService) FindByUuid(id uuid.UUID) (*models.Question, error) {
-	return s.rq.FindOne("uuid = ?", id.String())
+func (s *QuestionService) FindByUuid(id string) (*models.Question, error) {
+	return s.rq.FindOne("uuid = ?", id)
+}
+
+func (s *QuestionService) FindByID(id int) (*models.Question, error) {
+	return s.rq.FindOne("id = ?", id)
 }
 
 func (s *QuestionService) FindAll() ([]*models.Question, error) {

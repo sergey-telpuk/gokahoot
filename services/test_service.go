@@ -20,8 +20,12 @@ func (s *TestService) CreateNewTest(uuid guuid.UUID, name string, code guuid.UUI
 	return s.r.Create(model)
 }
 
-func (s *TestService) FindByUuid(id guuid.UUID) (*models.Test, error) {
-	return s.r.FindOne("uuid = ?", id.String())
+func (s *TestService) FindByUuid(id string) (*models.Test, error) {
+	return s.r.FindOne("uuid = ?", id)
+}
+
+func (s *TestService) FindByID(id int) (*models.Test, error) {
+	return s.r.FindOne("id = ?", id)
 }
 
 func (s *TestService) FindAll() ([]models.Test, error) {
