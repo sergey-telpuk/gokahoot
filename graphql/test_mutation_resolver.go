@@ -30,6 +30,7 @@ func (r *mutationResolver) DeleteTestByID(ctx context.Context, ids []int) (bool,
 	}
 	return true, nil
 }
+
 func (r *mutationResolver) DeleteTestByUUID(ctx context.Context, ids []string) (bool, error) {
 	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
 	if err := service.DeleteByUUIDs(ids...); err != nil {

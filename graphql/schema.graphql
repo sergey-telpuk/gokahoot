@@ -30,6 +30,18 @@ type Status {
     message: Boolean!
 }
 
+type UpdateAnswer{
+
+}
+
+type UpdateQuestion {
+    name: String!
+    testID: Int!
+    text: String!
+    imgURL: String
+    rightAnswer: Int!
+}
+
 #inputs
 input NewTest {
     name: String!
@@ -48,6 +60,12 @@ input NewQuestion {
     answers: [InputAnswer!]!
 }
 
+
+input UpdateTest{
+    ID: ID!
+
+
+}
 type Query {
     tests: [Test!]!
     testByID(id: Int!): Test!
@@ -58,6 +76,7 @@ type Query {
 
 type Mutation {
     createNewTest(input: NewTest!): Test!
+    updateTestByID(inout: [UpdateTest!]!): Test!
     createNewQuestion(input: NewQuestion!): Question!
     deleteTestByID(id: [Int!]!): Boolean!
     deleteTestByUUID(id: [String!]!): Boolean!
