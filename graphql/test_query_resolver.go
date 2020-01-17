@@ -2,84 +2,63 @@ package graphql
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/services"
 )
 
+func (r *testResolver) Questions(ctx context.Context, obj *Test) ([]*Question, error) {
+	var rQuestion []*Question
+	service := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
+
+	mQuestion, err := service.FindQuestionBelongToTest(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, q := range mQuestion {
+		mapped, _ := mapQuestion(q)
+		rQuestion = append(rQuestion, mapped)
+	}
+
+	return rQuestion, nil
+}
+
 func (r *queryResolver) Tests(ctx context.Context) ([]*Test, error) {
-	var mTests []models.Test
 	var rTests []*Test
 
-	if err := r.Di.Invoke(func(s *services.TestService) error {
-		var err error
-		mTests, err = s.FindAll()
-		if err != nil {
-			return err
-		}
+	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
 
-		return nil
+	mTests, err := service.FindAll()
 
-	}); err != nil {
-		return nil, errors.New(fmt.Sprintf("Provide container was error, error %v", err))
+	if err != nil {
+		return nil, err
 	}
 
 	for _, test := range mTests {
-		rTests = append(rTests, &Test{
-			ID:   test.ID,
-			Code: test.Code,
-			Name: test.Name,
-		})
+		mapped, _ := mapTest(test)
+		rTests = append(rTests, mapped)
 	}
 
 	return rTests, nil
 }
 
 func (r *queryResolver) TestByID(ctx context.Context, id int) (*Test, error) {
-	var mTest *models.Test
+	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
 
-	if err := r.Di.Invoke(func(s *services.TestService) error {
-		var err error
-		mTest, err = s.FindByID(id)
-		if err != nil {
-			return err
-		}
-
-		return nil
-
-	}); err != nil {
-		return nil, errors.New(fmt.Sprintf("Provide container was error, error %v", err))
+	mTest, err := service.FindByID(id)
+	if err != nil {
+		return nil, err
 	}
 
-	return mapTest(mTest), nil
+	return mapTest(mTest)
 }
 
 func (r *queryResolver) TestByUUID(ctx context.Context, id string) (*Test, error) {
-	var mTest *models.Test
+	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
 
-	if err := r.Di.Invoke(func(s *services.TestService) error {
-		var err error
-		mTest, err = s.FindByUuid(id)
-		if err != nil {
-			return err
-		}
-
-		return nil
-
-	}); err != nil {
-		return nil, errors.New(fmt.Sprintf("Provide container was error, error %v", err))
+	mTest, err := service.FindByUuid(id)
+	if err != nil {
+		return nil, err
 	}
 
-	return mapTest(mTest), nil
-}
-
-func mapTest(m *models.Test) *Test {
-
-	return &Test{
-		ID:   m.ID,
-		UUID: m.UUID,
-		Code: m.Code,
-		Name: m.Name,
-	}
+	return mapTest(mTest)
 }

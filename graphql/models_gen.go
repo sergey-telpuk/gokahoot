@@ -37,6 +37,10 @@ type Question struct {
 	Answers     []*Answer `json:"answers"`
 }
 
+type Status struct {
+	Message bool `json:"message"`
+}
+
 type Test struct {
 	ID        int         `json:"ID"`
 	UUID      string      `json:"UUID"`

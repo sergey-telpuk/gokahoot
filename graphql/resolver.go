@@ -2,11 +2,14 @@ package graphql
 
 //go:generate go run github.com/99designs/gqlgen
 import (
-	"go.uber.org/dig"
+	"errors"
+	"fmt"
+	"github.com/sergey-telpuk/gokahoot/di"
+	"github.com/sergey-telpuk/gokahoot/models"
 ) // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
 type Resolver struct {
-	Di *dig.Container
+	Di *di.DI
 }
 
 func (r *Resolver) Mutation() MutationResolver {
@@ -32,3 +35,47 @@ type testResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 
 type queryResolver struct{ *Resolver }
+
+func mapQuestion(m *models.Question) (*Question, error) {
+
+	if m.ID == 0 {
+		return nil, errors.New(fmt.Sprintf("Not a such item"))
+	}
+
+	return &Question{
+		ID:          m.ID,
+		UUID:        m.UUID,
+		TestID:      m.TestID,
+		Text:        m.Text,
+		ImgURL:      m.ImgURL,
+		RightAnswer: m.RightAnswer,
+	}, nil
+}
+
+func mapAnswer(m *models.Answer) (*Answer, error) {
+
+	if m.ID == 0 {
+		return nil, errors.New(fmt.Sprintf("Not a such item"))
+	}
+
+	return &Answer{
+		Text:       m.Text,
+		Sequential: m.Sequential,
+		ImgURL:     m.ImgURL,
+	}, nil
+}
+
+func mapTest(m *models.Test) (*Test, error) {
+
+	if m.ID == 0 {
+		return nil, errors.New(fmt.Sprintf("Not a such item"))
+	}
+
+	return &Test{
+		ID:   m.ID,
+		UUID: m.UUID,
+		Code: m.Code,
+		Name: m.Name,
+	}, nil
+
+}

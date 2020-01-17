@@ -5,6 +5,8 @@ import (
 	"github.com/sergey-telpuk/gokahoot/models"
 )
 
+const ContainerNameAnswerRepository = "ContainerNameAnswerRepository"
+
 type AnswerRepository struct {
 	db *db.Db
 }

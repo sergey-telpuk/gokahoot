@@ -8,6 +8,8 @@ import (
 	"github.com/sergey-telpuk/gokahoot/repositories"
 )
 
+const ContainerNameQuestionService = "ContainerNameQuestionService"
+
 type QuestionService struct {
 	rq *repositories.QuestionRepository
 	ra *repositories.AnswerRepository
@@ -58,6 +60,12 @@ func (s *QuestionService) FindByUuid(id string) (*models.Question, error) {
 
 func (s *QuestionService) FindByID(id int) (*models.Question, error) {
 	return s.rq.FindOne("id = ?", id)
+}
+func (s *QuestionService) DeleteByIDs(id ...int) error {
+	return s.rq.Delete("id IN (?)", id)
+}
+func (s *QuestionService) DeleteByUUIDs(id ...string) error {
+	return s.rq.Delete("uuid IN (?)", id)
 }
 
 func (s *QuestionService) FindAll() ([]*models.Question, error) {

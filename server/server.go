@@ -3,14 +3,14 @@ package server
 import (
 	"errors"
 	"fmt"
-	"go.uber.org/dig"
+	"github.com/sergey-telpuk/gokahoot/di"
 	"log"
 	"os"
 )
 
 const defaultPort = "8080"
 
-func Run(di *dig.Container) error {
+func Run(di *di.DI) error {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort

@@ -10,49 +10,49 @@ import (
 )
 
 func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuestion) (*Question, error) {
-	var question *models.Question
 	uuid := guuid.New()
-	if err := r.Di.Invoke(func(s *services.QuestionService) error {
-		var answers []*models.Answer
-		for _, answer := range input.Answers {
-			answers = append(answers, &models.Answer{
-				Text:       answer.Text,
-				ImgURL:     answer.ImgURL,
-				Sequential: answer.Sequential,
-			})
-		}
-		if err := s.CreateNewQuestion(
-			uuid,
-			input.TestID,
-			input.Text,
-			input.ImgURL,
-			input.RightAnswer,
-			answers,
-		); err != nil {
-			return errors.New(fmt.Sprintf("Craeting question was failed, error %v", err))
-		}
-		var err error
-		question, err = s.FindByUuid(uuid.String())
+	service := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
 
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}); err != nil {
-		return nil, errors.New(fmt.Sprintf("Provide container was error, error %v", err))
+	var answers []*models.Answer
+	for _, answer := range input.Answers {
+		answers = append(answers, &models.Answer{
+			Text:       answer.Text,
+			ImgURL:     answer.ImgURL,
+			Sequential: answer.Sequential,
+		})
+	}
+	if err := service.CreateNewQuestion(
+		uuid,
+		input.TestID,
+		input.Text,
+		input.ImgURL,
+		input.RightAnswer,
+		answers,
+	); err != nil {
+		return nil, errors.New(fmt.Sprintf("Craeting question was failed, error %v", err))
 	}
 
-	if question.ID == 0 {
-		return nil, nil
+	question, err := service.FindByUuid(uuid.String())
+
+	if err != nil {
+		return nil, err
 	}
 
-	return &Question{
-		ID:          question.ID,
-		TestID:      question.TestID,
-		UUID:        question.UUID,
-		Text:        question.Text,
-		ImgURL:      question.ImgURL,
-		RightAnswer: question.RightAnswer,
-	}, nil
+	return mapQuestion(question)
+}
+
+func (r *mutationResolver) DeleteQuestionByID(ctx context.Context, ids []int) (bool, error) {
+	service := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
+	if err := service.DeleteByIDs(ids...); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (r *mutationResolver) DeleteQuestionByUUID(ctx context.Context, ids []string) (bool, error) {
+	service := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
+	if err := service.DeleteByUUIDs(ids...); err != nil {
+		return false, err
+	}
+	return true, nil
 }

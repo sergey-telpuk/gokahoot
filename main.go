@@ -1,44 +1,37 @@
 package main
 
 import (
-	"github.com/jinzhu/gorm"
 	"github.com/sergey-telpuk/gokahoot/db"
+	"github.com/sergey-telpuk/gokahoot/di"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/server"
-	"go.uber.org/dig"
 	"log"
 	"os"
 )
 
 func main() {
-	di := server.BotContainers()
+	services := di.New()
 
-	migrate(di)
+	migrate(services)
 
-	if err := server.Run(di); err != nil {
+	if err := server.Run(services); err != nil {
 		os.Exit(1)
 	}
 	os.Exit(0)
 
-	defer di.Invoke(func(db *gorm.DB) {
-		_ = db.Close()
-	})
+	defer services.Clean()
 }
 
-func migrate(di *dig.Container) {
-	err := di.Invoke(func(db *db.Db) {
-		if err := db.GetConn().Exec("PRAGMA foreign_keys=ON").Error; err != nil {
-			log.Fatalf("Connection was failed %v", err)
-		}
+func migrate(di *di.DI) {
+	sDB := di.Container.Get(db.ContainerName).(*db.Db)
 
-		db.GetConn().AutoMigrate(
-			&models.Test{},
-			&models.Question{},
-			&models.Answer{},
-		)
-	})
-
-	if err != nil {
+	if err := sDB.GetConn().Exec("PRAGMA foreign_keys=ON").Error; err != nil {
 		log.Fatalf("Connection was failed %v", err)
 	}
+
+	sDB.GetConn().AutoMigrate(
+		&models.Test{},
+		&models.Question{},
+		&models.Answer{},
+	)
 }

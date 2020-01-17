@@ -5,6 +5,8 @@ import (
 	"github.com/sergey-telpuk/gokahoot/models"
 )
 
+const ContainerNameQuestionRepository = "ContainerNameQuestionRepository"
+
 type QuestionRepository struct {
 	db *db.Db
 }
@@ -20,6 +22,7 @@ func (r QuestionRepository) Create(model *models.Question) {
 
 	con.Create(model)
 }
+
 func (r QuestionRepository) FindOne(query interface{}, args ...interface{}) (*models.Question, error) {
 	var question models.Question
 
@@ -30,8 +33,16 @@ func (r QuestionRepository) FindOne(query interface{}, args ...interface{}) (*mo
 	return &question, nil
 }
 
-func (r QuestionRepository) Find(query interface{}, args ...interface{}) ([]models.Question, error) {
-	var questions []models.Question
+func (r QuestionRepository) Delete(query interface{}, args ...interface{}) error {
+	if err := r.db.GetConn().Where(query, args...).Delete(models.Question{}).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r QuestionRepository) Find(query interface{}, args ...interface{}) ([]*models.Question, error) {
+	var questions []*models.Question
 
 	if err := r.db.GetConn().Where(query, args).Find(&questions).Limit(10000).Error; err != nil {
 		return nil, err

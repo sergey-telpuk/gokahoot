@@ -25,6 +25,11 @@ type Answer {
     sequential: Int!
     imgURL: String
 }
+
+type Status {
+    message: Boolean!
+}
+
 #inputs
 input NewTest {
     name: String!
@@ -54,4 +59,6 @@ type Query {
 type Mutation {
     createNewTest(input: NewTest!): Test!
     createNewQuestion(input: NewQuestion!): Question!
+    deleteQuestionByID(id: [Int!]!): Boolean!
+    deleteQuestionByUUID(id: [String!]!): Boolean!
 }

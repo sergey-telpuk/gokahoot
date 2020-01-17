@@ -5,6 +5,8 @@ import (
 	"github.com/sergey-telpuk/gokahoot/models"
 )
 
+const ContainerNameTestRepository = "ContainerNameTestRepository"
+
 type TestRepository struct {
 	db *db.Db
 }
@@ -24,6 +26,7 @@ func (r TestRepository) Create(model *models.Test) error {
 
 	return nil
 }
+
 func (r TestRepository) FindOne(query interface{}, args ...interface{}) (*models.Test, error) {
 	var test models.Test
 
@@ -35,8 +38,8 @@ func (r TestRepository) FindOne(query interface{}, args ...interface{}) (*models
 	return &test, nil
 }
 
-func (r TestRepository) FindAll() ([]models.Test, error) {
-	var tests []models.Test
+func (r TestRepository) FindAll() ([]*models.Test, error) {
+	var tests []*models.Test
 
 	if err := r.db.GetConn().Find(&tests).Limit(1000).Error; err != nil {
 		return nil, err

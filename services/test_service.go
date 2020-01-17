@@ -6,6 +6,8 @@ import (
 	"github.com/sergey-telpuk/gokahoot/repositories"
 )
 
+const ContainerNameTestService = "ContainerNameTestService"
+
 type TestService struct {
 	r *repositories.TestRepository
 }
@@ -28,7 +30,7 @@ func (s *TestService) FindByID(id int) (*models.Test, error) {
 	return s.r.FindOne("id = ?", id)
 }
 
-func (s *TestService) FindAll() ([]models.Test, error) {
+func (s *TestService) FindAll() ([]*models.Test, error) {
 	return s.r.FindAll()
 }
 
