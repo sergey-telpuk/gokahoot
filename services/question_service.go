@@ -72,6 +72,10 @@ func (s *QuestionService) FindAll() ([]*models.Question, error) {
 	return s.rq.FindAll()
 }
 
+func (s *QuestionService) UpdateByUUID(m *models.Question) (*models.Question, error) {
+	return s.rq.Update(m)
+}
+
 func (s *QuestionService) FindAnswersBelongToQuestion(id int) ([]*models.Answer, error) {
 	return s.ra.FindByQuestionID(id)
 }

@@ -57,6 +57,7 @@ type ComplexityRoot struct {
 		DeleteQuestionByUUID func(childComplexity int, id []string) int
 		DeleteTestByID       func(childComplexity int, id []int) int
 		DeleteTestByUUID     func(childComplexity int, id []string) int
+		UpdateTestByUUIDs    func(childComplexity int, input []*UpdateTest) int
 	}
 
 	Query struct {
@@ -92,6 +93,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateNewTest(ctx context.Context, input NewTest) (*Test, error)
+	UpdateTestByUUIDs(ctx context.Context, input []*UpdateTest) ([]*Test, error)
 	CreateNewQuestion(ctx context.Context, input NewQuestion) (*Question, error)
 	DeleteTestByID(ctx context.Context, id []int) (bool, error)
 	DeleteTestByUUID(ctx context.Context, id []string) (bool, error)
@@ -219,6 +221,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteTestByUUID(childComplexity, args["id"].([]string)), true
+
+	case "Mutation.UpdateTestByUUIDs":
+		if e.complexity.Mutation.UpdateTestByUUIDs == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_UpdateTestByUUIDs_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTestByUUIDs(childComplexity, args["input"].([]*UpdateTest)), true
 
 	case "Query.questionByID":
 		if e.complexity.Query.QuestionByID == nil {
@@ -432,6 +446,11 @@ var parsedSchema = gqlparser.MustLoadSchema(
 #
 # https://gqlgen.com/getting-started/
 
+schema {
+    query: Query
+    mutation: Mutation
+}
+
 type Question {
     ID: Int!
     UUID: String!
@@ -469,13 +488,35 @@ input InputAnswer {
     text: String!
     imgURL: String
 }
+
 input NewQuestion {
-    name: String!
     testID: Int!
     text: String!
     imgURL: String
     rightAnswer: Int!
     answers: [InputAnswer!]!
+}
+
+#============= input updates
+input UpdateTest{
+    UUID: String!
+    name: String!
+    questions:[UpdateQuestion!]
+}
+
+input UpdateAnswer {
+    ID: Int!
+    sequential: Int
+    text: String
+    imgURL: String
+}
+
+input UpdateQuestion {
+    UUID: String!
+    text: String
+    imgURL: String
+    rightAnswer: Int
+    answers: [UpdateAnswer!]
 }
 
 type Query {
@@ -486,8 +527,11 @@ type Query {
     questionByUUID(id: String!): Question!
 }
 
+
 type Mutation {
     createNewTest(input: NewTest!): Test!
+    UpdateTestByUUIDs(input: [UpdateTest!]!): [Test!]!
+    #    updateQuextionsByIDs(input: [UpdateTest!]!): Test!
     createNewQuestion(input: NewQuestion!): Question!
     deleteTestByID(id: [Int!]!): Boolean!
     deleteTestByUUID(id: [String!]!): Boolean!
@@ -500,6 +544,20 @@ type Mutation {
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_UpdateTestByUUIDs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*UpdateTest
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNUpdateTest2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateTestᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_createNewQuestion_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -841,6 +899,50 @@ func (ec *executionContext) _Mutation_createNewTest(ctx context.Context, field g
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNTest2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐTest(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_UpdateTestByUUIDs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_UpdateTestByUUIDs_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateTestByUUIDs(rctx, args["input"].([]*UpdateTest))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Test)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNTest2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐTestᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createNewQuestion(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3013,12 +3115,6 @@ func (ec *executionContext) unmarshalInputNewQuestion(ctx context.Context, obj i
 
 	for k, v := range asMap {
 		switch k {
-		case "name":
-			var err error
-			it.Name, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "testID":
 			var err error
 			it.TestID, err = ec.unmarshalNInt2int(ctx, v)
@@ -3064,6 +3160,114 @@ func (ec *executionContext) unmarshalInputNewTest(ctx context.Context, obj inter
 		case "name":
 			var err error
 			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateAnswer(ctx context.Context, obj interface{}) (UpdateAnswer, error) {
+	var it UpdateAnswer
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "ID":
+			var err error
+			it.ID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sequential":
+			var err error
+			it.Sequential, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "text":
+			var err error
+			it.Text, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imgURL":
+			var err error
+			it.ImgURL, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateQuestion(ctx context.Context, obj interface{}) (UpdateQuestion, error) {
+	var it UpdateQuestion
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "UUID":
+			var err error
+			it.UUID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "text":
+			var err error
+			it.Text, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imgURL":
+			var err error
+			it.ImgURL, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "rightAnswer":
+			var err error
+			it.RightAnswer, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "answers":
+			var err error
+			it.Answers, err = ec.unmarshalOUpdateAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateAnswerᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateTest(ctx context.Context, obj interface{}) (UpdateTest, error) {
+	var it UpdateTest
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "UUID":
+			var err error
+			it.UUID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "questions":
+			var err error
+			it.Questions, err = ec.unmarshalOUpdateQuestion2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateQuestionᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3132,6 +3336,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = graphql.MarshalString("Mutation")
 		case "createNewTest":
 			out.Values[i] = ec._Mutation_createNewTest(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "UpdateTestByUUIDs":
+			out.Values[i] = ec._Mutation_UpdateTestByUUIDs(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3915,6 +4124,62 @@ func (ec *executionContext) marshalNTest2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgok
 	return ec._Test(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNUpdateAnswer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateAnswer(ctx context.Context, v interface{}) (UpdateAnswer, error) {
+	return ec.unmarshalInputUpdateAnswer(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateAnswer(ctx context.Context, v interface{}) (*UpdateAnswer, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNUpdateAnswer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateAnswer(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) unmarshalNUpdateQuestion2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateQuestion(ctx context.Context, v interface{}) (UpdateQuestion, error) {
+	return ec.unmarshalInputUpdateQuestion(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateQuestion2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateQuestion(ctx context.Context, v interface{}) (*UpdateQuestion, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNUpdateQuestion2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateQuestion(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) unmarshalNUpdateTest2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateTest(ctx context.Context, v interface{}) (UpdateTest, error) {
+	return ec.unmarshalInputUpdateTest(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateTest2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateTestᚄ(ctx context.Context, v interface{}) ([]*UpdateTest, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*UpdateTest, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNUpdateTest2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateTest(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNUpdateTest2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateTest(ctx context.Context, v interface{}) (*UpdateTest, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNUpdateTest2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateTest(ctx, v)
+	return &res, err
+}
+
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -4164,6 +4429,29 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return ec.marshalOBoolean2bool(ctx, sel, *v)
 }
 
+func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {
+	return graphql.UnmarshalInt(v)
+}
+
+func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	return graphql.MarshalInt(v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOInt2int(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec.marshalOInt2int(ctx, sel, *v)
+}
+
 func (ec *executionContext) marshalOQuestion2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐQuestionᚄ(ctx context.Context, sel ast.SelectionSet, v []*Question) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -4225,6 +4513,46 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return ec.marshalOString2string(ctx, sel, *v)
+}
+
+func (ec *executionContext) unmarshalOUpdateAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateAnswerᚄ(ctx context.Context, v interface{}) ([]*UpdateAnswer, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*UpdateAnswer, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNUpdateAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateAnswer(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOUpdateQuestion2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateQuestionᚄ(ctx context.Context, v interface{}) ([]*UpdateQuestion, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*UpdateQuestion, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNUpdateQuestion2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateQuestion(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

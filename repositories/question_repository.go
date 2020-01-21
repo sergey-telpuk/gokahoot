@@ -61,6 +61,15 @@ func (r QuestionRepository) FindQuestionBelongToTest(id int) ([]*models.Question
 	return questions, nil
 }
 
+func (r QuestionRepository) Update(m *models.Question) (*models.Question, error) {
+	if err := r.db.GetConn().Save(&m).Error; err != nil {
+
+		return nil, err
+	}
+
+	return m, nil
+}
+
 func (r QuestionRepository) FindAll() ([]*models.Question, error) {
 	var questions []*models.Question
 

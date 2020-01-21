@@ -44,8 +44,8 @@ input InputAnswer {
     text: String!
     imgURL: String
 }
+
 input NewQuestion {
-    name: String!
     testID: Int!
     text: String!
     imgURL: String
@@ -53,28 +53,25 @@ input NewQuestion {
     answers: [InputAnswer!]!
 }
 
-
 #============= input updates
 input UpdateTest{
-    ID: ID!
+    UUID: String!
     name: String!
     questions:[UpdateQuestion!]
 }
 
 input UpdateAnswer {
     ID: Int!
-    sequential: Int!
-    text: String!
+    sequential: Int
+    text: String
     imgURL: String
 }
 
 input UpdateQuestion {
-    ID: Int!
     UUID: String!
-    name: String!
-    text: String!
+    text: String
     imgURL: String
-    rightAnswer: Int!
+    rightAnswer: Int
     answers: [UpdateAnswer!]
 }
 
@@ -89,7 +86,7 @@ type Query {
 
 type Mutation {
     createNewTest(input: NewTest!): Test!
-    updateTestByIDs(,input: [UpdateTest!]!): Test!
+    UpdateTestByUUIDs(input: [UpdateTest!]!): [Test!]!
     #    updateQuextionsByIDs(input: [UpdateTest!]!): Test!
     createNewQuestion(input: NewQuestion!): Question!
     deleteTestByID(id: [Int!]!): Boolean!
