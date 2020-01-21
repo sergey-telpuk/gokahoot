@@ -222,12 +222,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteTestByUUID(childComplexity, args["id"].([]string)), true
 
-	case "Mutation.UpdateTestByUUIDs":
+	case "Mutation.updateTestByUUIDs":
 		if e.complexity.Mutation.UpdateTestByUUIDs == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_UpdateTestByUUIDs_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_updateTestByUUIDs_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -530,7 +530,7 @@ type Query {
 
 type Mutation {
     createNewTest(input: NewTest!): Test!
-    UpdateTestByUUIDs(input: [UpdateTest!]!): [Test!]!
+    updateTestByUUIDs(input: [UpdateTest!]!): [Test!]!
     #    updateQuextionsByIDs(input: [UpdateTest!]!): Test!
     createNewQuestion(input: NewQuestion!): Question!
     deleteTestByID(id: [Int!]!): Boolean!
@@ -544,20 +544,6 @@ type Mutation {
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) field_Mutation_UpdateTestByUUIDs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 []*UpdateTest
-	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNUpdateTest2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateTestᚄ(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
 
 func (ec *executionContext) field_Mutation_createNewQuestion_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -640,6 +626,20 @@ func (ec *executionContext) field_Mutation_deleteTestByUUID_args(ctx context.Con
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateTestByUUIDs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*UpdateTest
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNUpdateTest2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateTestᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -901,7 +901,7 @@ func (ec *executionContext) _Mutation_createNewTest(ctx context.Context, field g
 	return ec.marshalNTest2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐTest(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_UpdateTestByUUIDs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_updateTestByUUIDs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -918,7 +918,7 @@ func (ec *executionContext) _Mutation_UpdateTestByUUIDs(ctx context.Context, fie
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_UpdateTestByUUIDs_args(ctx, rawArgs)
+	args, err := ec.field_Mutation_updateTestByUUIDs_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -3339,8 +3339,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "UpdateTestByUUIDs":
-			out.Values[i] = ec._Mutation_UpdateTestByUUIDs(ctx, field)
+		case "updateTestByUUIDs":
+			out.Values[i] = ec._Mutation_updateTestByUUIDs(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

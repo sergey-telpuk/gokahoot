@@ -86,7 +86,7 @@ type Query {
 
 type Mutation {
     createNewTest(input: NewTest!): Test!
-    UpdateTestByUUIDs(input: [UpdateTest!]!): [Test!]!
+    updateTestByUUIDs(input: [UpdateTest!]!): [Test!]!
     #    updateQuextionsByIDs(input: [UpdateTest!]!): Test!
     createNewQuestion(input: NewQuestion!): Question!
     deleteTestByID(id: [Int!]!): Boolean!
