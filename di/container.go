@@ -86,6 +86,17 @@ func New() *DI {
 		log.Fatalf("Provide container was error, error %v", err)
 	}
 
+	if err := builder.Add(di.Def{
+		Name: services.ContainerNameAnswerService,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return services.InitAnswerService(
+				ctn.Get(repositories.ContainerNameAnswerRepository).(*repositories.AnswerRepository),
+			), nil
+		},
+	}); err != nil {
+		log.Fatalf("Provide container was error, error %v", err)
+	}
+
 	app := builder.Build()
 
 	return &DI{Container: app}

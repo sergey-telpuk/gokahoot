@@ -15,7 +15,6 @@ type InputAnswer struct {
 }
 
 type NewQuestion struct {
-	Name        string         `json:"name"`
 	TestID      int            `json:"testID"`
 	Text        string         `json:"text"`
 	ImgURL      *string        `json:"imgURL"`
@@ -47,4 +46,25 @@ type Test struct {
 	Code      string      `json:"code"`
 	Name      string      `json:"name"`
 	Questions []*Question `json:"questions"`
+}
+
+type UpdateAnswer struct {
+	ID         int     `json:"ID"`
+	Sequential *int    `json:"sequential"`
+	Text       *string `json:"text"`
+	ImgURL     *string `json:"imgURL"`
+}
+
+type UpdateQuestion struct {
+	UUID        string          `json:"UUID"`
+	Text        *string         `json:"text"`
+	ImgURL      *string         `json:"imgURL"`
+	RightAnswer *int            `json:"rightAnswer"`
+	Answers     []*UpdateAnswer `json:"answers"`
+}
+
+type UpdateTest struct {
+	UUID      string            `json:"UUID"`
+	Name      string            `json:"name"`
+	Questions []*UpdateQuestion `json:"questions"`
 }

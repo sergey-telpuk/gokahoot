@@ -17,10 +17,37 @@ func InitAnswerRepository(db *db.Db) *AnswerRepository {
 	}
 }
 
-func (r AnswerRepository) Create(model *models.Answer) error {
+func (r AnswerRepository) Create(m *models.Answer) error {
 	con := r.db.GetConn()
 
-	if err := con.Create(model).Error; err != nil {
+	if err := con.Create(m).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r AnswerRepository) FindOne(query interface{}, args ...interface{}) (*models.Answer, error) {
+	var m models.Answer
+
+	if err := r.db.GetConn().Where(query, args).First(&m).Error; err != nil {
+		return nil, err
+	}
+
+	return &m, nil
+}
+
+func (r AnswerRepository) Update(m *models.Answer) (*models.Answer, error) {
+	if err := r.db.GetConn().Save(&m).Error; err != nil {
+
+		return nil, err
+	}
+
+	return m, nil
+}
+
+func (r AnswerRepository) Delete(query interface{}, args ...interface{}) error {
+	if err := r.db.GetConn().Where(query, args...).Delete(models.Answer{}).Error; err != nil {
 		return err
 	}
 

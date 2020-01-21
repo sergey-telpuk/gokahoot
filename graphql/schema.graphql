@@ -2,6 +2,11 @@
 #
 # https://gqlgen.com/getting-started/
 
+schema {
+    query: Query
+    mutation: Mutation
+}
+
 type Question {
     ID: Int!
     UUID: String!
@@ -30,18 +35,6 @@ type Status {
     message: Boolean!
 }
 
-type UpdateAnswer{
-
-}
-
-type UpdateQuestion {
-    name: String!
-    testID: Int!
-    text: String!
-    imgURL: String
-    rightAnswer: Int!
-}
-
 #inputs
 input NewTest {
     name: String!
@@ -51,8 +44,8 @@ input InputAnswer {
     text: String!
     imgURL: String
 }
+
 input NewQuestion {
-    name: String!
     testID: Int!
     text: String!
     imgURL: String
@@ -60,12 +53,28 @@ input NewQuestion {
     answers: [InputAnswer!]!
 }
 
-
+#============= input updates
 input UpdateTest{
-    ID: ID!
-
-
+    UUID: String!
+    name: String!
+    questions:[UpdateQuestion!]
 }
+
+input UpdateAnswer {
+    ID: Int!
+    sequential: Int
+    text: String
+    imgURL: String
+}
+
+input UpdateQuestion {
+    UUID: String!
+    text: String
+    imgURL: String
+    rightAnswer: Int
+    answers: [UpdateAnswer!]
+}
+
 type Query {
     tests: [Test!]!
     testByID(id: Int!): Test!
@@ -74,9 +83,11 @@ type Query {
     questionByUUID(id: String!): Question!
 }
 
+
 type Mutation {
     createNewTest(input: NewTest!): Test!
-    updateTestByID(inout: [UpdateTest!]!): Test!
+    UpdateTestByUUIDs(input: [UpdateTest!]!): [Test!]!
+    #    updateQuextionsByIDs(input: [UpdateTest!]!): Test!
     createNewQuestion(input: NewQuestion!): Question!
     deleteTestByID(id: [Int!]!): Boolean!
     deleteTestByUUID(id: [String!]!): Boolean!
