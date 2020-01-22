@@ -51,13 +51,15 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateNewQuestion    func(childComplexity int, input NewQuestion) int
-		CreateNewTest        func(childComplexity int, input NewTest) int
-		DeleteQuestionByID   func(childComplexity int, id []int) int
-		DeleteQuestionByUUID func(childComplexity int, id []string) int
-		DeleteTestByID       func(childComplexity int, id []int) int
-		DeleteTestByUUID     func(childComplexity int, id []string) int
-		UpdateTestByUUIDs    func(childComplexity int, input []*UpdateTest) int
+		CreateNewQuestion      func(childComplexity int, input NewQuestion) int
+		CreateNewTest          func(childComplexity int, input NewTest) int
+		DeleteQuestionByID     func(childComplexity int, id []int) int
+		DeleteQuestionByUUID   func(childComplexity int, id []string) int
+		DeleteTestByID         func(childComplexity int, id []int) int
+		DeleteTestByUUID       func(childComplexity int, id []string) int
+		UpdateAnswersByIDs     func(childComplexity int, questionUUID string, input []*UpdateAnswer) int
+		UpdateQuestionsByUUIDs func(childComplexity int, testUUID string, input []*UpdateQuestion) int
+		UpdateTestByUUIDs      func(childComplexity int, input []*UpdateTest) int
 	}
 
 	Query struct {
@@ -94,6 +96,8 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateNewTest(ctx context.Context, input NewTest) (*Test, error)
 	UpdateTestByUUIDs(ctx context.Context, input []*UpdateTest) ([]*Test, error)
+	UpdateQuestionsByUUIDs(ctx context.Context, testUUID string, input []*UpdateQuestion) ([]*Question, error)
+	UpdateAnswersByIDs(ctx context.Context, questionUUID string, input []*UpdateAnswer) ([]*Answer, error)
 	CreateNewQuestion(ctx context.Context, input NewQuestion) (*Question, error)
 	DeleteTestByID(ctx context.Context, id []int) (bool, error)
 	DeleteTestByUUID(ctx context.Context, id []string) (bool, error)
@@ -221,6 +225,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteTestByUUID(childComplexity, args["id"].([]string)), true
+
+	case "Mutation.updateAnswersByIDs":
+		if e.complexity.Mutation.UpdateAnswersByIDs == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateAnswersByIDs_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateAnswersByIDs(childComplexity, args["questionUUID"].(string), args["input"].([]*UpdateAnswer)), true
+
+	case "Mutation.updateQuestionsByUUIDs":
+		if e.complexity.Mutation.UpdateQuestionsByUUIDs == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateQuestionsByUUIDs_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateQuestionsByUUIDs(childComplexity, args["testUUID"].(string), args["input"].([]*UpdateQuestion)), true
 
 	case "Mutation.updateTestByUUIDs":
 		if e.complexity.Mutation.UpdateTestByUUIDs == nil {
@@ -531,7 +559,8 @@ type Query {
 type Mutation {
     createNewTest(input: NewTest!): Test!
     updateTestByUUIDs(input: [UpdateTest!]!): [Test!]!
-    #    updateQuextionsByIDs(input: [UpdateTest!]!): Test!
+    updateQuestionsByUUIDs(testUUID: String!,input: [UpdateQuestion!]!): [Question!]!
+    updateAnswersByIDs(questionUUID: String!, input: [UpdateAnswer!]!): [Answer!]!
     createNewQuestion(input: NewQuestion!): Question!
     deleteTestByID(id: [Int!]!): Boolean!
     deleteTestByUUID(id: [String!]!): Boolean!
@@ -626,6 +655,50 @@ func (ec *executionContext) field_Mutation_deleteTestByUUID_args(ctx context.Con
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateAnswersByIDs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["questionUUID"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["questionUUID"] = arg0
+	var arg1 []*UpdateAnswer
+	if tmp, ok := rawArgs["input"]; ok {
+		arg1, err = ec.unmarshalNUpdateAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateAnswerᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateQuestionsByUUIDs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["testUUID"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["testUUID"] = arg0
+	var arg1 []*UpdateQuestion
+	if tmp, ok := rawArgs["input"]; ok {
+		arg1, err = ec.unmarshalNUpdateQuestion2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateQuestionᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -943,6 +1016,94 @@ func (ec *executionContext) _Mutation_updateTestByUUIDs(ctx context.Context, fie
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNTest2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐTestᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateQuestionsByUUIDs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateQuestionsByUUIDs_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateQuestionsByUUIDs(rctx, args["testUUID"].(string), args["input"].([]*UpdateQuestion))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Question)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNQuestion2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐQuestionᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateAnswersByIDs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateAnswersByIDs_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateAnswersByIDs(rctx, args["questionUUID"].(string), args["input"].([]*UpdateAnswer))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Answer)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐAnswerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createNewQuestion(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3344,6 +3505,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateQuestionsByUUIDs":
+			out.Values[i] = ec._Mutation_updateQuestionsByUUIDs(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateAnswersByIDs":
+			out.Values[i] = ec._Mutation_updateAnswersByIDs(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createNewQuestion":
 			out.Values[i] = ec._Mutation_createNewQuestion(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -4020,6 +4191,43 @@ func (ec *executionContext) marshalNQuestion2githubᚗcomᚋsergeyᚑtelpukᚋgo
 	return ec._Question(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNQuestion2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐQuestionᚄ(ctx context.Context, sel ast.SelectionSet, v []*Question) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		rctx := &graphql.ResolverContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithResolverContext(ctx, rctx)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNQuestion2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐQuestion(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalNQuestion2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐQuestion(ctx context.Context, sel ast.SelectionSet, v *Question) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
@@ -4128,6 +4336,26 @@ func (ec *executionContext) unmarshalNUpdateAnswer2githubᚗcomᚋsergeyᚑtelpu
 	return ec.unmarshalInputUpdateAnswer(ctx, v)
 }
 
+func (ec *executionContext) unmarshalNUpdateAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateAnswerᚄ(ctx context.Context, v interface{}) ([]*UpdateAnswer, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*UpdateAnswer, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNUpdateAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateAnswer(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) unmarshalNUpdateAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateAnswer(ctx context.Context, v interface{}) (*UpdateAnswer, error) {
 	if v == nil {
 		return nil, nil
@@ -4138,6 +4366,26 @@ func (ec *executionContext) unmarshalNUpdateAnswer2ᚖgithubᚗcomᚋsergeyᚑte
 
 func (ec *executionContext) unmarshalNUpdateQuestion2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateQuestion(ctx context.Context, v interface{}) (UpdateQuestion, error) {
 	return ec.unmarshalInputUpdateQuestion(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateQuestion2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateQuestionᚄ(ctx context.Context, v interface{}) ([]*UpdateQuestion, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*UpdateQuestion, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNUpdateQuestion2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateQuestion(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) unmarshalNUpdateQuestion2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐUpdateQuestion(ctx context.Context, v interface{}) (*UpdateQuestion, error) {
