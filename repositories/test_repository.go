@@ -48,7 +48,7 @@ func (r TestRepository) Update(m *models.Test) (*models.Test, error) {
 }
 
 func (r TestRepository) Delete(query interface{}, args ...interface{}) error {
-	if err := r.db.GetConn().Where(query, args...).Delete(models.Question{}).Error; err != nil {
+	if err := r.db.GetConn().Where(query, args...).Delete(models.Test{}).Error; err != nil {
 		return err
 	}
 
