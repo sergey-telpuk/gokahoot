@@ -59,6 +59,7 @@ func mapAnswer(m *models.Answer) (*Answer, error) {
 	}
 
 	return &Answer{
+		ID:         m.ID,
 		Text:       m.Text,
 		Sequential: m.Sequential,
 		ImgURL:     m.ImgURL,

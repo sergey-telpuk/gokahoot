@@ -3,6 +3,7 @@
 package graphql
 
 type Answer struct {
+	ID         int     `json:"ID"`
 	Text       string  `json:"text"`
 	Sequential int     `json:"sequential"`
 	ImgURL     *string `json:"imgURL"`

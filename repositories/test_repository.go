@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"errors"
+	"fmt"
 	"github.com/sergey-telpuk/gokahoot/db"
 	"github.com/sergey-telpuk/gokahoot/models"
 )
@@ -21,7 +23,7 @@ func (r TestRepository) Create(model *models.Test) error {
 	con := r.db.GetConn()
 
 	if err := con.Create(model).Error; err != nil {
-		return err
+		return errorTest(err)
 	}
 
 	return nil
@@ -32,7 +34,7 @@ func (r TestRepository) FindOne(query interface{}, args ...interface{}) (*models
 
 	if err := r.db.GetConn().Where(query, args).First(&test).Error; err != nil {
 
-		return nil, err
+		return nil, errorTest(err)
 	}
 
 	return &test, nil
@@ -41,7 +43,7 @@ func (r TestRepository) FindOne(query interface{}, args ...interface{}) (*models
 func (r TestRepository) Update(m *models.Test) (*models.Test, error) {
 	if err := r.db.GetConn().Save(&m).Error; err != nil {
 
-		return nil, err
+		return nil, errorTest(err)
 	}
 
 	return m, nil
@@ -49,7 +51,7 @@ func (r TestRepository) Update(m *models.Test) (*models.Test, error) {
 
 func (r TestRepository) Delete(query interface{}, args ...interface{}) error {
 	if err := r.db.GetConn().Where(query, args...).Delete(models.Test{}).Error; err != nil {
-		return err
+		return errorTest(err)
 	}
 
 	return nil
@@ -59,8 +61,12 @@ func (r TestRepository) FindAll() ([]*models.Test, error) {
 	var tests []*models.Test
 
 	if err := r.db.GetConn().Find(&tests).Limit(1000).Error; err != nil {
-		return nil, err
+		return nil, errorTest(err)
 	}
 
 	return tests, nil
+}
+
+func errorTest(err error) error {
+	return errors.New(fmt.Sprintf("Test model error: %s", err))
 }

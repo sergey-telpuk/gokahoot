@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"errors"
+	"fmt"
 	"github.com/sergey-telpuk/gokahoot/db"
 	"github.com/sergey-telpuk/gokahoot/models"
 )
@@ -31,7 +33,7 @@ func (r AnswerRepository) FindOne(query interface{}, args ...interface{}) (*mode
 	var m models.Answer
 
 	if err := r.db.GetConn().Where(query, args).First(&m).Error; err != nil {
-		return nil, err
+		return nil, errorAnswer(err)
 	}
 
 	return &m, nil
@@ -40,7 +42,7 @@ func (r AnswerRepository) FindOne(query interface{}, args ...interface{}) (*mode
 func (r AnswerRepository) Update(m *models.Answer) (*models.Answer, error) {
 	if err := r.db.GetConn().Save(&m).Error; err != nil {
 
-		return nil, err
+		return nil, errorAnswer(err)
 	}
 
 	return m, nil
@@ -48,7 +50,7 @@ func (r AnswerRepository) Update(m *models.Answer) (*models.Answer, error) {
 
 func (r AnswerRepository) Delete(query interface{}, args ...interface{}) error {
 	if err := r.db.GetConn().Where(query, args...).Delete(models.Answer{}).Error; err != nil {
-		return err
+		return errorAnswer(err)
 	}
 
 	return nil
@@ -59,8 +61,12 @@ func (r AnswerRepository) FindByQuestionID(id int) ([]*models.Answer, error) {
 	con := r.db.GetConn()
 
 	if err := con.Where("question_id = ?", id).Find(&answers).Error; err != nil {
-		return nil, err
+		return nil, errorAnswer(err)
 	}
 
 	return answers, nil
+}
+
+func errorAnswer(err error) error {
+	return errors.New(fmt.Sprintf("Answer model error: %s", err))
 }

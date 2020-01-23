@@ -29,7 +29,7 @@ func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuest
 		input.RightAnswer,
 		answers,
 	); err != nil {
-		return nil, errors.New(fmt.Sprintf("Craeting question was failed, error %v", err))
+		return nil, errors.New(fmt.Sprintf("Creating question was failed, error %v", err))
 	}
 
 	question, err := service.FindByUuid(uuid.String())

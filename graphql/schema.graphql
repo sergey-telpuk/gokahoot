@@ -26,6 +26,7 @@ type Test {
 }
 
 type Answer {
+    ID: Int!
     text: String!
     sequential: Int!
     imgURL: String
