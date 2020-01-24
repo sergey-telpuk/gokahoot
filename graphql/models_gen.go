@@ -21,6 +21,11 @@ type InputAnswer struct {
 	ImgURL     *string `json:"imgURL"`
 }
 
+type JoinPlayer struct {
+	GameCode string `json:"game_code"`
+	Name     string `json:"name"`
+}
+
 type Message struct {
 	Text string `json:"text"`
 }
@@ -54,7 +59,7 @@ type Question struct {
 }
 
 type Status struct {
-	Message bool `json:"message"`
+	Success bool `json:"success"`
 }
 
 type Test struct {

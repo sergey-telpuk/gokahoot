@@ -18,6 +18,10 @@ models:
     fields:
       questions:
         resolver: true # force a resolver to be generated
+  Game:
+    fields:
+      players:
+        resolver: true # force a resolver to be generated
 resolver:
   filename: resolver.go
   type: Resolver

@@ -46,7 +46,7 @@ func (r QuestionRepository) Delete(query interface{}, args ...interface{}) error
 func (r QuestionRepository) Find(query interface{}, args ...interface{}) ([]*models.Question, error) {
 	var _models []*models.Question
 
-	if err := r.db.GetConn().Where(query, args).Find(&_models).Limit(10000).Error; err != nil {
+	if err := r.db.GetConn().Where(query, args...).Find(&_models).Limit(10000).Error; err != nil {
 		return nil, errorQuestion(err)
 	}
 
@@ -54,13 +54,7 @@ func (r QuestionRepository) Find(query interface{}, args ...interface{}) ([]*mod
 }
 
 func (r QuestionRepository) FindQuestionBelongToTest(id int) ([]*models.Question, error) {
-	var _models []*models.Question
-
-	if err := r.db.GetConn().Where("test_id = ?", id).Find(&_models).Limit(10000).Error; err != nil {
-		return nil, errorQuestion(err)
-	}
-
-	return _models, nil
+	return r.Find("test_id = ?", id)
 }
 
 func (r QuestionRepository) Update(m *models.Question) (*models.Question, error) {

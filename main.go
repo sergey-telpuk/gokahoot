@@ -41,5 +41,6 @@ func migrate(di *di.DI) {
 		&models.Question{},
 		&models.Answer{},
 		&models.Game{},
+		&models.Player{},
 	)
 }

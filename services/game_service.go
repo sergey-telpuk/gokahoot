@@ -34,7 +34,7 @@ func (s *GameService) UpdateByUUID(m *models.Game) (*models.Game, error) {
 }
 
 func (s *GameService) DeleteByUUIDs(id ...string) error {
-	return s.r.Delete("uuid IN (?)", id)
+	return s.r.Delete("code IN (?)", id)
 }
 
 func (s *GameService) DeleteByIDs(id ...int) error {

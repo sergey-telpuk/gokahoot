@@ -55,18 +55,18 @@ func (r *mutationResolver) UpdateTestByUUIDs(ctx context.Context, input []*Updat
 	return result, nil
 }
 
-func (r *mutationResolver) DeleteTestByID(ctx context.Context, ids []int) (bool, error) {
+func (r *mutationResolver) DeleteTestByID(ctx context.Context, ids []int) (*Status, error) {
 	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
 	if err := service.DeleteByIDs(ids...); err != nil {
-		return false, err
+		return nil, err
 	}
-	return true, nil
+	return &Status{Success: true}, nil
 }
 
-func (r *mutationResolver) DeleteTestByUUID(ctx context.Context, ids []string) (bool, error) {
+func (r *mutationResolver) DeleteTestByUUID(ctx context.Context, ids []string) (*Status, error) {
 	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
 	if err := service.DeleteByUUIDs(ids...); err != nil {
-		return false, err
+		return nil, err
 	}
-	return true, nil
+	return &Status{Success: true}, nil
 }

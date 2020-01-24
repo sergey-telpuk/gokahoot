@@ -20,6 +20,8 @@ type mutationResolver struct{ *Resolver }
 
 type queryResolver struct{ *Resolver }
 
+type gameResolver struct{ *Resolver }
+
 type subscriptionResolver struct{ *Resolver }
 
 func (r *Resolver) Mutation() MutationResolver {
@@ -32,6 +34,10 @@ func (r *Resolver) Query() QueryResolver {
 
 func (r *Resolver) Question() QuestionResolver {
 	return &questionResolver{r}
+}
+
+func (r *Resolver) Game() GameResolver {
+	return &gameResolver{r}
 }
 
 func (r *Resolver) Test() TestResolver {
@@ -95,6 +101,19 @@ func mapGame(m *models.Game) (*Game, error) {
 	return &Game{
 		Code:     m.Code,
 		TestUUID: m.TestID,
+	}, nil
+
+}
+func mapPlayer(m *models.Player) (*Player, error) {
+
+	if m.ID == 0 {
+		return nil, errors.New(fmt.Sprintf("Not a such item"))
+	}
+
+	return &Player{
+		UUID:     m.UUID,
+		Name:     m.Name,
+		GameCode: "=======",
 	}, nil
 
 }

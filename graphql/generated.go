@@ -35,6 +35,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Game() GameResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Question() QuestionResolver
@@ -72,6 +73,7 @@ type ComplexityRoot struct {
 		DeleteQuestionByUUID   func(childComplexity int, id []string) int
 		DeleteTestByID         func(childComplexity int, id []int) int
 		DeleteTestByUUID       func(childComplexity int, id []string) int
+		JoinPlayerToGame       func(childComplexity int, input JoinPlayer) int
 		UpdateAnswersByIDs     func(childComplexity int, questionUUID string, input []*UpdateAnswer) int
 		UpdateQuestionsByUUIDs func(childComplexity int, testUUID string, input []*UpdateQuestion) int
 		UpdateTestByUUIDs      func(childComplexity int, input []*UpdateTest) int
@@ -102,7 +104,7 @@ type ComplexityRoot struct {
 	}
 
 	Status struct {
-		Message func(childComplexity int) int
+		Success func(childComplexity int) int
 	}
 
 	Subscription struct {
@@ -117,18 +119,22 @@ type ComplexityRoot struct {
 	}
 }
 
+type GameResolver interface {
+	Players(ctx context.Context, obj *Game) ([]*Player, error)
+}
 type MutationResolver interface {
 	CreateNewTest(ctx context.Context, input NewTest) (*Test, error)
 	UpdateTestByUUIDs(ctx context.Context, input []*UpdateTest) ([]*Test, error)
 	UpdateQuestionsByUUIDs(ctx context.Context, testUUID string, input []*UpdateQuestion) ([]*Question, error)
 	UpdateAnswersByIDs(ctx context.Context, questionUUID string, input []*UpdateAnswer) ([]*Answer, error)
 	CreateNewQuestion(ctx context.Context, input NewQuestion) (*Question, error)
-	DeleteTestByID(ctx context.Context, id []int) (bool, error)
-	DeleteTestByUUID(ctx context.Context, id []string) (bool, error)
-	DeleteQuestionByID(ctx context.Context, id []int) (bool, error)
-	DeleteQuestionByUUID(ctx context.Context, id []string) (bool, error)
+	DeleteTestByID(ctx context.Context, id []int) (*Status, error)
+	DeleteTestByUUID(ctx context.Context, id []string) (*Status, error)
+	DeleteQuestionByID(ctx context.Context, id []int) (*Status, error)
+	DeleteQuestionByUUID(ctx context.Context, id []string) (*Status, error)
 	ActivateGame(ctx context.Context, testUUID string) (*Game, error)
 	DeactivateGameByCODEs(ctx context.Context, codes []string) (*Status, error)
+	JoinPlayerToGame(ctx context.Context, input JoinPlayer) (*Player, error)
 }
 type QueryResolver interface {
 	Tests(ctx context.Context) ([]*Test, error)
@@ -314,6 +320,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteTestByUUID(childComplexity, args["id"].([]string)), true
 
+	case "Mutation.joinPlayerToGame":
+		if e.complexity.Mutation.JoinPlayerToGame == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_joinPlayerToGame_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.JoinPlayerToGame(childComplexity, args["input"].(JoinPlayer)), true
+
 	case "Mutation.updateAnswersByIDs":
 		if e.complexity.Mutation.UpdateAnswersByIDs == nil {
 			break
@@ -475,12 +493,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Question.UUID(childComplexity), true
 
-	case "Status.message":
-		if e.complexity.Status.Message == nil {
+	case "Status.success":
+		if e.complexity.Status.Success == nil {
 			break
 		}
 
-		return e.complexity.Status.Message(childComplexity), true
+		return e.complexity.Status.Success(childComplexity), true
 
 	case "Subscription.messages":
 		if e.complexity.Subscription.Messages == nil {
@@ -614,6 +632,10 @@ input InputAnswer {
 	text: String!
 	imgURL: String
 }
+input JoinPlayer {
+	game_code: String!
+	name: String!
+}
 type Message {
 	text: String!
 }
@@ -623,12 +645,13 @@ type Mutation {
 	updateQuestionsByUUIDs(testUUID: String!, input: [UpdateQuestion!]!): [Question!]!
 	updateAnswersByIDs(questionUUID: String!, input: [UpdateAnswer!]!): [Answer!]!
 	createNewQuestion(input: NewQuestion!): Question!
-	deleteTestByID(id: [Int!]!): Boolean!
-	deleteTestByUUID(id: [String!]!): Boolean!
-	deleteQuestionByID(id: [Int!]!): Boolean!
-	deleteQuestionByUUID(id: [String!]!): Boolean!
+	deleteTestByID(id: [Int!]!): Status!
+	deleteTestByUUID(id: [String!]!): Status!
+	deleteQuestionByID(id: [Int!]!): Status!
+	deleteQuestionByUUID(id: [String!]!): Status!
 	activateGame(testUUID: String!): Game!
 	deactivateGameByCODEs(codes: [String!]!): Status!
+	joinPlayerToGame(input: JoinPlayer!): Player!
 }
 input NewQuestion {
 	testID: Int!
@@ -662,7 +685,7 @@ type Question {
 	answers: [Answer!]!
 }
 type Status {
-	message: Boolean!
+	success: Boolean!
 }
 type Subscription {
 	messages: Message!
@@ -807,6 +830,20 @@ func (ec *executionContext) field_Mutation_deleteTestByUUID_args(ctx context.Con
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_joinPlayerToGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 JoinPlayer
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNJoinPlayer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐJoinPlayer(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1186,13 +1223,13 @@ func (ec *executionContext) _Game_players(ctx context.Context, field graphql.Col
 		Object:   "Game",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Players, nil
+		return ec.resolvers.Game().Players(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1481,9 +1518,9 @@ func (ec *executionContext) _Mutation_deleteTestByID(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*Status)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNStatus2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteTestByUUID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1522,9 +1559,9 @@ func (ec *executionContext) _Mutation_deleteTestByUUID(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*Status)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNStatus2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteQuestionByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1563,9 +1600,9 @@ func (ec *executionContext) _Mutation_deleteQuestionByID(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*Status)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNStatus2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteQuestionByUUID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1604,9 +1641,9 @@ func (ec *executionContext) _Mutation_deleteQuestionByUUID(ctx context.Context, 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*Status)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNStatus2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_activateGame(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1689,6 +1726,47 @@ func (ec *executionContext) _Mutation_deactivateGameByCODEs(ctx context.Context,
 	res := resTmp.(*Status)
 	fc.Result = res
 	return ec.marshalNStatus2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_joinPlayerToGame(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_joinPlayerToGame_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().JoinPlayerToGame(rctx, args["input"].(JoinPlayer))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Player)
+	fc.Result = res
+	return ec.marshalNPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐPlayer(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Player_UUID(ctx context.Context, field graphql.CollectedField, obj *Player) (ret graphql.Marshaler) {
@@ -2295,7 +2373,7 @@ func (ec *executionContext) _Question_answers(ctx context.Context, field graphql
 	return ec.marshalNAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐAnswerᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Status_message(ctx context.Context, field graphql.CollectedField, obj *Status) (ret graphql.Marshaler) {
+func (ec *executionContext) _Status_success(ctx context.Context, field graphql.CollectedField, obj *Status) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2312,7 +2390,7 @@ func (ec *executionContext) _Status_message(ctx context.Context, field graphql.C
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
+		return obj.Success, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3591,6 +3669,30 @@ func (ec *executionContext) unmarshalInputInputAnswer(ctx context.Context, obj i
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputJoinPlayer(ctx context.Context, obj interface{}) (JoinPlayer, error) {
+	var it JoinPlayer
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "game_code":
+			var err error
+			it.GameCode, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewQuestion(ctx context.Context, obj interface{}) (NewQuestion, error) {
 	var it NewQuestion
 	var asMap = obj.(map[string]interface{})
@@ -3820,15 +3922,24 @@ func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj
 		case "testUUID":
 			out.Values[i] = ec._Game_testUUID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "CODE":
 			out.Values[i] = ec._Game_CODE(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "players":
-			out.Values[i] = ec._Game_players(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Game_players(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3934,6 +4045,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "deactivateGameByCODEs":
 			out.Values[i] = ec._Mutation_deactivateGameByCODEs(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "joinPlayerToGame":
+			out.Values[i] = ec._Mutation_joinPlayerToGame(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -4159,8 +4275,8 @@ func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, o
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Status")
-		case "message":
-			out.Values[i] = ec._Status_message(ctx, field, obj)
+		case "success":
+			out.Values[i] = ec._Status_success(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -4640,6 +4756,10 @@ func (ec *executionContext) marshalNInt2ᚕintᚄ(ctx context.Context, sel ast.S
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalNJoinPlayer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐJoinPlayer(ctx context.Context, v interface{}) (JoinPlayer, error) {
+	return ec.unmarshalInputJoinPlayer(ctx, v)
 }
 
 func (ec *executionContext) marshalNMessage2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐMessage(ctx context.Context, sel ast.SelectionSet, v Message) graphql.Marshaler {

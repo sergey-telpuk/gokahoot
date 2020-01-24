@@ -41,20 +41,20 @@ func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuest
 	return mapQuestion(question)
 }
 
-func (r *mutationResolver) DeleteQuestionByID(ctx context.Context, ids []int) (bool, error) {
+func (r *mutationResolver) DeleteQuestionByID(ctx context.Context, ids []int) (*Status, error) {
 	service := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
 	if err := service.DeleteByIDs(ids...); err != nil {
-		return false, err
+		return nil, err
 	}
-	return true, nil
+	return &Status{Success: true}, nil
 }
 
-func (r *mutationResolver) DeleteQuestionByUUID(ctx context.Context, ids []string) (bool, error) {
+func (r *mutationResolver) DeleteQuestionByUUID(ctx context.Context, ids []string) (*Status, error) {
 	service := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
 	if err := service.DeleteByUUIDs(ids...); err != nil {
-		return false, err
+		return nil, err
 	}
-	return true, nil
+	return &Status{Success: true}, nil
 }
 
 func (r *mutationResolver) UpdateQuestionsByUUIDs(ctx context.Context, testUUID string, questions []*UpdateQuestion) ([]*Question, error) {

@@ -33,5 +33,29 @@ func (r *mutationResolver) DeactivateGameByCODEs(ctx context.Context, codes []st
 	if err := service.DeleteByUUIDs(codes...); err != nil {
 		return nil, err
 	}
-	return &Status{Message: true}, nil
+	return &Status{Success: true}, nil
+}
+
+func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input JoinPlayer) (*Player, error) {
+	uuid := guuid.New()
+	gameService := r.Di.Container.Get(services.ContainerNameGameService).(*services.GameService)
+	playerService := r.Di.Container.Get(services.ContainerNamePlayerService).(*services.PlayerService)
+
+	game, err := gameService.FindByUuid(input.GameCode)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err := playerService.CreateNewPlayer(uuid, game.ID, input.Name); err != nil {
+		return nil, err
+	}
+
+	player, err := playerService.FindByUuid(uuid.String())
+
+	if err != nil {
+		return nil, err
+	}
+
+	return mapPlayer(player)
 }
