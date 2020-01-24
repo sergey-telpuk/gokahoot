@@ -11,7 +11,11 @@ import (
 )
 
 func main() {
-	services := di.New()
+	services, err := di.New()
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	go graphql.Broadcaster()
 
@@ -36,5 +40,6 @@ func migrate(di *di.DI) {
 		&models.Test{},
 		&models.Question{},
 		&models.Answer{},
+		&models.Game{},
 	)
 }

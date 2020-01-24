@@ -15,7 +15,6 @@ type TestService struct {
 func (s *TestService) CreateNewTest(uuid guuid.UUID, name string, code guuid.UUID) error {
 	model := &models.Test{
 		UUID: uuid.String(),
-		Code: code.String(),
 		Name: name,
 	}
 

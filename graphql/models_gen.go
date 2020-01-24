@@ -9,6 +9,12 @@ type Answer struct {
 	ImgURL     *string `json:"imgURL"`
 }
 
+type Game struct {
+	TestUUID int       `json:"testUUID"`
+	Code     string    `json:"CODE"`
+	Players  []*Player `json:"players"`
+}
+
 type InputAnswer struct {
 	Sequential int     `json:"sequential"`
 	Text       string  `json:"text"`
@@ -31,6 +37,12 @@ type NewTest struct {
 	Name string `json:"name"`
 }
 
+type Player struct {
+	UUID     string `json:"UUID"`
+	GameCode string `json:"game_code"`
+	Name     string `json:"name"`
+}
+
 type Question struct {
 	ID          int       `json:"ID"`
 	UUID        string    `json:"UUID"`
@@ -48,7 +60,6 @@ type Status struct {
 type Test struct {
 	ID        int         `json:"ID"`
 	UUID      string      `json:"UUID"`
-	Code      string      `json:"code"`
 	Name      string      `json:"name"`
 	Questions []*Question `json:"questions"`
 }

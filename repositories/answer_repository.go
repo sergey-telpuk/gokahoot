@@ -57,14 +57,14 @@ func (r AnswerRepository) Delete(query interface{}, args ...interface{}) error {
 }
 
 func (r AnswerRepository) FindByQuestionID(id int) ([]*models.Answer, error) {
-	var answers []*models.Answer
+	var _models []*models.Answer
 	con := r.db.GetConn()
 
-	if err := con.Where("question_id = ?", id).Find(&answers).Error; err != nil {
+	if err := con.Where("question_id = ?", id).Find(&_models).Error; err != nil {
 		return nil, errorAnswer(err)
 	}
 
-	return answers, nil
+	return _models, nil
 }
 
 func errorAnswer(err error) error {

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sergey-telpuk/gokahoot/di"
-	"log"
 	"os"
 )
 
@@ -17,8 +16,6 @@ func Run(di *di.DI) error {
 	}
 
 	s := &HttpServer{di}
-
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 
 	if err := s.Run(port); err != nil {
 		return errors.New(fmt.Sprintf("Http server was failed %v", err))

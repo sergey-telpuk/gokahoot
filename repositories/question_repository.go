@@ -26,13 +26,13 @@ func (r QuestionRepository) Create(model *models.Question) {
 }
 
 func (r QuestionRepository) FindOne(query interface{}, args ...interface{}) (*models.Question, error) {
-	var question models.Question
+	var model models.Question
 
-	if err := r.db.GetConn().Where(query, args).First(&question).Error; err != nil {
+	if err := r.db.GetConn().Where(query, args).First(&model).Error; err != nil {
 		return nil, errorQuestion(err)
 	}
 
-	return &question, nil
+	return &model, nil
 }
 
 func (r QuestionRepository) Delete(query interface{}, args ...interface{}) error {
@@ -44,23 +44,23 @@ func (r QuestionRepository) Delete(query interface{}, args ...interface{}) error
 }
 
 func (r QuestionRepository) Find(query interface{}, args ...interface{}) ([]*models.Question, error) {
-	var questions []*models.Question
+	var _models []*models.Question
 
-	if err := r.db.GetConn().Where(query, args).Find(&questions).Limit(10000).Error; err != nil {
+	if err := r.db.GetConn().Where(query, args).Find(&_models).Limit(10000).Error; err != nil {
 		return nil, errorQuestion(err)
 	}
 
-	return questions, nil
+	return _models, nil
 }
 
 func (r QuestionRepository) FindQuestionBelongToTest(id int) ([]*models.Question, error) {
-	var questions []*models.Question
+	var _models []*models.Question
 
-	if err := r.db.GetConn().Where("test_id = ?", id).Find(&questions).Limit(10000).Error; err != nil {
+	if err := r.db.GetConn().Where("test_id = ?", id).Find(&_models).Limit(10000).Error; err != nil {
 		return nil, errorQuestion(err)
 	}
 
-	return questions, nil
+	return _models, nil
 }
 
 func (r QuestionRepository) Update(m *models.Question) (*models.Question, error) {
@@ -73,13 +73,13 @@ func (r QuestionRepository) Update(m *models.Question) (*models.Question, error)
 }
 
 func (r QuestionRepository) FindAll() ([]*models.Question, error) {
-	var questions []*models.Question
+	var _models []*models.Question
 
-	if err := r.db.GetConn().Find(&questions).Limit(10000).Error; err != nil {
+	if err := r.db.GetConn().Find(&_models).Limit(10000).Error; err != nil {
 		return nil, errorQuestion(err)
 	}
 
-	return questions, nil
+	return _models, nil
 }
 
 func errorQuestion(err error) error {

@@ -81,8 +81,20 @@ func mapTest(m *models.Test) (*Test, error) {
 	return &Test{
 		ID:   m.ID,
 		UUID: m.UUID,
-		Code: m.Code,
 		Name: m.Name,
+	}, nil
+
+}
+
+func mapGame(m *models.Game) (*Game, error) {
+
+	if m.ID == 0 {
+		return nil, errors.New(fmt.Sprintf("Not a such item"))
+	}
+
+	return &Game{
+		Code:     m.Code,
+		TestUUID: m.TestID,
 	}, nil
 
 }

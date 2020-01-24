@@ -20,7 +20,6 @@ type Question {
 type Test {
     ID: Int!
     UUID: String!
-    code: String!
     name: String!
     questions: [Question!]
 }
@@ -30,6 +29,19 @@ type Answer {
     text: String!
     sequential: Int!
     imgURL: String
+}
+
+type Player{
+    UUID: String!
+    game_code: String!
+    name: String!
+}
+
+#Game
+type Game {
+    testUUID: Int!
+    CODE: String!
+    players: [Player!]
 }
 
 type Status {
@@ -95,6 +107,9 @@ type Mutation {
     deleteTestByUUID(id: [String!]!): Boolean!
     deleteQuestionByID(id: [Int!]!): Boolean!
     deleteQuestionByUUID(id: [String!]!): Boolean!
+    #game
+    activateGame(testUUID: String!): Game!
+    deactivateGameByCODEs(codes: [String!]!): Status!
 }
 
 #Subscriptions

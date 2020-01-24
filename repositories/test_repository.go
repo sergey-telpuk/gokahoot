@@ -30,14 +30,14 @@ func (r TestRepository) Create(model *models.Test) error {
 }
 
 func (r TestRepository) FindOne(query interface{}, args ...interface{}) (*models.Test, error) {
-	var test models.Test
+	var model models.Test
 
-	if err := r.db.GetConn().Where(query, args).First(&test).Error; err != nil {
+	if err := r.db.GetConn().Where(query, args).First(&model).Error; err != nil {
 
 		return nil, errorTest(err)
 	}
 
-	return &test, nil
+	return &model, nil
 }
 
 func (r TestRepository) Update(m *models.Test) (*models.Test, error) {
@@ -58,13 +58,13 @@ func (r TestRepository) Delete(query interface{}, args ...interface{}) error {
 }
 
 func (r TestRepository) FindAll() ([]*models.Test, error) {
-	var tests []*models.Test
+	var _models []*models.Test
 
-	if err := r.db.GetConn().Find(&tests).Limit(1000).Error; err != nil {
+	if err := r.db.GetConn().Find(&_models).Limit(1000).Error; err != nil {
 		return nil, errorTest(err)
 	}
 
-	return tests, nil
+	return _models, nil
 }
 
 func errorTest(err error) error {
