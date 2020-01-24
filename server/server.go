@@ -16,11 +16,11 @@ func Run(di *di.DI) error {
 		port = defaultPort
 	}
 
-	router := newRouter(di)
+	s := &HttpServer{di}
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 
-	if err := router.Run(":" + port); err != nil {
+	if err := s.Run(port); err != nil {
 		return errors.New(fmt.Sprintf("Http server was failed %v", err))
 	}
 

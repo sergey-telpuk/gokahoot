@@ -15,6 +15,10 @@ type InputAnswer struct {
 	ImgURL     *string `json:"imgURL"`
 }
 
+type Message struct {
+	Text string `json:"text"`
+}
+
 type NewQuestion struct {
 	TestID      int            `json:"testID"`
 	Text        string         `json:"text"`

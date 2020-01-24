@@ -12,6 +12,16 @@ type Resolver struct {
 	Di *di.DI
 }
 
+type questionResolver struct{ *Resolver }
+
+type testResolver struct{ *Resolver }
+
+type mutationResolver struct{ *Resolver }
+
+type queryResolver struct{ *Resolver }
+
+type subscriptionResolver struct{ *Resolver }
+
 func (r *Resolver) Mutation() MutationResolver {
 	return &mutationResolver{r}
 }
@@ -28,13 +38,9 @@ func (r *Resolver) Test() TestResolver {
 	return &testResolver{r}
 }
 
-type questionResolver struct{ *Resolver }
-
-type testResolver struct{ *Resolver }
-
-type mutationResolver struct{ *Resolver }
-
-type queryResolver struct{ *Resolver }
+func (r *Resolver) Subscription() SubscriptionResolver {
+	return &subscriptionResolver{r}
+}
 
 func mapQuestion(m *models.Question) (*Question, error) {
 

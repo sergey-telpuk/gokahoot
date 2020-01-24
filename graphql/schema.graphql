@@ -96,3 +96,13 @@ type Mutation {
     deleteQuestionByID(id: [Int!]!): Boolean!
     deleteQuestionByUUID(id: [String!]!): Boolean!
 }
+
+#Subscriptions
+
+type Message {
+    text: String!
+}
+
+type Subscription {
+    messages: Message!
+}

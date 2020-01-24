@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/sergey-telpuk/gokahoot/db"
 	"github.com/sergey-telpuk/gokahoot/di"
+	"github.com/sergey-telpuk/gokahoot/graphql"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/server"
 	"log"
@@ -12,10 +13,12 @@ import (
 func main() {
 	services := di.New()
 
+	go graphql.Broadcaster()
+
 	migrate(services)
 
 	if err := server.Run(services); err != nil {
-		os.Exit(1)
+		log.Fatal(err)
 	}
 	os.Exit(0)
 
