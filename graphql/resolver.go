@@ -113,7 +113,7 @@ func mapPlayer(m *models.Player) (*Player, error) {
 	return &Player{
 		UUID:     m.UUID,
 		Name:     m.Name,
-		GameCode: "=======",
+		GameCode: m.Game.Code,
 	}, nil
 
 }

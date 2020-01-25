@@ -102,6 +102,8 @@ type Query {
   testByUUID(id: String!): Test!
   questionByID(id: Int!): Question!
   questionByUUID(id: String!): Question!
+  activatedGames: [Game!]!
+  activatedGameByCode(code: String!): Game!
 }
 
 

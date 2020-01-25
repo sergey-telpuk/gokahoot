@@ -31,11 +31,19 @@ func (r PlayerRepository) Create(model *models.Player) error {
 
 func (r PlayerRepository) FindOne(query interface{}, args ...interface{}) (*models.Player, error) {
 	var model models.Player
+	var game models.Game
 
 	if err := r.db.GetConn().Where(query, args).First(&model).Error; err != nil {
 
 		return nil, errorPlayer(err)
 	}
+
+	if err := r.db.GetConn().Model(&model).Related(&game).Error; err != nil {
+
+		return nil, errorPlayer(err)
+	}
+
+	model.Game = game
 
 	return &model, nil
 }
