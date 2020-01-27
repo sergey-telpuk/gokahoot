@@ -22,8 +22,8 @@ func (s *PlayerService) CreateNewPlayer(playerUUID guuid.UUID, gameID int, name 
 	return s.r.Create(model)
 }
 
-func (s *PlayerService) FindByUuid(id string) (*models.Player, error) {
-	return s.r.FindOne("players.uuid = ?", id)
+func (s *PlayerService) FindByUuid(uuid string) (*models.Player, error) {
+	return s.r.FindOne("players.uuid = ?", uuid)
 }
 
 func (s *PlayerService) FindByID(id int) (*models.Player, error) {

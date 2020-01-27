@@ -3,132 +3,136 @@
 # https://gqlgen.com/getting-started/
 
 schema {
-  query: Query
-  mutation: Mutation
+    query: Query
+    mutation: Mutation
 }
 
 type Question {
-  ID: Int!
-  UUID: String!
-  testID: Int!
-  text: String!
-  imgURL: String
-  rightAnswer: Int!
-  answers: [Answer!]!
+    ID: Int!
+    UUID: String!
+    testID: Int!
+    text: String!
+    imgURL: String
+    rightAnswer: Int!
+    answers: [Answer!]!
 }
 
 type Test {
-  ID: Int!
-  UUID: String!
-  name: String!
-  questions: [Question!]
+    ID: Int!
+    UUID: String!
+    name: String!
+    questions: [Question!]
 }
 
 type Answer {
-  ID: Int!
-  text: String!
-  sequential: Int!
-  imgURL: String
+    ID: Int!
+    text: String!
+    sequential: Int!
+    imgURL: String
 }
 
 
 #Game
 type Game {
-  test: Test!
-  CODE: String!
-  players: [Player!]
+    test: Test!
+    CODE: String!
+    players: [Player!]
 }
 
 type Player {
-  UUID: String!
-  game: Game!
-  name: String!
+    UUID: String!
+    game: Game!
+    name: String!
 }
 
 type Status {
-  success: Boolean!
+    success: Boolean!
 }
 
 #inputs
 input NewTest {
-  name: String!
+    name: String!
 }
 input InputAnswer {
-  sequential: Int!
-  text: String!
-  imgURL: String
+    sequential: Int!
+    text: String!
+    imgURL: String
 }
 
 input NewQuestion {
-  testUUID: String!
-  text: String!
-  imgURL: String
-  rightAnswer: Int!
-  answers: [InputAnswer!]!
+    testUUID: String!
+    text: String!
+    imgURL: String
+    rightAnswer: Int!
+    answers: [InputAnswer!]!
 }
 
 #============= input updates
 input UpdateTest{
-  UUID: String!
-  name: String!
-  questions:[UpdateQuestion!]
+    UUID: String!
+    name: String!
+    questions:[UpdateQuestion!]
 }
 
 input UpdateAnswer {
-  ID: Int!
-  sequential: Int
-  text: String
-  imgURL: String
+    ID: Int!
+    sequential: Int
+    text: String
+    imgURL: String
 }
 
 input UpdateQuestion {
-  UUID: String!
-  text: String
-  imgURL: String
-  rightAnswer: Int
-  answers: [UpdateAnswer!]
+    UUID: String!
+    text: String
+    imgURL: String
+    rightAnswer: Int
+    answers: [UpdateAnswer!]
 }
 
 #Input Player
 input JoinPlayer {
-  gameCode: String!
-  name: String!
+    gameCode: String!
+    name: String!
 }
 
+
 type Query {
-  tests: [Test!]!
-  testByID(id: Int!): Test!
-  testByUUID(id: String!): Test!
-  questionByID(id: Int!): Question!
-  questionByUUID(id: String!): Question!
-  activatedGames: [Game!]!
-  activatedGameByCode(code: String!): Game!
+    tests: [Test!]!
+    testByID(id: Int!): Test!
+    testByUUID(id: String!): Test!
+    questionByID(id: Int!): Question!
+    questionByUUID(id: String!): Question!
+    activatedGames: [Game!]!
+    activatedGameByCode(code: String!): Game!
 }
 
 
 
 type Mutation {
-  createNewTest(input: NewTest!): Test!
-  updateTestByUUIDs(input: [UpdateTest!]!): [Test!]!
-  updateQuestionsByUUIDs(testUUID: String!,input: [UpdateQuestion!]!): [Question!]!
-  updateAnswersByIDs(questionUUID: String!, input: [UpdateAnswer!]!): [Answer!]!
-  createNewQuestion(input: NewQuestion!): Question!
-  deleteTestByID(id: [Int!]!): Status!
-  deleteTestByUUID(id: [String!]!): Status!
-  deleteQuestionByID(id: [Int!]!): Status!
-  deleteQuestionByUUID(id: [String!]!): Status!
-  #game
-  activateGame(testUUID: String!): Game!
-  deactivateGameByCODEs(codes: [String!]!): Status!
-  joinPlayerToGame(input: JoinPlayer!): Player!
+    createNewTest(input: NewTest!): Test!
+    updateTestByUUIDs(input: [UpdateTest!]!): [Test!]!
+    updateQuestionsByUUIDs(testUUID: String!,input: [UpdateQuestion!]!): [Question!]!
+    updateAnswersByIDs(questionUUID: String!, input: [UpdateAnswer!]!): [Answer!]!
+    createNewQuestion(input: NewQuestion!): Question!
+    deleteTestByID(id: [Int!]!): Status!
+    deleteTestByUUID(id: [String!]!): Status!
+    deleteQuestionByID(id: [Int!]!): Status!
+    deleteQuestionByUUID(id: [String!]!): Status!
+    #game
+    activateGame(testUUID: String!): Game!
+    deactivateGameByCODEs(codes: [String!]!): Status!
+    joinPlayerToGame(input: JoinPlayer!): Player!
 }
 
 #Subscriptions
 
-type Message {
-  text: String!
+#Broadcast
+type BroadcastPlayer  {
+    UUID: String!
+    gameCode:  String!
+    name: String!
 }
 
 type Subscription {
-  messages: Message!
+    onJoiningPlayerToGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
 }

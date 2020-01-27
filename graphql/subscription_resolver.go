@@ -2,53 +2,34 @@ package graphql
 
 import (
 	"context"
-	"math/rand"
+	"github.com/sergey-telpuk/gokahoot/services"
 	"sync"
-	"time"
 )
-
-type client struct {
-	Message chan *Message
-}
-
-var clients = map[string]*client{}
 
 var mutex = &sync.Mutex{}
 
-func Broadcaster() {
-	for {
-		select {
-		case <-time.After(1 * time.Second):
-			for _, v := range clients {
-				v.Message <- &Message{Text: "hello" + time.Now().String()}
-			}
-		}
+func (r *subscriptionResolver) OnJoiningPlayerToGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayer, error) {
+	broadcastService := r.Di.Container.Get(services.ContainerNameBroadcastService).(*services.BroadcastService)
+	event := make(chan *BroadcastPlayer, 1)
+
+	if err := broadcastService.AddGame(gameCode); err != nil {
+		return nil, err
 	}
-}
 
-func (r *subscriptionResolver) Messages(ctx context.Context) (<-chan *Message, error) {
-	id := randString(8)
+	_, err := broadcastService.AddPlayerToGame(gameCode, playerUUID)
 
-	events := make(chan *Message, 1)
+	if err != nil {
+		return nil, err
+	}
 
-	client := &client{Message: events}
-	clients[id] = client
+	//player.EventWaitForJoining = event
 
 	go func() {
 		<-ctx.Done()
 		mutex.Lock()
-		delete(clients, id)
+		_ = broadcastService.DeletePlayerFromGame(gameCode, playerUUID)
 		mutex.Unlock()
 	}()
 
-	return events, nil
-}
-
-func randString(n int) string {
-	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
-	}
-	return string(b)
+	return event, nil
 }

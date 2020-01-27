@@ -10,7 +10,7 @@ func (r *gameResolver) Players(ctx context.Context, game *Game) ([]*Player, erro
 	playerService := r.Di.Container.Get(services.ContainerNamePlayerService).(*services.PlayerService)
 	gameService := r.Di.Container.Get(services.ContainerNameGameService).(*services.GameService)
 
-	mGame, err := gameService.FindByUuid(game.Code)
+	mGame, err := gameService.FindByCode(game.Code)
 
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (r *queryResolver) ActivatedGames(ctx context.Context) ([]*Game, error) {
 func (r *queryResolver) ActivatedGameByCode(ctx context.Context, code string) (*Game, error) {
 	service := r.Di.Container.Get(services.ContainerNameGameService).(*services.GameService)
 
-	game, err := service.FindByUuid(code)
+	game, err := service.FindByCode(code)
 
 	if err != nil {
 		return nil, err

@@ -21,20 +21,20 @@ func (s *GameService) CreateNewGame(testID int, code guuid.UUID) error {
 	return s.r.Create(model)
 }
 
-func (s *GameService) FindByUuid(id string) (*models.Game, error) {
-	return s.r.FindOne("games.code = ?", id)
+func (s *GameService) FindByCode(code string) (*models.Game, error) {
+	return s.r.FindOne("games.code = ?", code)
 }
 
 func (s *GameService) FindByID(id int) (*models.Game, error) {
 	return s.r.FindOne("games.id = ?", id)
 }
 
-func (s *GameService) UpdateByUUID(m *models.Game) (*models.Game, error) {
+func (s *GameService) Update(m *models.Game) (*models.Game, error) {
 	return s.r.Update(m)
 }
 
-func (s *GameService) DeleteByUUIDs(id ...string) error {
-	return s.r.Delete("games.UUID IN (?)", id)
+func (s *GameService) DeleteByCODEs(id ...string) error {
+	return s.r.Delete("games.code IN (?)", id)
 }
 
 func (s *GameService) DeleteByIDs(id ...int) error {

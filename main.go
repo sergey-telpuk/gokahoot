@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/sergey-telpuk/gokahoot/db"
 	"github.com/sergey-telpuk/gokahoot/di"
-	"github.com/sergey-telpuk/gokahoot/graphql"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/server"
 	"log"
@@ -16,8 +15,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	go graphql.Broadcaster()
 
 	migrate(services)
 

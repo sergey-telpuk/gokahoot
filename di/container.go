@@ -139,6 +139,28 @@ func New() (*DI, error) {
 		return nil, errorsDI(err)
 	}
 
+	if err := builder.Add(di.Def{
+		Name: repositories.ContainerNameBroadcastRepository,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return repositories.InitBroadcastRepository(), nil
+		},
+	}); err != nil {
+		return nil, errorsDI(err)
+	}
+
+	if err := builder.Add(di.Def{
+		Name: services.ContainerNameBroadcastService,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return services.InitBroadcastService(
+				ctn.Get(repositories.ContainerNameBroadcastRepository).(*repositories.BroadcastRepository),
+				ctn.Get(services.ContainerNameGameService).(*services.GameService),
+				ctn.Get(services.ContainerNamePlayerService).(*services.PlayerService),
+			), nil
+		},
+	}); err != nil {
+		return nil, errorsDI(err)
+	}
+
 	app := builder.Build()
 
 	return &DI{Container: app}, nil

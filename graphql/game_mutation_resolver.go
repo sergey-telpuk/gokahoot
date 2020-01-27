@@ -20,7 +20,7 @@ func (r *mutationResolver) ActivateGame(ctx context.Context, testUUID string) (*
 		return nil, err
 	}
 
-	game, err := gameService.FindByUuid(uuid.String())
+	game, err := gameService.FindByCode(uuid.String())
 
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (r *mutationResolver) ActivateGame(ctx context.Context, testUUID string) (*
 }
 func (r *mutationResolver) DeactivateGameByCODEs(ctx context.Context, codes []string) (*Status, error) {
 	service := r.Di.Container.Get(services.ContainerNameGameService).(*services.GameService)
-	if err := service.DeleteByUUIDs(codes...); err != nil {
+	if err := service.DeleteByCODEs(codes...); err != nil {
 		return nil, err
 	}
 	return &Status{Success: true}, nil
@@ -40,8 +40,9 @@ func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input JoinPlaye
 	uuid := guuid.New()
 	gameService := r.Di.Container.Get(services.ContainerNameGameService).(*services.GameService)
 	playerService := r.Di.Container.Get(services.ContainerNamePlayerService).(*services.PlayerService)
+	broadcastService := r.Di.Container.Get(services.ContainerNameBroadcastService).(*services.BroadcastService)
 
-	game, err := gameService.FindByUuid(input.GameCode)
+	game, err := gameService.FindByCode(input.GameCode)
 
 	if err != nil {
 		return nil, err
@@ -56,6 +57,8 @@ func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input JoinPlaye
 	if err != nil {
 		return nil, err
 	}
+
+	_ = broadcastService.BroadcastForWaitForJoiningGame(game.Code, player.UUID)
 
 	return mapPlayer(player)
 }
