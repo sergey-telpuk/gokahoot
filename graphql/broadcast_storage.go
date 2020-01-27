@@ -3,6 +3,7 @@ package graphql
 import (
 	"errors"
 	"fmt"
+	guuid "github.com/google/uuid"
 )
 
 const ContainerNameBroadcastRepository = "ContainerNameBroadcastRepository"
@@ -44,23 +45,6 @@ func (r *BroadcastRepository) GetGame(gameCode string) (*StorageGame, error) {
 	return r.Games[gameCode], nil
 }
 
-func (r *BroadcastRepository) GetPlayer(gameCode string, playerUUID string) (*StoragePlayer, error) {
-
-	game, err := r.GetGame(gameCode)
-
-	if err != nil {
-		return nil, err
-	}
-
-	player, ok := game.Players[playerUUID]
-
-	if !ok {
-		return nil, errorBroadcastRepository(errors.New(fmt.Sprintf("not such a player(%s)", gameCode)))
-	}
-
-	return player, nil
-}
-
 func (r *BroadcastRepository) DeleteGame(gameCode string) {
 	_, ok := r.Games[gameCode]
 
@@ -75,27 +59,23 @@ func (r *BroadcastRepository) HasGame(gameCode string) bool {
 	return ok
 }
 
-func (r *BroadcastRepository) AddPlayerToGame(player StoragePlayer) error {
+func (r *BroadcastRepository) AddPlayerToGame(uuid guuid.UUID, player *StoragePlayer) error {
 	game, err := r.GetGame(player.GameCode)
 
 	if err != nil {
 		return err
 	}
 
-	_, ok := game.Players[player.UUID]
-
-	if !ok {
-		game.Players[player.UUID] = &player
-	}
+	game.Players[uuid.String()] = player
 
 	return nil
 }
 
-func (r *BroadcastRepository) DeletePlayerFromGame(gameCode string, playerUUID string) {
-	_, ok := r.Games[gameCode].Players[playerUUID]
+func (r *BroadcastRepository) DeletePlayerFromGame(gameCode string, uuid guuid.UUID) {
+	_, ok := r.Games[gameCode].Players[uuid.String()]
 
 	if ok {
-		delete(r.Games[gameCode].Players, playerUUID)
+		delete(r.Games[gameCode].Players, uuid.String())
 	}
 
 }

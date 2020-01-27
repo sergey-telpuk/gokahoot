@@ -75,7 +75,7 @@ type ComplexityRoot struct {
 		DeleteQuestionByUUID   func(childComplexity int, id []string) int
 		DeleteTestByID         func(childComplexity int, id []int) int
 		DeleteTestByUUID       func(childComplexity int, id []string) int
-		JoinPlayerToGame       func(childComplexity int, input JoinPlayer) int
+		JoinPlayerToGame       func(childComplexity int, input InputJoinPlayer) int
 		UpdateAnswersByIDs     func(childComplexity int, questionUUID string, input []*UpdateAnswer) int
 		UpdateQuestionsByUUIDs func(childComplexity int, testUUID string, input []*UpdateQuestion) int
 		UpdateTestByUUIDs      func(childComplexity int, input []*UpdateTest) int
@@ -138,7 +138,7 @@ type MutationResolver interface {
 	DeleteQuestionByUUID(ctx context.Context, id []string) (*Status, error)
 	ActivateGame(ctx context.Context, testUUID string) (*Game, error)
 	DeactivateGameByCODEs(ctx context.Context, codes []string) (*Status, error)
-	JoinPlayerToGame(ctx context.Context, input JoinPlayer) (*Player, error)
+	JoinPlayerToGame(ctx context.Context, input InputJoinPlayer) (*Player, error)
 }
 type QueryResolver interface {
 	Tests(ctx context.Context) ([]*Test, error)
@@ -202,21 +202,21 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Answer.Text(childComplexity), true
 
-	case "StoragePlayer.gameCode":
+	case "BroadcastPlayer.gameCode":
 		if e.complexity.BroadcastPlayer.GameCode == nil {
 			break
 		}
 
 		return e.complexity.BroadcastPlayer.GameCode(childComplexity), true
 
-	case "StoragePlayer.name":
+	case "BroadcastPlayer.name":
 		if e.complexity.BroadcastPlayer.Name == nil {
 			break
 		}
 
 		return e.complexity.BroadcastPlayer.Name(childComplexity), true
 
-	case "StoragePlayer.UUID":
+	case "BroadcastPlayer.UUID":
 		if e.complexity.BroadcastPlayer.UUID == nil {
 			break
 		}
@@ -350,7 +350,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.JoinPlayerToGame(childComplexity, args["input"].(JoinPlayer)), true
+		return e.complexity.Mutation.JoinPlayerToGame(childComplexity, args["input"].(InputJoinPlayer)), true
 
 	case "Mutation.updateAnswersByIDs":
 		if e.complexity.Mutation.UpdateAnswersByIDs == nil {
@@ -666,7 +666,7 @@ var parsedSchema = gqlparser.MustLoadSchema(
 	sequential: Int!
 	imgURL: String
 }
-type StoragePlayer {
+type BroadcastPlayer {
 	UUID: String!
 	gameCode: String!
 	name: String!
@@ -681,7 +681,7 @@ input InputAnswer {
 	text: String!
 	imgURL: String
 }
-input JoinPlayer {
+input InputJoinPlayer {
 	gameCode: String!
 	name: String!
 }
@@ -697,7 +697,7 @@ type Mutation {
 	deleteQuestionByUUID(id: [String!]!): Status!
 	activateGame(testUUID: String!): Game!
 	deactivateGameByCODEs(codes: [String!]!): Status!
-	joinPlayerToGame(input: JoinPlayer!): Player!
+	joinPlayerToGame(input: InputJoinPlayer!): Player!
 }
 input NewQuestion {
 	testUUID: String!
@@ -736,7 +736,7 @@ type Status {
 	success: Boolean!
 }
 type Subscription {
-	onJoiningPlayerToGame(gameCode: String!, playerUUID: String!): StoragePlayer!
+	onJoiningPlayerToGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
 }
 type Test {
 	ID: Int!
@@ -884,9 +884,9 @@ func (ec *executionContext) field_Mutation_deleteTestByUUID_args(ctx context.Con
 func (ec *executionContext) field_Mutation_joinPlayerToGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 JoinPlayer
+	var arg0 InputJoinPlayer
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNJoinPlayer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐJoinPlayer(ctx, tmp)
+		arg0, err = ec.unmarshalNInputJoinPlayer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputJoinPlayer(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1236,7 +1236,7 @@ func (ec *executionContext) _BroadcastPlayer_UUID(ctx context.Context, field gra
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "StoragePlayer",
+		Object:   "BroadcastPlayer",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -1270,7 +1270,7 @@ func (ec *executionContext) _BroadcastPlayer_gameCode(ctx context.Context, field
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "StoragePlayer",
+		Object:   "BroadcastPlayer",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -1304,7 +1304,7 @@ func (ec *executionContext) _BroadcastPlayer_name(ctx context.Context, field gra
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "StoragePlayer",
+		Object:   "BroadcastPlayer",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -1904,7 +1904,7 @@ func (ec *executionContext) _Mutation_joinPlayerToGame(ctx context.Context, fiel
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().JoinPlayerToGame(rctx, args["input"].(JoinPlayer))
+		return ec.resolvers.Mutation().JoinPlayerToGame(rctx, args["input"].(InputJoinPlayer))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3903,8 +3903,8 @@ func (ec *executionContext) unmarshalInputInputAnswer(ctx context.Context, obj i
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputJoinPlayer(ctx context.Context, obj interface{}) (JoinPlayer, error) {
-	var it JoinPlayer
+func (ec *executionContext) unmarshalInputInputJoinPlayer(ctx context.Context, obj interface{}) (InputJoinPlayer, error) {
+	var it InputJoinPlayer
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -4142,7 +4142,7 @@ func (ec *executionContext) _Answer(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
-var broadcastPlayerImplementors = []string{"StoragePlayer"}
+var broadcastPlayerImplementors = []string{"BroadcastPlayer"}
 
 func (ec *executionContext) _BroadcastPlayer(ctx context.Context, sel ast.SelectionSet, obj *BroadcastPlayer) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, broadcastPlayerImplementors)
@@ -4152,7 +4152,7 @@ func (ec *executionContext) _BroadcastPlayer(ctx context.Context, sel ast.Select
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("StoragePlayer")
+			out.Values[i] = graphql.MarshalString("BroadcastPlayer")
 		case "UUID":
 			out.Values[i] = ec._BroadcastPlayer_UUID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -5038,6 +5038,10 @@ func (ec *executionContext) unmarshalNInputAnswer2ᚖgithubᚗcomᚋsergeyᚑtel
 	return &res, err
 }
 
+func (ec *executionContext) unmarshalNInputJoinPlayer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐInputJoinPlayer(ctx context.Context, v interface{}) (InputJoinPlayer, error) {
+	return ec.unmarshalInputInputJoinPlayer(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	return graphql.UnmarshalInt(v)
 }
@@ -5079,10 +5083,6 @@ func (ec *executionContext) marshalNInt2ᚕintᚄ(ctx context.Context, sel ast.S
 	}
 
 	return ret
-}
-
-func (ec *executionContext) unmarshalNJoinPlayer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐJoinPlayer(ctx context.Context, v interface{}) (JoinPlayer, error) {
-	return ec.unmarshalInputJoinPlayer(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNNewQuestion2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐNewQuestion(ctx context.Context, v interface{}) (NewQuestion, error) {

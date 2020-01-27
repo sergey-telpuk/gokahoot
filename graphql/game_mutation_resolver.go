@@ -35,7 +35,7 @@ func (r *mutationResolver) DeactivateGameByCODEs(ctx context.Context, codes []st
 	return &Status{Success: true}, nil
 }
 
-func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input JoinPlayer) (*Player, error) {
+func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input InputJoinPlayer) (*Player, error) {
 	uuid := guuid.New()
 	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
 	playerService := r.Di.Container.Get(ContainerNamePlayerService).(*PlayerService)

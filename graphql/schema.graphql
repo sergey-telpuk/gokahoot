@@ -90,7 +90,7 @@ input UpdateQuestion {
 }
 
 #Input Player
-input JoinPlayer {
+input InputJoinPlayer {
     gameCode: String!
     name: String!
 }
@@ -121,7 +121,7 @@ type Mutation {
     #game
     activateGame(testUUID: String!): Game!
     deactivateGameByCODEs(codes: [String!]!): Status!
-    joinPlayerToGame(input: JoinPlayer!): Player!
+    joinPlayerToGame(input: InputJoinPlayer!): Player!
 }
 
 #Subscriptions

@@ -27,7 +27,7 @@ type InputAnswer struct {
 	ImgURL     *string `json:"imgURL"`
 }
 
-type JoinPlayer struct {
+type InputJoinPlayer struct {
 	GameCode string `json:"gameCode"`
 	Name     string `json:"name"`
 }

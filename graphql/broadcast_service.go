@@ -1,8 +1,12 @@
 package graphql
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	guuid "github.com/google/uuid"
+	"github.com/sergey-telpuk/gokahoot/models"
+	"time"
 )
 
 const ContainerNameBroadcastService = "ContainerNameBroadcastService"
@@ -42,20 +46,28 @@ func (s *BroadcastService) BroadcastForWaitForJoiningGame(gameCode string, playe
 		return err
 	}
 
-	for _, bPlayer := range game.Players {
-		fmt.Println("============", bPlayer, player.Game)
-		bPlayer.EventWaitForJoining <- &BroadcastPlayer{
-			Name:     player.Name,
-			UUID:     player.UUID,
-			GameCode: player.Game.Code,
-		}
-		fmt.Println("============", bPlayer, player.Game)
+	for _, broadcastPlayer := range game.Players {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		go func(stPlayer *StoragePlayer, player *models.Player, ctx context.Context) {
+			select {
+			case stPlayer.EventWaitForJoining <- &BroadcastPlayer{
+				Name:     player.Name,
+				UUID:     player.UUID,
+				GameCode: player.Game.Code,
+			}:
+			case <-ctx.Done():
+				return
+			}
+
+			defer cancel()
+
+		}(broadcastPlayer, player, ctx)
 	}
 
 	return nil
 }
 
-func (s *BroadcastService) AddPlayerToGame(gameCode string, playerUUID string) (*StoragePlayer, error) {
+func (s *BroadcastService) AddPlayerToGame(uuid guuid.UUID, gameCode string, playerUUID string) (*StoragePlayer, error) {
 	ok := s.broadcastRepository.HasGame(gameCode)
 
 	if !ok {
@@ -71,15 +83,18 @@ func (s *BroadcastService) AddPlayerToGame(gameCode string, playerUUID string) (
 	if player == nil {
 		return nil, errorBroadcastService(errors.New("not such a player"))
 	}
-	if err := s.broadcastRepository.AddPlayerToGame(StoragePlayer{
+
+	newPlayer := &StoragePlayer{
 		UUID:     player.UUID,
 		Name:     player.Name,
 		GameCode: player.Game.Code,
-	}); err != nil {
+	}
+
+	if err := s.broadcastRepository.AddPlayerToGame(uuid, newPlayer); err != nil {
 		return nil, err
 	}
 
-	return s.broadcastRepository.GetPlayer(gameCode, playerUUID)
+	return newPlayer, nil
 }
 
 func (s *BroadcastService) DeleteGame(gameCode string) error {
@@ -88,8 +103,8 @@ func (s *BroadcastService) DeleteGame(gameCode string) error {
 	return nil
 }
 
-func (s *BroadcastService) DeletePlayerFromGame(gameCode string, playerUUID string) error {
-	s.broadcastRepository.DeletePlayerFromGame(gameCode, playerUUID)
+func (s *BroadcastService) DeletePlayerFromGame(gameCode string, uuid guuid.UUID) error {
+	s.broadcastRepository.DeletePlayerFromGame(gameCode, uuid)
 
 	return nil
 }
