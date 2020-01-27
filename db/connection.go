@@ -32,6 +32,8 @@ func Init() (*Db, error) {
 	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
 	con.DB().SetConnMaxLifetime(time.Hour)
 
+	con.LogMode(true)
+
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Connection was failed %v", err))
 	}

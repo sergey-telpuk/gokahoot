@@ -10,9 +10,9 @@ type Answer struct {
 }
 
 type Game struct {
-	TestUUID int       `json:"testUUID"`
-	Code     string    `json:"CODE"`
-	Players  []*Player `json:"players"`
+	Test    *Test     `json:"test"`
+	Code    string    `json:"CODE"`
+	Players []*Player `json:"players"`
 }
 
 type InputAnswer struct {

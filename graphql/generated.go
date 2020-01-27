@@ -55,9 +55,9 @@ type ComplexityRoot struct {
 	}
 
 	Game struct {
-		Code     func(childComplexity int) int
-		Players  func(childComplexity int) int
-		TestUUID func(childComplexity int) int
+		Code    func(childComplexity int) int
+		Players func(childComplexity int) int
+		Test    func(childComplexity int) int
 	}
 
 	Message struct {
@@ -214,12 +214,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Game.Players(childComplexity), true
 
-	case "Game.testUUID":
-		if e.complexity.Game.TestUUID == nil {
+	case "Game.test":
+		if e.complexity.Game.Test == nil {
 			break
 		}
 
-		return e.complexity.Game.TestUUID(childComplexity), true
+		return e.complexity.Game.Test(childComplexity), true
 
 	case "Message.text":
 		if e.complexity.Message.Text == nil {
@@ -646,7 +646,7 @@ var parsedSchema = gqlparser.MustLoadSchema(
 	imgURL: String
 }
 type Game {
-	testUUID: Int!
+	test: Test!
 	CODE: String!
 	players: [Player!]
 }
@@ -1183,7 +1183,7 @@ func (ec *executionContext) _Answer_imgURL(ctx context.Context, field graphql.Co
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Game_testUUID(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
+func (ec *executionContext) _Game_test(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1200,7 +1200,7 @@ func (ec *executionContext) _Game_testUUID(ctx context.Context, field graphql.Co
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.TestUUID, nil
+		return obj.Test, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1212,9 +1212,9 @@ func (ec *executionContext) _Game_testUUID(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*Test)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNTest2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐTest(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Game_CODE(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
@@ -4033,8 +4033,8 @@ func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Game")
-		case "testUUID":
-			out.Values[i] = ec._Game_testUUID(ctx, field, obj)
+		case "test":
+			out.Values[i] = ec._Game_test(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
