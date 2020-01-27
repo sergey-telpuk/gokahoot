@@ -3,12 +3,11 @@ package graphql
 import (
 	"context"
 	guuid "github.com/google/uuid"
-	"github.com/sergey-telpuk/gokahoot/services"
 )
 
 func (r *mutationResolver) CreateNewTest(ctx context.Context, input NewTest) (*Test, error) {
 	uuid := guuid.New()
-	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
+	service := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 
 	if err := service.CreateNewTest(uuid, input.Name, guuid.New()); err != nil {
 		return nil, err
@@ -25,7 +24,7 @@ func (r *mutationResolver) CreateNewTest(ctx context.Context, input NewTest) (*T
 
 func (r *mutationResolver) UpdateTestByUUIDs(ctx context.Context, input []*UpdateTest) ([]*Test, error) {
 	var result []*Test
-	testService := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
+	testService := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 
 	for _, iTest := range input {
 		mTest, err := testService.FindByUuid(iTest.UUID)
@@ -56,7 +55,7 @@ func (r *mutationResolver) UpdateTestByUUIDs(ctx context.Context, input []*Updat
 }
 
 func (r *mutationResolver) DeleteTestByID(ctx context.Context, ids []int) (*Status, error) {
-	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
+	service := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 	if err := service.DeleteByIDs(ids...); err != nil {
 		return nil, err
 	}
@@ -64,7 +63,7 @@ func (r *mutationResolver) DeleteTestByID(ctx context.Context, ids []int) (*Stat
 }
 
 func (r *mutationResolver) DeleteTestByUUID(ctx context.Context, ids []string) (*Status, error) {
-	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
+	service := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 	if err := service.DeleteByUUIDs(ids...); err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-package repositories
+package graphql
 
 import (
 	"errors"
@@ -9,19 +9,19 @@ const ContainerNameBroadcastRepository = "ContainerNameBroadcastRepository"
 
 type (
 	BroadcastRepository struct {
-		Games map[string]*BroadcastGame
+		Games map[string]*StorageGame
 	}
 
-	BroadcastGame struct {
+	StorageGame struct {
 		Code    string
-		Players map[string]*BroadcastPlayer
+		Players map[string]*StoragePlayer
 	}
 
-	BroadcastPlayer struct {
+	StoragePlayer struct {
 		Name                string
 		UUID                string
 		GameCode            string
-		EventWaitForJoining chan interface{}
+		EventWaitForJoining chan *BroadcastPlayer
 	}
 )
 
@@ -29,14 +29,14 @@ func (r *BroadcastRepository) AddGame(gameCode string) {
 	_, ok := r.Games[gameCode]
 
 	if !ok {
-		r.Games[gameCode] = &BroadcastGame{
+		r.Games[gameCode] = &StorageGame{
 			Code:    gameCode,
-			Players: map[string]*BroadcastPlayer{},
+			Players: map[string]*StoragePlayer{},
 		}
 	}
 }
 
-func (r *BroadcastRepository) GetGame(gameCode string) (*BroadcastGame, error) {
+func (r *BroadcastRepository) GetGame(gameCode string) (*StorageGame, error) {
 	if !r.HasGame(gameCode) {
 		return nil, errorBroadcastRepository(errors.New(fmt.Sprintf("not such a game(%s)", gameCode)))
 	}
@@ -44,7 +44,7 @@ func (r *BroadcastRepository) GetGame(gameCode string) (*BroadcastGame, error) {
 	return r.Games[gameCode], nil
 }
 
-func (r *BroadcastRepository) GetPlayer(gameCode string, playerUUID string) (*BroadcastPlayer, error) {
+func (r *BroadcastRepository) GetPlayer(gameCode string, playerUUID string) (*StoragePlayer, error) {
 
 	game, err := r.GetGame(gameCode)
 
@@ -54,7 +54,7 @@ func (r *BroadcastRepository) GetPlayer(gameCode string, playerUUID string) (*Br
 
 	player, ok := game.Players[playerUUID]
 
-	if ok {
+	if !ok {
 		return nil, errorBroadcastRepository(errors.New(fmt.Sprintf("not such a player(%s)", gameCode)))
 	}
 
@@ -75,7 +75,7 @@ func (r *BroadcastRepository) HasGame(gameCode string) bool {
 	return ok
 }
 
-func (r *BroadcastRepository) AddPlayerToGame(player BroadcastPlayer) error {
+func (r *BroadcastRepository) AddPlayerToGame(player StoragePlayer) error {
 	game, err := r.GetGame(player.GameCode)
 
 	if err != nil {
@@ -101,9 +101,9 @@ func (r *BroadcastRepository) DeletePlayerFromGame(gameCode string, playerUUID s
 }
 
 func InitBroadcastRepository() *BroadcastRepository {
-	return &BroadcastRepository{Games: map[string]*BroadcastGame{}}
+	return &BroadcastRepository{Games: map[string]*StorageGame{}}
 }
 
 func errorBroadcastRepository(err error) error {
-	return errors.New(fmt.Sprintf("BroadcastRepository error: %s", err))
+	return errors.New(fmt.Sprintf("BroadcastStorage error: %s", err))
 }

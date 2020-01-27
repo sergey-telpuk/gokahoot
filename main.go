@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/sergey-telpuk/gokahoot/db"
-	"github.com/sergey-telpuk/gokahoot/di"
+	"github.com/sergey-telpuk/gokahoot/graphql"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/server"
 	"log"
@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	services, err := di.New()
+	services, err := graphql.New()
 
 	if err != nil {
 		log.Fatal(err)
@@ -26,7 +26,7 @@ func main() {
 	defer services.Clean()
 }
 
-func migrate(di *di.DI) {
+func migrate(di *graphql.DI) {
 	sDB := di.Container.Get(db.ContainerName).(*db.Db)
 
 	if err := sDB.GetConn().Exec("PRAGMA foreign_keys=ON").Error; err != nil {

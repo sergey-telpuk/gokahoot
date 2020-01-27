@@ -3,13 +3,13 @@ package server
 import (
 	"errors"
 	"fmt"
-	"github.com/sergey-telpuk/gokahoot/di"
+	"github.com/sergey-telpuk/gokahoot/graphql"
 	"os"
 )
 
 const defaultPort = "8080"
 
-func Run(di *di.DI) error {
+func Run(di *graphql.DI) error {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort

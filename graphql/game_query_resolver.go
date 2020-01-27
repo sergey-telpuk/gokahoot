@@ -2,13 +2,12 @@ package graphql
 
 import (
 	"context"
-	"github.com/sergey-telpuk/gokahoot/services"
 )
 
 func (r *gameResolver) Players(ctx context.Context, game *Game) ([]*Player, error) {
 	var rModels []*Player
-	playerService := r.Di.Container.Get(services.ContainerNamePlayerService).(*services.PlayerService)
-	gameService := r.Di.Container.Get(services.ContainerNameGameService).(*services.GameService)
+	playerService := r.Di.Container.Get(ContainerNamePlayerService).(*PlayerService)
+	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
 
 	mGame, err := gameService.FindByCode(game.Code)
 
@@ -32,7 +31,7 @@ func (r *gameResolver) Players(ctx context.Context, game *Game) ([]*Player, erro
 
 func (r *queryResolver) ActivatedGames(ctx context.Context) ([]*Game, error) {
 	var rGames []*Game
-	service := r.Di.Container.Get(services.ContainerNameGameService).(*services.GameService)
+	service := r.Di.Container.Get(ContainerNameGameService).(*GameService)
 
 	games, err := service.FindAll()
 
@@ -49,7 +48,7 @@ func (r *queryResolver) ActivatedGames(ctx context.Context) ([]*Game, error) {
 }
 
 func (r *queryResolver) ActivatedGameByCode(ctx context.Context, code string) (*Game, error) {
-	service := r.Di.Container.Get(services.ContainerNameGameService).(*services.GameService)
+	service := r.Di.Container.Get(ContainerNameGameService).(*GameService)
 
 	game, err := service.FindByCode(code)
 

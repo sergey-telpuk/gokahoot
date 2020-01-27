@@ -1,4 +1,4 @@
-package services
+package graphql
 
 import (
 	"github.com/google/uuid"

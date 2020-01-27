@@ -202,21 +202,21 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Answer.Text(childComplexity), true
 
-	case "BroadcastPlayer.gameCode":
+	case "StoragePlayer.gameCode":
 		if e.complexity.BroadcastPlayer.GameCode == nil {
 			break
 		}
 
 		return e.complexity.BroadcastPlayer.GameCode(childComplexity), true
 
-	case "BroadcastPlayer.name":
+	case "StoragePlayer.name":
 		if e.complexity.BroadcastPlayer.Name == nil {
 			break
 		}
 
 		return e.complexity.BroadcastPlayer.Name(childComplexity), true
 
-	case "BroadcastPlayer.UUID":
+	case "StoragePlayer.UUID":
 		if e.complexity.BroadcastPlayer.UUID == nil {
 			break
 		}
@@ -666,7 +666,7 @@ var parsedSchema = gqlparser.MustLoadSchema(
 	sequential: Int!
 	imgURL: String
 }
-type BroadcastPlayer {
+type StoragePlayer {
 	UUID: String!
 	gameCode: String!
 	name: String!
@@ -736,7 +736,7 @@ type Status {
 	success: Boolean!
 }
 type Subscription {
-	onJoiningPlayerToGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
+	onJoiningPlayerToGame(gameCode: String!, playerUUID: String!): StoragePlayer!
 }
 type Test {
 	ID: Int!
@@ -1236,7 +1236,7 @@ func (ec *executionContext) _BroadcastPlayer_UUID(ctx context.Context, field gra
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "BroadcastPlayer",
+		Object:   "StoragePlayer",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -1270,7 +1270,7 @@ func (ec *executionContext) _BroadcastPlayer_gameCode(ctx context.Context, field
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "BroadcastPlayer",
+		Object:   "StoragePlayer",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -1304,7 +1304,7 @@ func (ec *executionContext) _BroadcastPlayer_name(ctx context.Context, field gra
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "BroadcastPlayer",
+		Object:   "StoragePlayer",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -4142,7 +4142,7 @@ func (ec *executionContext) _Answer(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
-var broadcastPlayerImplementors = []string{"BroadcastPlayer"}
+var broadcastPlayerImplementors = []string{"StoragePlayer"}
 
 func (ec *executionContext) _BroadcastPlayer(ctx context.Context, sel ast.SelectionSet, obj *BroadcastPlayer) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, broadcastPlayerImplementors)
@@ -4152,7 +4152,7 @@ func (ec *executionContext) _BroadcastPlayer(ctx context.Context, sel ast.Select
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("BroadcastPlayer")
+			out.Values[i] = graphql.MarshalString("StoragePlayer")
 		case "UUID":
 			out.Values[i] = ec._BroadcastPlayer_UUID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

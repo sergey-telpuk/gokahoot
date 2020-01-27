@@ -9,21 +9,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
-	"github.com/sergey-telpuk/gokahoot/di"
 	"github.com/sergey-telpuk/gokahoot/graphql"
 	"net/http"
 	"time"
 )
 
 type HttpServer struct {
-	DI *di.DI
+	DI *graphql.DI
 }
 
 func (s *HttpServer) Run(port string) error {
 	return s.routers(s.DI).Run(":" + port)
 }
 
-func (s *HttpServer) routers(di *di.DI) *gin.Engine {
+func (s *HttpServer) routers(di *graphql.DI) *gin.Engine {
 	c := cors.Default()
 	r := gin.Default()
 
@@ -36,7 +35,7 @@ func (s *HttpServer) routers(di *di.DI) *gin.Engine {
 }
 
 // Defining the Graphql handler
-func graphqlHandler(di *di.DI) *handler.Server {
+func graphqlHandler(di *graphql.DI) *handler.Server {
 	schema := graphql.NewExecutableSchema(
 		graphql.Config{
 			Resolvers: &graphql.Resolver{Di: di},

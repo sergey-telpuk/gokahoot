@@ -4,12 +4,11 @@ package graphql
 import (
 	"errors"
 	"fmt"
-	"github.com/sergey-telpuk/gokahoot/di"
 	"github.com/sergey-telpuk/gokahoot/models"
 ) // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
 type Resolver struct {
-	Di *di.DI
+	Di *DI
 }
 
 type questionResolver struct{ *Resolver }

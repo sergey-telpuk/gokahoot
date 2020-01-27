@@ -2,12 +2,11 @@ package graphql
 
 import (
 	"context"
-	"github.com/sergey-telpuk/gokahoot/services"
 )
 
 func (r *testResolver) Questions(ctx context.Context, obj *Test) ([]*Question, error) {
 	var rQuestion []*Question
-	service := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
+	service := r.Di.Container.Get(ContainerNameQuestionService).(*QuestionService)
 
 	mQuestion, err := service.FindQuestionBelongToTest(obj.ID)
 	if err != nil {
@@ -25,7 +24,7 @@ func (r *testResolver) Questions(ctx context.Context, obj *Test) ([]*Question, e
 func (r *queryResolver) Tests(ctx context.Context) ([]*Test, error) {
 	var rTests []*Test
 
-	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
+	service := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 
 	mTests, err := service.FindAll()
 
@@ -42,7 +41,7 @@ func (r *queryResolver) Tests(ctx context.Context) ([]*Test, error) {
 }
 
 func (r *queryResolver) TestByID(ctx context.Context, id int) (*Test, error) {
-	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
+	service := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 
 	mTest, err := service.FindByID(id)
 	if err != nil {
@@ -53,7 +52,7 @@ func (r *queryResolver) TestByID(ctx context.Context, id int) (*Test, error) {
 }
 
 func (r *queryResolver) TestByUUID(ctx context.Context, id string) (*Test, error) {
-	service := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
+	service := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 
 	mTest, err := service.FindByUuid(id)
 	if err != nil {

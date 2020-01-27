@@ -1,4 +1,4 @@
-package di
+package graphql
 
 import (
 	"errors"
@@ -6,7 +6,6 @@ import (
 	"github.com/sarulabs/di"
 	"github.com/sergey-telpuk/gokahoot/db"
 	"github.com/sergey-telpuk/gokahoot/repositories"
-	"github.com/sergey-telpuk/gokahoot/services"
 )
 
 type DI struct {
@@ -85,18 +84,18 @@ func New() (*DI, error) {
 	}
 
 	if err := builder.Add(di.Def{
-		Name: services.ContainerNameTestService,
+		Name: ContainerNameTestService,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return services.InitTestService(ctn.Get(repositories.ContainerNameTestRepository).(*repositories.TestRepository)), nil
+			return InitTestService(ctn.Get(repositories.ContainerNameTestRepository).(*repositories.TestRepository)), nil
 		},
 	}); err != nil {
 		return nil, errorsDI(err)
 	}
 
 	if err := builder.Add(di.Def{
-		Name: services.ContainerNameQuestionService,
+		Name: ContainerNameQuestionService,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return services.InitQuestionService(
+			return InitQuestionService(
 				ctn.Get(repositories.ContainerNameQuestionRepository).(*repositories.QuestionRepository),
 				ctn.Get(repositories.ContainerNameAnswerRepository).(*repositories.AnswerRepository),
 				ctn.Get(db.ContainerName).(*db.Db),
@@ -107,9 +106,9 @@ func New() (*DI, error) {
 	}
 
 	if err := builder.Add(di.Def{
-		Name: services.ContainerNameAnswerService,
+		Name: ContainerNameAnswerService,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return services.InitAnswerService(
+			return InitAnswerService(
 				ctn.Get(repositories.ContainerNameAnswerRepository).(*repositories.AnswerRepository),
 			), nil
 		},
@@ -118,9 +117,9 @@ func New() (*DI, error) {
 	}
 
 	if err := builder.Add(di.Def{
-		Name: services.ContainerNameGameService,
+		Name: ContainerNameGameService,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return services.InitGameService(
+			return InitGameService(
 				ctn.Get(repositories.ContainerNameGameRepository).(*repositories.GameRepository),
 			), nil
 		},
@@ -129,9 +128,9 @@ func New() (*DI, error) {
 	}
 
 	if err := builder.Add(di.Def{
-		Name: services.ContainerNamePlayerService,
+		Name: ContainerNamePlayerService,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return services.InitPlayerService(
+			return InitPlayerService(
 				ctn.Get(repositories.ContainerNamePlayerRepository).(*repositories.PlayerRepository),
 			), nil
 		},
@@ -140,21 +139,21 @@ func New() (*DI, error) {
 	}
 
 	if err := builder.Add(di.Def{
-		Name: repositories.ContainerNameBroadcastRepository,
+		Name: ContainerNameBroadcastRepository,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return repositories.InitBroadcastRepository(), nil
+			return InitBroadcastRepository(), nil
 		},
 	}); err != nil {
 		return nil, errorsDI(err)
 	}
 
 	if err := builder.Add(di.Def{
-		Name: services.ContainerNameBroadcastService,
+		Name: ContainerNameBroadcastService,
 		Build: func(ctn di.Container) (interface{}, error) {
-			return services.InitBroadcastService(
-				ctn.Get(repositories.ContainerNameBroadcastRepository).(*repositories.BroadcastRepository),
-				ctn.Get(services.ContainerNameGameService).(*services.GameService),
-				ctn.Get(services.ContainerNamePlayerService).(*services.PlayerService),
+			return InitBroadcastService(
+				ctn.Get(ContainerNameBroadcastRepository).(*BroadcastRepository),
+				ctn.Get(ContainerNameGameService).(*GameService),
+				ctn.Get(ContainerNamePlayerService).(*PlayerService),
 			), nil
 		},
 	}); err != nil {

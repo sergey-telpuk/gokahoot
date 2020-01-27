@@ -1,15 +1,14 @@
-package services
+package graphql
 
 import (
 	"errors"
 	"fmt"
-	"github.com/sergey-telpuk/gokahoot/repositories"
 )
 
 const ContainerNameBroadcastService = "ContainerNameBroadcastService"
 
 type BroadcastService struct {
-	broadcastRepository *repositories.BroadcastRepository
+	broadcastRepository *BroadcastRepository
 	gameService         *GameService
 	playerService       *PlayerService
 }
@@ -44,18 +43,19 @@ func (s *BroadcastService) BroadcastForWaitForJoiningGame(gameCode string, playe
 	}
 
 	for _, bPlayer := range game.Players {
-		fmt.Println(bPlayer, player)
-		//bPlayer.EventWaitForJoining <- &graphql.BroadcastPlayer{
-		//	Name:     player.Name,
-		//	UUID:     player.UUID,
-		//	GameCode: player.Game.Code,
-		//}
+		fmt.Println("============", bPlayer, player.Game)
+		bPlayer.EventWaitForJoining <- &BroadcastPlayer{
+			Name:     player.Name,
+			UUID:     player.UUID,
+			GameCode: player.Game.Code,
+		}
+		fmt.Println("============", bPlayer, player.Game)
 	}
 
 	return nil
 }
 
-func (s *BroadcastService) AddPlayerToGame(gameCode string, playerUUID string) (*repositories.BroadcastPlayer, error) {
+func (s *BroadcastService) AddPlayerToGame(gameCode string, playerUUID string) (*StoragePlayer, error) {
 	ok := s.broadcastRepository.HasGame(gameCode)
 
 	if !ok {
@@ -71,8 +71,7 @@ func (s *BroadcastService) AddPlayerToGame(gameCode string, playerUUID string) (
 	if player == nil {
 		return nil, errorBroadcastService(errors.New("not such a player"))
 	}
-
-	if err := s.broadcastRepository.AddPlayerToGame(repositories.BroadcastPlayer{
+	if err := s.broadcastRepository.AddPlayerToGame(StoragePlayer{
 		UUID:     player.UUID,
 		Name:     player.Name,
 		GameCode: player.Game.Code,
@@ -96,7 +95,7 @@ func (s *BroadcastService) DeletePlayerFromGame(gameCode string, playerUUID stri
 }
 
 func InitBroadcastService(
-	broadcast *repositories.BroadcastRepository,
+	broadcast *BroadcastRepository,
 	gameService *GameService,
 	playerService *PlayerService,
 

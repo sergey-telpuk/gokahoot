@@ -6,13 +6,12 @@ import (
 	"fmt"
 	guuid "github.com/google/uuid"
 	"github.com/sergey-telpuk/gokahoot/models"
-	"github.com/sergey-telpuk/gokahoot/services"
 )
 
 func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuestion) (*Question, error) {
 	uuid := guuid.New()
-	questionService := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
-	testService := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
+	questionService := r.Di.Container.Get(ContainerNameQuestionService).(*QuestionService)
+	testService := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 
 	test, _ := testService.FindByUuid(input.TestUUID)
 
@@ -49,7 +48,7 @@ func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuest
 }
 
 func (r *mutationResolver) DeleteQuestionByID(ctx context.Context, ids []int) (*Status, error) {
-	service := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
+	service := r.Di.Container.Get(ContainerNameQuestionService).(*QuestionService)
 	if err := service.DeleteByIDs(ids...); err != nil {
 		return nil, err
 	}
@@ -57,7 +56,7 @@ func (r *mutationResolver) DeleteQuestionByID(ctx context.Context, ids []int) (*
 }
 
 func (r *mutationResolver) DeleteQuestionByUUID(ctx context.Context, ids []string) (*Status, error) {
-	service := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
+	service := r.Di.Container.Get(ContainerNameQuestionService).(*QuestionService)
 	if err := service.DeleteByUUIDs(ids...); err != nil {
 		return nil, err
 	}
@@ -66,8 +65,8 @@ func (r *mutationResolver) DeleteQuestionByUUID(ctx context.Context, ids []strin
 
 func (r *mutationResolver) UpdateQuestionsByUUIDs(ctx context.Context, testUUID string, questions []*UpdateQuestion) ([]*Question, error) {
 	var result []*Question
-	questionService := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
-	testService := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
+	questionService := r.Di.Container.Get(ContainerNameQuestionService).(*QuestionService)
+	testService := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 
 	mTest, err := testService.FindByUuid(testUUID)
 
@@ -115,8 +114,8 @@ func (r *mutationResolver) UpdateQuestionsByUUIDs(ctx context.Context, testUUID 
 
 func (r *mutationResolver) UpdateAnswersByIDs(ctx context.Context, questionUUID string, answers []*UpdateAnswer) ([]*Answer, error) {
 	var result []*Answer
-	questionService := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
-	answerService := r.Di.Container.Get(services.ContainerNameAnswerService).(*services.AnswerService)
+	questionService := r.Di.Container.Get(ContainerNameQuestionService).(*QuestionService)
+	answerService := r.Di.Container.Get(ContainerNameAnswerService).(*AnswerService)
 
 	mQuestion, err := questionService.FindByUuid(questionUUID)
 
