@@ -31,19 +31,15 @@ func (r PlayerRepository) Create(model *models.Player) error {
 
 func (r PlayerRepository) FindOne(query interface{}, args ...interface{}) (*models.Player, error) {
 	var model models.Player
-	var game models.Game
 
-	if err := r.db.GetConn().Where(query, args).First(&model).Error; err != nil {
-
-		return nil, errorPlayer(err)
-	}
-
-	if err := r.db.GetConn().Model(&model).Related(&game).Error; err != nil {
+	if err := r.db.GetConn().Preload("Game").
+		Joins("left join games on games.id = players.game_id").
+		Preload("Game.Test").
+		Joins("left join tests on tests.id = games.test_id").
+		Where(query, args).First(&model).Error; err != nil {
 
 		return nil, errorPlayer(err)
 	}
-
-	model.Game = game
 
 	return &model, nil
 }
@@ -68,7 +64,11 @@ func (r PlayerRepository) Delete(query interface{}, args ...interface{}) error {
 func (r PlayerRepository) FindAll() ([]*models.Player, error) {
 	var _models []*models.Player
 
-	if err := r.db.GetConn().Find(&_models).Limit(1000).Error; err != nil {
+	if err := r.db.GetConn().Preload("Game").
+		Joins("left join games on games.id = players.game_id").
+		Preload("Game.Test").
+		Joins("left join tests on tests.id = games.test_id").
+		Find(&_models).Limit(1000).Error; err != nil {
 		return nil, errorPlayer(err)
 	}
 
@@ -78,7 +78,11 @@ func (r PlayerRepository) FindAll() ([]*models.Player, error) {
 func (r PlayerRepository) Find(query interface{}, args ...interface{}) ([]*models.Player, error) {
 	var _models []*models.Player
 
-	if err := r.db.GetConn().Where(query, args...).Find(&_models).Limit(10000).Error; err != nil {
+	if err := r.db.GetConn().Preload("Game").
+		Joins("left join games on games.id = players.game_id").
+		Preload("Game.Test").
+		Joins("left join tests on tests.id = games.test_id").
+		Where(query, args...).Find(&_models).Limit(10000).Error; err != nil {
 		return nil, errorPlayer(err)
 	}
 
@@ -86,7 +90,7 @@ func (r PlayerRepository) Find(query interface{}, args ...interface{}) ([]*model
 }
 
 func (r PlayerRepository) FindQuestionBelongToGame(id int) ([]*models.Player, error) {
-	return r.Find("game_id = ?", id)
+	return r.Find("players.game_id = ?", id)
 }
 
 func errorPlayer(err error) error {

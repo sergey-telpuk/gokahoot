@@ -112,10 +112,12 @@ func mapPlayer(m *models.Player) (*Player, error) {
 		return nil, errors.New(fmt.Sprintf("Not a such item"))
 	}
 
+	game, _ := mapGame(m.Game)
+
 	return &Player{
-		UUID:     m.UUID,
-		Name:     m.Name,
-		GameCode: m.Game.Code,
+		UUID: m.UUID,
+		Name: m.Name,
+		Game: game,
 	}, nil
 
 }

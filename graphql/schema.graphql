@@ -32,7 +32,6 @@ type Answer {
 }
 
 
-
 #Game
 type Game {
   test: Test!
@@ -42,7 +41,7 @@ type Game {
 
 type Player {
   UUID: String!
-  game_code: String!
+  game: Game!
   name: String!
 }
 
@@ -61,7 +60,7 @@ input InputAnswer {
 }
 
 input NewQuestion {
-  testID: Int!
+  testUUID: String!
   text: String!
   imgURL: String
   rightAnswer: Int!
@@ -92,7 +91,7 @@ input UpdateQuestion {
 
 #Input Player
 input JoinPlayer {
-  game_code: String!
+  gameCode: String!
   name: String!
 }
 

@@ -11,7 +11,14 @@ import (
 
 func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuestion) (*Question, error) {
 	uuid := guuid.New()
-	service := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
+	questionService := r.Di.Container.Get(services.ContainerNameQuestionService).(*services.QuestionService)
+	testService := r.Di.Container.Get(services.ContainerNameTestService).(*services.TestService)
+
+	test, _ := testService.FindByUuid(input.TestUUID)
+
+	if test == nil {
+		return nil, errors.New(fmt.Sprintf("Creating question was failed, error %v", "Not such a test."))
+	}
 
 	var answers []*models.Answer
 	for _, answer := range input.Answers {
@@ -21,9 +28,9 @@ func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuest
 			Sequential: answer.Sequential,
 		})
 	}
-	if err := service.CreateNewQuestion(
+	if err := questionService.CreateNewQuestion(
 		uuid,
-		input.TestID,
+		test.ID,
 		input.Text,
 		input.ImgURL,
 		input.RightAnswer,
@@ -32,7 +39,7 @@ func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuest
 		return nil, errors.New(fmt.Sprintf("Creating question was failed, error %v", err))
 	}
 
-	question, err := service.FindByUuid(uuid.String())
+	question, err := questionService.FindByUuid(uuid.String())
 
 	if err != nil {
 		return nil, err

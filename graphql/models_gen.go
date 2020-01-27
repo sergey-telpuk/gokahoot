@@ -22,7 +22,7 @@ type InputAnswer struct {
 }
 
 type JoinPlayer struct {
-	GameCode string `json:"game_code"`
+	GameCode string `json:"gameCode"`
 	Name     string `json:"name"`
 }
 
@@ -31,7 +31,7 @@ type Message struct {
 }
 
 type NewQuestion struct {
-	TestID      int            `json:"testID"`
+	TestUUID    string         `json:"testUUID"`
 	Text        string         `json:"text"`
 	ImgURL      *string        `json:"imgURL"`
 	RightAnswer int            `json:"rightAnswer"`
@@ -43,9 +43,9 @@ type NewTest struct {
 }
 
 type Player struct {
-	UUID     string `json:"UUID"`
-	GameCode string `json:"game_code"`
-	Name     string `json:"name"`
+	UUID string `json:"UUID"`
+	Game *Game  `json:"game"`
+	Name string `json:"name"`
 }
 
 type Question struct {

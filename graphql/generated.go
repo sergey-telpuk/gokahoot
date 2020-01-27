@@ -80,9 +80,9 @@ type ComplexityRoot struct {
 	}
 
 	Player struct {
-		GameCode func(childComplexity int) int
-		Name     func(childComplexity int) int
-		UUID     func(childComplexity int) int
+		Game func(childComplexity int) int
+		Name func(childComplexity int) int
+		UUID func(childComplexity int) int
 	}
 
 	Query struct {
@@ -372,12 +372,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateTestByUUIDs(childComplexity, args["input"].([]*UpdateTest)), true
 
-	case "Player.game_code":
-		if e.complexity.Player.GameCode == nil {
+	case "Player.game":
+		if e.complexity.Player.Game == nil {
 			break
 		}
 
-		return e.complexity.Player.GameCode(childComplexity), true
+		return e.complexity.Player.Game(childComplexity), true
 
 	case "Player.name":
 		if e.complexity.Player.Name == nil {
@@ -656,7 +656,7 @@ input InputAnswer {
 	imgURL: String
 }
 input JoinPlayer {
-	game_code: String!
+	gameCode: String!
 	name: String!
 }
 type Message {
@@ -677,7 +677,7 @@ type Mutation {
 	joinPlayerToGame(input: JoinPlayer!): Player!
 }
 input NewQuestion {
-	testID: Int!
+	testUUID: String!
 	text: String!
 	imgURL: String
 	rightAnswer: Int!
@@ -688,7 +688,7 @@ input NewTest {
 }
 type Player {
 	UUID: String!
-	game_code: String!
+	game: Game!
 	name: String!
 }
 type Query {
@@ -1842,7 +1842,7 @@ func (ec *executionContext) _Player_UUID(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Player_game_code(ctx context.Context, field graphql.CollectedField, obj *Player) (ret graphql.Marshaler) {
+func (ec *executionContext) _Player_game(ctx context.Context, field graphql.CollectedField, obj *Player) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1859,7 +1859,7 @@ func (ec *executionContext) _Player_game_code(ctx context.Context, field graphql
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.GameCode, nil
+		return obj.Game, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1871,9 +1871,9 @@ func (ec *executionContext) _Player_game_code(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*Game)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐGame(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Player_name(ctx context.Context, field graphql.CollectedField, obj *Player) (ret graphql.Marshaler) {
@@ -3789,7 +3789,7 @@ func (ec *executionContext) unmarshalInputJoinPlayer(ctx context.Context, obj in
 
 	for k, v := range asMap {
 		switch k {
-		case "game_code":
+		case "gameCode":
 			var err error
 			it.GameCode, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -3813,9 +3813,9 @@ func (ec *executionContext) unmarshalInputNewQuestion(ctx context.Context, obj i
 
 	for k, v := range asMap {
 		switch k {
-		case "testID":
+		case "testUUID":
 			var err error
-			it.TestID, err = ec.unmarshalNInt2int(ctx, v)
+			it.TestUUID, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4194,8 +4194,8 @@ func (ec *executionContext) _Player(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "game_code":
-			out.Values[i] = ec._Player_game_code(ctx, field, obj)
+		case "game":
+			out.Values[i] = ec._Player_game(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
