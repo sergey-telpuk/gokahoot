@@ -171,7 +171,7 @@ func InitBroadcastService(
 }
 
 func (s *BroadcastService) PlayGame(game models.Game) {
-	commonTime := time.Duration(len(game.Test.Questions)*TimeForAnsweringSec+10) * time.Second
+	commonTime := time.Duration(len(game.Test.Questions)*TimeForAnsweringSec+TimeForAnsweringSec) * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), commonTime)
 
 	go func(_game models.Game, _ctx context.Context, _cancel context.CancelFunc) {
