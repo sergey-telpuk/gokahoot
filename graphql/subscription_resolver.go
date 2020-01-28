@@ -15,7 +15,7 @@ func (r *subscriptionResolver) OnJoiningPlayerToGame(ctx context.Context, gameCo
 	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
 
 	if status, err := gameService.IsWaitingForJoining(gameCode); !status || err != nil {
-		return nil, errors.New(fmt.Sprintf("Joing player error: %v", err))
+		return nil, errors.New(fmt.Sprintf("A joinging player error: %v", "game isn\\'t acivated"))
 	}
 
 	uuid := guuid.New()
