@@ -1,6 +1,7 @@
 package graphql
 
 import (
+	"fmt"
 	guuid "github.com/google/uuid"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/repositories"
@@ -31,6 +32,8 @@ func (s *GameService) IsWaitingForJoining(code string) (bool, error) {
 	if m == nil {
 		return false, nil
 	}
+
+	fmt.Print("==============", m.Status)
 
 	return models.GameInWaitingPlayers == m.Status, err
 }

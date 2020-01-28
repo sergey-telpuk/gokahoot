@@ -1,8 +1,8 @@
 package models
 
 const (
-	GameInPlaying = iota
-	GameInWaitingPlayers
+	GameInWaitingPlayers = iota //default
+	GameInPlaying
 	GameInFinished
 )
 
