@@ -25,6 +25,36 @@ func (s *GameService) FindByCode(code string) (*models.Game, error) {
 	return s.r.FindOne("games.code = ?", code)
 }
 
+func (s *GameService) IsWaitingForJoining(code string) (bool, error) {
+	m, err := s.r.FindOne("games.code = ?", code)
+
+	if m == nil {
+		return false, nil
+	}
+
+	return models.GameInWaitingPlayers == m.Status, err
+}
+
+func (s *GameService) IsPlayingGame(code string) (bool, error) {
+	m, err := s.r.FindOne("games.code = ?", code)
+
+	if m == nil {
+		return false, nil
+	}
+
+	return models.GameInPlaying == m.Status, err
+}
+
+func (s *GameService) IsFinishedGame(code string) (bool, error) {
+	m, err := s.r.FindOne("games.code = ?", code)
+
+	if m == nil {
+		return false, nil
+	}
+
+	return models.GameInFinished == m.Status, err
+}
+
 func (s *GameService) FindByID(id int) (*models.Game, error) {
 	return s.r.FindOne("games.id = ?", id)
 }

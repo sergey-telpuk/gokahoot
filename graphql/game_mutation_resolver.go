@@ -43,6 +43,10 @@ func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input InputJoin
 	playerService := r.Di.Container.Get(ContainerNamePlayerService).(*PlayerService)
 	broadcastService := r.Di.Container.Get(ContainerNameBroadcastService).(*BroadcastService)
 
+	if status, err := gameService.IsWaitingForJoining(input.GameCode); !status || err != nil {
+		return nil, errors.New(fmt.Sprintf("Joing player error: %v", err))
+	}
+
 	game, err := gameService.FindByCode(input.GameCode)
 
 	if err != nil {

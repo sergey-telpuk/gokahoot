@@ -32,7 +32,9 @@ func (r GameRepository) Create(model *models.Game) error {
 func (r GameRepository) FindOne(query interface{}, args ...interface{}) (*models.Game, error) {
 	var model models.Game
 
-	if err := r.db.GetConn().Preload("Test").Joins("left join tests on tests.id = games.test_id").Where(query, args).First(&model).Error; err != nil {
+	if err := r.db.GetConn().Preload("Test").
+		Joins("left join tests on tests.id = games.test_id").
+		Where(query, args).First(&model).Error; err != nil {
 
 		return nil, errorGame(err)
 	}
