@@ -195,6 +195,7 @@ func (s *BroadcastService) PlayGame(game models.Game) {
 
 					broadcastTimer--
 					currentTimer++
+					continue
 				}
 
 				_cancel()
