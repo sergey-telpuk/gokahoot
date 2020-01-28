@@ -2,6 +2,12 @@
 
 package graphql
 
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type Answer struct {
 	ID         int     `json:"ID"`
 	Text       string  `json:"text"`
@@ -16,9 +22,10 @@ type BroadcastPlayer struct {
 }
 
 type BroadcastPlayingGame struct {
-	Timer               int    `json:"timer"`
-	GameCode            string `json:"gameCode"`
-	CurrentQuestionUUID string `json:"currentQuestionUUID"`
+	Timer               int        `json:"timer"`
+	GameCode            string     `json:"gameCode"`
+	CurrentQuestionUUID string     `json:"currentQuestionUUID"`
+	GameStatusEnum      GameStatus `json:"gameStatusEnum"`
 }
 
 type Game struct {
@@ -97,4 +104,47 @@ type UpdateTest struct {
 	UUID      string            `json:"UUID"`
 	Name      string            `json:"name"`
 	Questions []*UpdateQuestion `json:"questions"`
+}
+
+type GameStatus string
+
+const (
+	GameStatusWaitForPlayers GameStatus = "WAIT_FOR_PLAYERS"
+	GameStatusPlaying        GameStatus = "PLAYING"
+	GameStatusFinished       GameStatus = "FINISHED"
+)
+
+var AllGameStatus = []GameStatus{
+	GameStatusWaitForPlayers,
+	GameStatusPlaying,
+	GameStatusFinished,
+}
+
+func (e GameStatus) IsValid() bool {
+	switch e {
+	case GameStatusWaitForPlayers, GameStatusPlaying, GameStatusFinished:
+		return true
+	}
+	return false
+}
+
+func (e GameStatus) String() string {
+	return string(e)
+}
+
+func (e *GameStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GameStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GameStatus", str)
+	}
+	return nil
+}
+
+func (e GameStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

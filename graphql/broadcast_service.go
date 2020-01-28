@@ -49,7 +49,7 @@ func (s *BroadcastService) StartBroadcastGameIsBeingPlayed(gameCode string) erro
 		return err
 	}
 
-	go s.playGame(*game)
+	go s.PlayGame(*game)
 
 	return nil
 }
@@ -143,7 +143,7 @@ func InitBroadcastService(
 	}
 }
 
-func (s *BroadcastService) playGame(game models.Game) {
+func (s *BroadcastService) PlayGame(game models.Game) {
 	questions := game.Test.Questions
 	countQuestions := len(questions)
 	commonTime := time.Duration(countQuestions*TimeForAnsweringSec+1) * time.Second
@@ -165,16 +165,19 @@ func (s *BroadcastService) playGame(game models.Game) {
 					broadcastTimer = 5
 				}
 
-				s.broadcastTimerPlayers(broadcastTimer, game.Code, currentQuestion.UUID)
+				s.BroadcastTimerPlayers(broadcastTimer, game.Code, currentQuestion.UUID, gameStatus(game.Status))
 
 			case <-ctx.Done():
+				game.Status = models.GameInFinished
+				_, _ = s.gameService.Update(&game)
+				s.BroadcastTimerPlayers(0, game.Code, currentQuestion.UUID, gameStatus(game.Status))
 				return
 			}
 		}
 	}()
 }
 
-func (s *BroadcastService) broadcastTimerPlayers(timer int, gameCode string, questionUUID string) {
+func (s *BroadcastService) BroadcastTimerPlayers(timer int, gameCode string, questionUUID string, status GameStatus) {
 	players, err := s.broadcastRepository.GetPlayersForPlayingGame(gameCode)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -188,11 +191,23 @@ func (s *BroadcastService) broadcastTimerPlayers(timer int, gameCode string, que
 		case player.EventPlayingGame <- &BroadcastPlayingGame{
 			Timer:               timer,
 			GameCode:            gameCode,
+			GameStatusEnum:      status,
 			CurrentQuestionUUID: questionUUID,
 		}:
 		case <-ctx.Done():
 			return
 		}
+	}
+}
+
+func gameStatus(status int) GameStatus {
+	switch status {
+	case models.GameInPlaying:
+		return GameStatusPlaying
+	case models.GameInFinished:
+		return GameStatusFinished
+	default:
+		return GameStatusWaitForPlayers
 	}
 }
 

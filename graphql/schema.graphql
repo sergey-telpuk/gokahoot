@@ -134,11 +134,16 @@ type BroadcastPlayer  {
     gameCode:  String!
     name: String!
 }
-
+enum GameStatus {
+    WAIT_FOR_PLAYERS
+    PLAYING
+    FINISHED
+}
 type BroadcastPlayingGame  {
     timer: Int!
     gameCode:  String!
     currentQuestionUUID: String!
+    gameStatusEnum: GameStatus!
 }
 
 
