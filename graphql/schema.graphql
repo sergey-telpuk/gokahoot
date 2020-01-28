@@ -123,6 +123,7 @@ type Mutation {
     activateGame(testUUID: String!): Game!
     deactivateGameByCODEs(codes: [String!]!): Status!
     joinPlayerToGame(input: InputJoinPlayer!): Player!
+    deletePlayerFromGame(gameCode: String!, playerUUID: String!): Status!
     startGameByCode(code: String!): Game!
 }
 
@@ -149,5 +150,6 @@ type BroadcastPlayingGame  {
 
 type Subscription {
     onJoiningPlayerToGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
+    onDeletePlayerFromGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
     onPlayingGame(gameCode: String!, playerUUID: String!): BroadcastPlayingGame!
 }

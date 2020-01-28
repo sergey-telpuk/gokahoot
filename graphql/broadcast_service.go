@@ -55,7 +55,7 @@ func (s *BroadcastService) StartBroadcastGameIsBeingPlayed(gameCode string) erro
 }
 
 func (s *BroadcastService) BroadcastForWaitForJoiningGame(gameCode string, playerUUID string) error {
-	game, err := s.broadcastRepository.GetGame(gameCode)
+	players, err := s.broadcastRepository.GetPlayersForPlayingGame(gameCode)
 
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func (s *BroadcastService) BroadcastForWaitForJoiningGame(gameCode string, playe
 		return err
 	}
 
-	for _, broadcastPlayer := range game.Players {
+	for _, broadcastPlayer := range players {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		go func(stPlayer *StoragePlayer, player *models.Player, ctx context.Context, cancel context.CancelFunc) {
 			select {
@@ -83,6 +83,34 @@ func (s *BroadcastService) BroadcastForWaitForJoiningGame(gameCode string, playe
 			defer cancel()
 
 		}(broadcastPlayer, player, ctx, cancel)
+	}
+
+	return nil
+}
+
+func (s *BroadcastService) BroadcastForDeletingPlayerGame(gameCode string, playerUUID string) error {
+	players, err := s.broadcastRepository.GetPlayersForDeletingGame(gameCode)
+
+	if err != nil {
+		return err
+	}
+
+	for _, broadcastPlayer := range players {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		go func(stPlayer *StoragePlayer, ctx context.Context, cancel context.CancelFunc) {
+			select {
+			case stPlayer.EventDeletingPlayerFromGame <- &BroadcastPlayer{
+				Name:     stPlayer.Name,
+				UUID:     stPlayer.UUID,
+				GameCode: gameCode,
+			}:
+			case <-ctx.Done():
+				return
+			}
+
+			defer cancel()
+
+		}(broadcastPlayer, ctx, cancel)
 	}
 
 	return nil

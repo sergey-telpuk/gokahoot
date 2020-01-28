@@ -79,6 +79,7 @@ type ComplexityRoot struct {
 		CreateNewQuestion      func(childComplexity int, input NewQuestion) int
 		CreateNewTest          func(childComplexity int, input NewTest) int
 		DeactivateGameByCODEs  func(childComplexity int, codes []string) int
+		DeletePlayerFromGame   func(childComplexity int, gameCode string, playerUUID string) int
 		DeleteQuestionByID     func(childComplexity int, id []int) int
 		DeleteQuestionByUUID   func(childComplexity int, id []string) int
 		DeleteTestByID         func(childComplexity int, id []int) int
@@ -121,8 +122,9 @@ type ComplexityRoot struct {
 	}
 
 	Subscription struct {
-		OnJoiningPlayerToGame func(childComplexity int, gameCode string, playerUUID string) int
-		OnPlayingGame         func(childComplexity int, gameCode string, playerUUID string) int
+		OnDeletePlayerFromGame func(childComplexity int, gameCode string, playerUUID string) int
+		OnJoiningPlayerToGame  func(childComplexity int, gameCode string, playerUUID string) int
+		OnPlayingGame          func(childComplexity int, gameCode string, playerUUID string) int
 	}
 
 	Test struct {
@@ -149,6 +151,7 @@ type MutationResolver interface {
 	ActivateGame(ctx context.Context, testUUID string) (*Game, error)
 	DeactivateGameByCODEs(ctx context.Context, codes []string) (*Status, error)
 	JoinPlayerToGame(ctx context.Context, input InputJoinPlayer) (*Player, error)
+	DeletePlayerFromGame(ctx context.Context, gameCode string, playerUUID string) (*Status, error)
 	StartGameByCode(ctx context.Context, code string) (*Game, error)
 }
 type QueryResolver interface {
@@ -165,6 +168,7 @@ type QuestionResolver interface {
 }
 type SubscriptionResolver interface {
 	OnJoiningPlayerToGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayer, error)
+	OnDeletePlayerFromGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayer, error)
 	OnPlayingGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayingGame, error)
 }
 type TestResolver interface {
@@ -338,6 +342,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeactivateGameByCODEs(childComplexity, args["codes"].([]string)), true
+
+	case "Mutation.deletePlayerFromGame":
+		if e.complexity.Mutation.DeletePlayerFromGame == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deletePlayerFromGame_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeletePlayerFromGame(childComplexity, args["gameCode"].(string), args["playerUUID"].(string)), true
 
 	case "Mutation.deleteQuestionByID":
 		if e.complexity.Mutation.DeleteQuestionByID == nil {
@@ -598,6 +614,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Status.Success(childComplexity), true
 
+	case "Subscription.onDeletePlayerFromGame":
+		if e.complexity.Subscription.OnDeletePlayerFromGame == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_onDeletePlayerFromGame_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.OnDeletePlayerFromGame(childComplexity, args["gameCode"].(string), args["playerUUID"].(string)), true
+
 	case "Subscription.onJoiningPlayerToGame":
 		if e.complexity.Subscription.OnJoiningPlayerToGame == nil {
 			break
@@ -781,6 +809,7 @@ type Mutation {
 	activateGame(testUUID: String!): Game!
 	deactivateGameByCODEs(codes: [String!]!): Status!
 	joinPlayerToGame(input: InputJoinPlayer!): Player!
+	deletePlayerFromGame(gameCode: String!, playerUUID: String!): Status!
 	startGameByCode(code: String!): Game!
 }
 input NewQuestion {
@@ -821,6 +850,7 @@ type Status {
 }
 type Subscription {
 	onJoiningPlayerToGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
+	onDeletePlayerFromGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
 	onPlayingGame(gameCode: String!, playerUUID: String!): BroadcastPlayingGame!
 }
 type Test {
@@ -907,6 +937,28 @@ func (ec *executionContext) field_Mutation_deactivateGameByCODEs_args(ctx contex
 		}
 	}
 	args["codes"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deletePlayerFromGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["gameCode"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["gameCode"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["playerUUID"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["playerUUID"] = arg1
 	return args, nil
 }
 
@@ -1133,6 +1185,28 @@ func (ec *executionContext) field_Query_testByUUID_args(ctx context.Context, raw
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Subscription_onDeletePlayerFromGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["gameCode"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["gameCode"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["playerUUID"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["playerUUID"] = arg1
 	return args, nil
 }
 
@@ -2212,6 +2286,47 @@ func (ec *executionContext) _Mutation_joinPlayerToGame(ctx context.Context, fiel
 	return ec.marshalNPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐPlayer(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_deletePlayerFromGame(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deletePlayerFromGame_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeletePlayerFromGame(rctx, args["gameCode"].(string), args["playerUUID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Status)
+	fc.Result = res
+	return ec.marshalNStatus2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐStatus(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_startGameByCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2991,6 +3106,57 @@ func (ec *executionContext) _Subscription_onJoiningPlayerToGame(ctx context.Cont
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Subscription().OnJoiningPlayerToGame(rctx, args["gameCode"].(string), args["playerUUID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func() graphql.Marshaler {
+		res, ok := <-resTmp.(<-chan *BroadcastPlayer)
+		if !ok {
+			return nil
+		}
+		return graphql.WriterFunc(func(w io.Writer) {
+			w.Write([]byte{'{'})
+			graphql.MarshalString(field.Alias).MarshalGQL(w)
+			w.Write([]byte{':'})
+			ec.marshalNBroadcastPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐBroadcastPlayer(ctx, field.Selections, res).MarshalGQL(w)
+			w.Write([]byte{'}'})
+		})
+	}
+}
+
+func (ec *executionContext) _Subscription_onDeletePlayerFromGame(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Subscription",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Subscription_onDeletePlayerFromGame_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().OnDeletePlayerFromGame(rctx, args["gameCode"].(string), args["playerUUID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4727,6 +4893,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "deletePlayerFromGame":
+			out.Values[i] = ec._Mutation_deletePlayerFromGame(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "startGameByCode":
 			out.Values[i] = ec._Mutation_startGameByCode(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -5013,6 +5184,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 	switch fields[0].Name {
 	case "onJoiningPlayerToGame":
 		return ec._Subscription_onJoiningPlayerToGame(ctx, fields[0])
+	case "onDeletePlayerFromGame":
+		return ec._Subscription_onDeletePlayerFromGame(ctx, fields[0])
 	case "onPlayingGame":
 		return ec._Subscription_onPlayingGame(ctx, fields[0])
 	default:

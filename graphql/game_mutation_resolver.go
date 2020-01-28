@@ -99,3 +99,24 @@ func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input InputJoin
 
 	return mapPlayer(player)
 }
+
+func (r *mutationResolver) DeletePlayerFromGame(ctx context.Context, gameCode string, playerUUID string) (*Status, error) {
+	playerService := r.Di.Container.Get(ContainerNamePlayerService).(*PlayerService)
+	broadcastService := r.Di.Container.Get(ContainerNameBroadcastService).(*BroadcastService)
+
+	_, err := playerService.GetPlayerByUUID(playerUUID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err := playerService.DeleteByUUIDs(playerUUID); err != nil {
+		return nil, err
+	}
+
+	if err := broadcastService.BroadcastForDeletingPlayerGame(gameCode, playerUUID); err != nil {
+		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
+	}
+
+	return &Status{Success: true}, nil
+}
