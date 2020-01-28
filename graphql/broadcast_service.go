@@ -9,7 +9,10 @@ import (
 	"time"
 )
 
-const ContainerNameBroadcastService = "ContainerNameBroadcastService"
+const (
+	ContainerNameBroadcastService = "ContainerNameBroadcastService"
+	TimeForAnsweringSec           = 5
+)
 
 type BroadcastService struct {
 	broadcastRepository *BroadcastRepository
@@ -66,7 +69,7 @@ func (s *BroadcastService) BroadcastForWaitForJoiningGame(gameCode string, playe
 
 	for _, broadcastPlayer := range game.Players {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		go func(stPlayer *StoragePlayer, player *models.Player, ctx context.Context) {
+		go func(stPlayer *StoragePlayer, player *models.Player, ctx context.Context, cancel context.CancelFunc) {
 			select {
 			case stPlayer.EventWaitForJoining <- &BroadcastPlayer{
 				Name:     player.Name,
@@ -79,7 +82,7 @@ func (s *BroadcastService) BroadcastForWaitForJoiningGame(gameCode string, playe
 
 			defer cancel()
 
-		}(broadcastPlayer, player, ctx)
+		}(broadcastPlayer, player, ctx, cancel)
 	}
 
 	return nil
@@ -141,9 +144,13 @@ func InitBroadcastService(
 }
 
 func (s *BroadcastService) playGame(game models.Game) {
-	countQuestions := len(game.Test.Questions)
-	commonTime := time.Duration(countQuestions*1) * time.Second
+	questions := game.Test.Questions
+	countQuestions := len(questions)
+	commonTime := time.Duration(countQuestions*TimeForAnsweringSec+1) * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), commonTime)
+	currentTimer := -1
+	broadcastTimer := TimeForAnsweringSec + 1
+	currentQuestion := questions[0]
 
 	go func() {
 		defer cancel()
@@ -151,14 +158,42 @@ func (s *BroadcastService) playGame(game models.Game) {
 		for {
 			select {
 			case <-time.After(1 * time.Second):
-				fmt.Println("=============")
-			//TODO
+				currentTimer++
+				broadcastTimer--
+				if currentTimer%TimeForAnsweringSec == 0 && currentTimer/TimeForAnsweringSec <= countQuestions {
+					currentQuestion = questions[currentTimer/TimeForAnsweringSec]
+					broadcastTimer = 5
+				}
+
+				s.broadcastTimerPlayers(broadcastTimer, game.Code, currentQuestion.UUID)
+
 			case <-ctx.Done():
-				fmt.Println("==============END")
 				return
 			}
 		}
 	}()
+}
+
+func (s *BroadcastService) broadcastTimerPlayers(timer int, gameCode string, questionUUID string) {
+	players, err := s.broadcastRepository.GetPlayersForPlayingGame(gameCode)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err != nil {
+		return
+	}
+
+	for _, player := range players {
+		select {
+		case player.EventPlayingGame <- &BroadcastPlayingGame{
+			Timer:               timer,
+			GameCode:            gameCode,
+			CurrentQuestionUUID: questionUUID,
+		}:
+		case <-ctx.Done():
+			return
+		}
+	}
 }
 
 func errorBroadcastService(err error) error {

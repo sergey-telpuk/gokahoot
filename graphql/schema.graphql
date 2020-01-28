@@ -138,8 +138,7 @@ type BroadcastPlayer  {
 type BroadcastPlayingGame  {
     timer: Int!
     gameCode:  String!
-    name: String!
-    currentQuestion: Question!
+    currentQuestionUUID: String!
 }
 
 

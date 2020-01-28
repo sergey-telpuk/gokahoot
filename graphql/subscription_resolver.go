@@ -95,5 +95,5 @@ func (r *subscriptionResolver) OnPlayingGame(ctx context.Context, gameCode strin
 		mutex.Unlock()
 	}(uuid, gameCode)
 
-	return nil, nil
+	return event, nil
 }

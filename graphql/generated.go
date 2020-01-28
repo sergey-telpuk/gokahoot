@@ -61,10 +61,9 @@ type ComplexityRoot struct {
 	}
 
 	BroadcastPlayingGame struct {
-		CurrentQuestion func(childComplexity int) int
-		GameCode        func(childComplexity int) int
-		Name            func(childComplexity int) int
-		Timer           func(childComplexity int) int
+		CurrentQuestionUUID func(childComplexity int) int
+		GameCode            func(childComplexity int) int
+		Timer               func(childComplexity int) int
 	}
 
 	Game struct {
@@ -235,12 +234,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.BroadcastPlayer.UUID(childComplexity), true
 
-	case "BroadcastPlayingGame.currentQuestion":
-		if e.complexity.BroadcastPlayingGame.CurrentQuestion == nil {
+	case "BroadcastPlayingGame.currentQuestionUUID":
+		if e.complexity.BroadcastPlayingGame.CurrentQuestionUUID == nil {
 			break
 		}
 
-		return e.complexity.BroadcastPlayingGame.CurrentQuestion(childComplexity), true
+		return e.complexity.BroadcastPlayingGame.CurrentQuestionUUID(childComplexity), true
 
 	case "BroadcastPlayingGame.gameCode":
 		if e.complexity.BroadcastPlayingGame.GameCode == nil {
@@ -248,13 +247,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BroadcastPlayingGame.GameCode(childComplexity), true
-
-	case "BroadcastPlayingGame.name":
-		if e.complexity.BroadcastPlayingGame.Name == nil {
-			break
-		}
-
-		return e.complexity.BroadcastPlayingGame.Name(childComplexity), true
 
 	case "BroadcastPlayingGame.timer":
 		if e.complexity.BroadcastPlayingGame.Timer == nil {
@@ -745,8 +737,7 @@ type BroadcastPlayer {
 type BroadcastPlayingGame {
 	timer: Int!
 	gameCode: String!
-	name: String!
-	currentQuestion: Question!
+	currentQuestionUUID: String!
 }
 type Game {
 	test: Test!
@@ -1514,7 +1505,7 @@ func (ec *executionContext) _BroadcastPlayingGame_gameCode(ctx context.Context, 
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _BroadcastPlayingGame_name(ctx context.Context, field graphql.CollectedField, obj *BroadcastPlayingGame) (ret graphql.Marshaler) {
+func (ec *executionContext) _BroadcastPlayingGame_currentQuestionUUID(ctx context.Context, field graphql.CollectedField, obj *BroadcastPlayingGame) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1531,7 +1522,7 @@ func (ec *executionContext) _BroadcastPlayingGame_name(ctx context.Context, fiel
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Name, nil
+		return obj.CurrentQuestionUUID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1546,40 +1537,6 @@ func (ec *executionContext) _BroadcastPlayingGame_name(ctx context.Context, fiel
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _BroadcastPlayingGame_currentQuestion(ctx context.Context, field graphql.CollectedField, obj *BroadcastPlayingGame) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "BroadcastPlayingGame",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CurrentQuestion, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*Question)
-	fc.Result = res
-	return ec.marshalNQuestion2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐQuestion(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Game_test(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
@@ -4578,13 +4535,8 @@ func (ec *executionContext) _BroadcastPlayingGame(ctx context.Context, sel ast.S
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "name":
-			out.Values[i] = ec._BroadcastPlayingGame_name(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "currentQuestion":
-			out.Values[i] = ec._BroadcastPlayingGame_currentQuestion(ctx, field, obj)
+		case "currentQuestionUUID":
+			out.Values[i] = ec._BroadcastPlayingGame_currentQuestionUUID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
