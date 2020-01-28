@@ -2,6 +2,8 @@ package graphql
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	guuid "github.com/google/uuid"
 )
 
@@ -57,7 +59,9 @@ func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input InputJoin
 		return nil, err
 	}
 
-	_ = broadcastService.BroadcastForWaitForJoiningGame(game.Code, player.UUID)
+	if err := broadcastService.BroadcastForWaitForJoiningGame(game.Code, player.UUID); err != nil {
+		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
+	}
 
 	return mapPlayer(player)
 }
