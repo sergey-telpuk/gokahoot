@@ -171,29 +171,33 @@ func InitBroadcastService(
 }
 
 func (s *BroadcastService) PlayGame(game models.Game) {
-	questions := game.Test.Questions
-	commonTime := time.Duration(len(questions)*TimeForAnsweringSec+1) * time.Second
+	commonTime := time.Duration(len(game.Test.Questions)*TimeForAnsweringSec+10) * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), commonTime)
 
-	go func(_game models.Game, _questions []models.Question, _ctx context.Context, _cancel context.CancelFunc) {
+	go func(_game models.Game, _ctx context.Context, _cancel context.CancelFunc) {
 		defer _cancel()
-		countQuestions := len(_questions)
+
+		countQuestions := len(game.Test.Questions)
 		currentTimer := 0
 		broadcastTimer := TimeForAnsweringSec
-		currentQuestion := _questions[0]
+		currentQuestion := game.Test.Questions[0]
 
 		for {
 			select {
 			case <-time.After(1 * time.Second):
-				if currentTimer%TimeForAnsweringSec == 0 && currentTimer/TimeForAnsweringSec <= countQuestions {
-					currentQuestion = _questions[currentTimer/TimeForAnsweringSec]
-					broadcastTimer = TimeForAnsweringSec
+				if currentTimer <= countQuestions*TimeForAnsweringSec {
+					if currentTimer%TimeForAnsweringSec == 0 {
+						currentQuestion = game.Test.Questions[currentTimer/TimeForAnsweringSec]
+						broadcastTimer = TimeForAnsweringSec
+					}
+
+					s.BroadcastTimerPlayers(broadcastTimer, _game.Code, currentQuestion.UUID, gameStatus(_game.Status))
+
+					broadcastTimer--
+					currentTimer++
 				}
 
-				s.BroadcastTimerPlayers(broadcastTimer, _game.Code, currentQuestion.UUID, gameStatus(_game.Status))
-
-				broadcastTimer--
-				currentTimer++
+				_cancel()
 			case <-_ctx.Done():
 				_game.Status = models.GameInFinished
 				_, _ = s.gameService.Update(&_game)
@@ -201,7 +205,7 @@ func (s *BroadcastService) PlayGame(game models.Game) {
 				return
 			}
 		}
-	}(game, questions, ctx, cancel)
+	}(game, ctx, cancel)
 }
 
 func (s *BroadcastService) BroadcastTimerPlayers(timer int, gameCode string, questionUUID string, status GameStatus) {
