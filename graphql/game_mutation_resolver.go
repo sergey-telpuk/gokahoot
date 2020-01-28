@@ -39,19 +39,29 @@ func (r *mutationResolver) DeactivateGameByCODEs(ctx context.Context, codes []st
 }
 
 func (r *mutationResolver) StartGameByCode(ctx context.Context, code string) (*Game, error) {
-	service := r.Di.Container.Get(ContainerNameGameService).(*GameService)
+	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
+	broadcastService := r.Di.Container.Get(ContainerNameBroadcastService).(*BroadcastService)
 
-	game, err := service.GetGameByCode(code)
+	game, err := gameService.GetGameByCode(code)
 
 	if err != nil {
 		return nil, err
 	}
+
+	//if game.Status == models.GameInPlaying {
+	//	return nil, errors.New(fmt.Sprintf("A starting game messsage: %v", "The game has already started."))
+	//}
+
 	game.Status = models.GameInPlaying
 
-	_, err = service.Update(game)
+	_, err = gameService.Update(game)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if err := broadcastService.StartBroadcastGameIsBeingPlayed(game.Code); err != nil {
+		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
 	}
 
 	return mapGame(game)

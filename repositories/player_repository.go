@@ -33,9 +33,7 @@ func (r PlayerRepository) FindOne(query interface{}, args ...interface{}) (*mode
 	var model models.Player
 
 	if err := r.db.GetConn().Preload("Game").
-		Joins("left join games on games.id = players.game_id").
 		Preload("Game.Test").
-		Joins("left join tests on tests.id = games.test_id").
 		Where(query, args).First(&model).Error; err != nil {
 
 		return nil, errorPlayer(err)
@@ -65,9 +63,7 @@ func (r PlayerRepository) FindAll() ([]*models.Player, error) {
 	var _models []*models.Player
 
 	if err := r.db.GetConn().Preload("Game").
-		Joins("left join games on games.id = players.game_id").
 		Preload("Game.Test").
-		Joins("left join tests on tests.id = games.test_id").
 		Find(&_models).Limit(1000).Error; err != nil {
 		return nil, errorPlayer(err)
 	}
@@ -79,9 +75,7 @@ func (r PlayerRepository) Find(query interface{}, args ...interface{}) ([]*model
 	var _models []*models.Player
 
 	if err := r.db.GetConn().Preload("Game").
-		Joins("left join games on games.id = players.game_id").
 		Preload("Game.Test").
-		Joins("left join tests on tests.id = games.test_id").
 		Where(query, args...).Find(&_models).Limit(10000).Error; err != nil {
 		return nil, errorPlayer(err)
 	}

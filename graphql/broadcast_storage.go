@@ -23,6 +23,7 @@ type (
 		UUID                string
 		GameCode            string
 		EventWaitForJoining chan *BroadcastPlayer
+		EventPlayingGame    chan *BroadcastPlayingGame
 	}
 )
 

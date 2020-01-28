@@ -33,6 +33,24 @@ func (s *BroadcastService) AddGame(gameCode string) error {
 	return nil
 }
 
+func (s *BroadcastService) StartBroadcastGameIsBeingPlayed(gameCode string) error {
+	game, err := s.gameService.GetGameByCode(gameCode)
+
+	if err != nil {
+		return err
+	}
+
+	game, err = s.gameService.AddRelationsQuestionsAndPlayers(game)
+
+	if err != nil {
+		return err
+	}
+
+	go s.playGame(*game)
+
+	return nil
+}
+
 func (s *BroadcastService) BroadcastForWaitForJoiningGame(gameCode string, playerUUID string) error {
 	game, err := s.broadcastRepository.GetGame(gameCode)
 
@@ -120,6 +138,27 @@ func InitBroadcastService(
 		gameService:         gameService,
 		playerService:       playerService,
 	}
+}
+
+func (s *BroadcastService) playGame(game models.Game) {
+	countQuestions := len(game.Test.Questions)
+	commonTime := time.Duration(countQuestions*1) * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), commonTime)
+
+	go func() {
+		defer cancel()
+
+		for {
+			select {
+			case <-time.After(1 * time.Second):
+				fmt.Println("=============")
+			//TODO
+			case <-ctx.Done():
+				fmt.Println("==============END")
+				return
+			}
+		}
+	}()
 }
 
 func errorBroadcastService(err error) error {

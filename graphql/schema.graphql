@@ -135,6 +135,15 @@ type BroadcastPlayer  {
     name: String!
 }
 
+type BroadcastPlayingGame  {
+    timer: Int!
+    gameCode:  String!
+    name: String!
+    currentQuestion: Question!
+}
+
+
 type Subscription {
     onJoiningPlayerToGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
+    onPlayingGame(gameCode: String!, playerUUID: String!): BroadcastPlayingGame!
 }

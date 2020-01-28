@@ -27,6 +27,14 @@ func (s *GameService) FindByCode(code string) (*models.Game, error) {
 	return s.r.FindOne("games.code = ?", code)
 }
 
+func (s *GameService) JoinPlayers(m *models.Game) (*models.Game, error) {
+	return s.r.FindPlayers(m)
+}
+
+func (s *GameService) AddRelationsQuestionsAndPlayers(m *models.Game) (*models.Game, error) {
+	return s.r.AddRelationsQuestionsAndPlayers(m)
+}
+
 func (s *GameService) IsWaitingForJoining(code string) (bool, error) {
 	m, err := s.r.FindOne("games.code = ?", code)
 

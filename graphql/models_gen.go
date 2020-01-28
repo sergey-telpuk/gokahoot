@@ -15,6 +15,13 @@ type BroadcastPlayer struct {
 	Name     string `json:"name"`
 }
 
+type BroadcastPlayingGame struct {
+	Timer           int       `json:"timer"`
+	GameCode        string    `json:"gameCode"`
+	Name            string    `json:"name"`
+	CurrentQuestion *Question `json:"currentQuestion"`
+}
+
 type Game struct {
 	Test    *Test     `json:"test"`
 	Code    string    `json:"CODE"`
