@@ -12,9 +12,9 @@ var mutex = &sync.Mutex{}
 
 func (r *subscriptionResolver) OnJoiningPlayerToGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayer, error) {
 	broadcastService := r.Di.Container.Get(ContainerNameBroadcastService).(*BroadcastService)
-	gametService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
+	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
 
-	if status, err := gametService.IsWaitingForJoining(gameCode); !status || err != nil {
+	if status, err := gameService.IsWaitingForJoining(gameCode); !status || err != nil {
 		return nil, errors.New(fmt.Sprintf("Joing player error: %v", err))
 	}
 
