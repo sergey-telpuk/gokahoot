@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	guuid "github.com/google/uuid"
+	"github.com/sergey-telpuk/gokahoot/models"
 )
 
 func (r *mutationResolver) ActivateGame(ctx context.Context, testUUID string) (*Game, error) {
@@ -12,7 +13,7 @@ func (r *mutationResolver) ActivateGame(ctx context.Context, testUUID string) (*
 	testService := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 	uuid := guuid.New()
 
-	test, err := testService.FindByUuid(testUUID)
+	test, err := testService.GetTestByUUID(testUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +22,7 @@ func (r *mutationResolver) ActivateGame(ctx context.Context, testUUID string) (*
 		return nil, err
 	}
 
-	game, err := gameService.FindByCode(uuid.String())
+	game, err := gameService.GetGameByCode(uuid.String())
 
 	if err != nil {
 		return nil, err
@@ -37,6 +38,25 @@ func (r *mutationResolver) DeactivateGameByCODEs(ctx context.Context, codes []st
 	return &Status{Success: true}, nil
 }
 
+func (r *mutationResolver) StartGameByCode(ctx context.Context, code string) (*Game, error) {
+	service := r.Di.Container.Get(ContainerNameGameService).(*GameService)
+
+	game, err := service.GetGameByCode(code)
+
+	if err != nil {
+		return nil, err
+	}
+	game.Status = models.GameInPlaying
+
+	_, err = service.Update(game)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return mapGame(game)
+}
+
 func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input InputJoinPlayer) (*Player, error) {
 	uuid := guuid.New()
 	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
@@ -47,7 +67,7 @@ func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input InputJoin
 		return nil, errors.New(fmt.Sprintf("A joinging player messsage: %v or error %v", "a game isnt acivated", err))
 	}
 
-	game, err := gameService.FindByCode(input.GameCode)
+	game, err := gameService.GetGameByCode(input.GameCode)
 
 	if err != nil {
 		return nil, err
@@ -57,7 +77,7 @@ func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input InputJoin
 		return nil, err
 	}
 
-	player, err := playerService.FindByUuid(uuid.String())
+	player, err := playerService.GetPlayerByUUID(uuid.String())
 
 	if err != nil {
 		return nil, err

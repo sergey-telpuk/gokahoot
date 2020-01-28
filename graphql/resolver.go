@@ -100,8 +100,9 @@ func mapGame(m *models.Game) (*Game, error) {
 	test, _ := mapTest(m.Test)
 
 	return &Game{
-		Code: m.Code,
-		Test: test,
+		Code:   m.Code,
+		Status: m.Status,
+		Test:   test,
 	}, nil
 
 }

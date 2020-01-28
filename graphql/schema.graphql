@@ -36,6 +36,7 @@ type Answer {
 type Game {
     test: Test!
     CODE: String!
+    Status: Int!
     players: [Player!]
 }
 
@@ -122,6 +123,7 @@ type Mutation {
     activateGame(testUUID: String!): Game!
     deactivateGameByCODEs(codes: [String!]!): Status!
     joinPlayerToGame(input: InputJoinPlayer!): Player!
+    startGameByCode(code: String!): Game!
 }
 
 #Subscriptions

@@ -13,7 +13,7 @@ func (r *mutationResolver) CreateNewTest(ctx context.Context, input NewTest) (*T
 		return nil, err
 	}
 
-	test, err := service.FindByUuid(uuid.String())
+	test, err := service.GetTestByUUID(uuid.String())
 
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (r *mutationResolver) UpdateTestByUUIDs(ctx context.Context, input []*Updat
 	testService := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 
 	for _, iTest := range input {
-		mTest, err := testService.FindByUuid(iTest.UUID)
+		mTest, err := testService.GetTestByUUID(iTest.UUID)
 
 		if err != nil {
 			return nil, err

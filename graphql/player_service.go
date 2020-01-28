@@ -1,6 +1,8 @@
 package graphql
 
 import (
+	"errors"
+	"fmt"
 	guuid "github.com/google/uuid"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/repositories"
@@ -26,6 +28,20 @@ func (s *PlayerService) FindByUuid(uuid string) (*models.Player, error) {
 	return s.r.FindOne("players.uuid = ?", uuid)
 }
 
+func (s *PlayerService) GetPlayerByUUID(uuid string) (*models.Player, error) {
+	m, err := s.FindByUuid(uuid)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if m == nil {
+		return nil, errors.New(fmt.Sprintf("Player model error: %s", "not a such player"))
+	}
+
+	return m, nil
+}
+
 func (s *PlayerService) FindByID(id int) (*models.Player, error) {
 	return s.r.FindOne("players.id = ?", id)
 }
@@ -46,7 +62,7 @@ func (s *PlayerService) FindAll() ([]*models.Player, error) {
 	return s.r.FindAll()
 }
 
-func (s *PlayerService) FindQuestionBelongToGame(id int) ([]*models.Player, error) {
+func (s *PlayerService) FindPlayersBelongToGame(id int) ([]*models.Player, error) {
 	return s.r.FindQuestionBelongToGame(id)
 }
 

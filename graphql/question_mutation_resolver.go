@@ -13,10 +13,10 @@ func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuest
 	questionService := r.Di.Container.Get(ContainerNameQuestionService).(*QuestionService)
 	testService := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 
-	test, _ := testService.FindByUuid(input.TestUUID)
+	test, err := testService.GetTestByUUID(input.TestUUID)
 
-	if test == nil {
-		return nil, errors.New(fmt.Sprintf("Creating question was failed, error %v", "Not such a test."))
+	if err != nil {
+		return nil, err
 	}
 
 	var answers []*models.Answer
@@ -68,7 +68,7 @@ func (r *mutationResolver) UpdateQuestionsByUUIDs(ctx context.Context, testUUID 
 	questionService := r.Di.Container.Get(ContainerNameQuestionService).(*QuestionService)
 	testService := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 
-	mTest, err := testService.FindByUuid(testUUID)
+	mTest, err := testService.GetTestByUUID(testUUID)
 
 	if err != nil {
 		return nil, err

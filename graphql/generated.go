@@ -63,6 +63,7 @@ type ComplexityRoot struct {
 	Game struct {
 		Code    func(childComplexity int) int
 		Players func(childComplexity int) int
+		Status  func(childComplexity int) int
 		Test    func(childComplexity int) int
 	}
 
@@ -76,6 +77,7 @@ type ComplexityRoot struct {
 		DeleteTestByID         func(childComplexity int, id []int) int
 		DeleteTestByUUID       func(childComplexity int, id []string) int
 		JoinPlayerToGame       func(childComplexity int, input InputJoinPlayer) int
+		StartGameByCode        func(childComplexity int, code string) int
 		UpdateAnswersByIDs     func(childComplexity int, questionUUID string, input []*UpdateAnswer) int
 		UpdateQuestionsByUUIDs func(childComplexity int, testUUID string, input []*UpdateQuestion) int
 		UpdateTestByUUIDs      func(childComplexity int, input []*UpdateTest) int
@@ -139,6 +141,7 @@ type MutationResolver interface {
 	ActivateGame(ctx context.Context, testUUID string) (*Game, error)
 	DeactivateGameByCODEs(ctx context.Context, codes []string) (*Status, error)
 	JoinPlayerToGame(ctx context.Context, input InputJoinPlayer) (*Player, error)
+	StartGameByCode(ctx context.Context, code string) (*Game, error)
 }
 type QueryResolver interface {
 	Tests(ctx context.Context) ([]*Test, error)
@@ -236,6 +239,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Game.Players(childComplexity), true
+
+	case "Game.Status":
+		if e.complexity.Game.Status == nil {
+			break
+		}
+
+		return e.complexity.Game.Status(childComplexity), true
 
 	case "Game.test":
 		if e.complexity.Game.Test == nil {
@@ -351,6 +361,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.JoinPlayerToGame(childComplexity, args["input"].(InputJoinPlayer)), true
+
+	case "Mutation.startGameByCode":
+		if e.complexity.Mutation.StartGameByCode == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_startGameByCode_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.StartGameByCode(childComplexity, args["code"].(string)), true
 
 	case "Mutation.updateAnswersByIDs":
 		if e.complexity.Mutation.UpdateAnswersByIDs == nil {
@@ -674,6 +696,7 @@ type BroadcastPlayer {
 type Game {
 	test: Test!
 	CODE: String!
+	Status: Int!
 	players: [Player!]
 }
 input InputAnswer {
@@ -698,6 +721,7 @@ type Mutation {
 	activateGame(testUUID: String!): Game!
 	deactivateGameByCODEs(codes: [String!]!): Status!
 	joinPlayerToGame(input: InputJoinPlayer!): Player!
+	startGameByCode(code: String!): Game!
 }
 input NewQuestion {
 	testUUID: String!
@@ -892,6 +916,20 @@ func (ec *executionContext) field_Mutation_joinPlayerToGame_args(ctx context.Con
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_startGameByCode_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["code"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["code"] = arg0
 	return args, nil
 }
 
@@ -1396,6 +1434,40 @@ func (ec *executionContext) _Game_CODE(ctx context.Context, field graphql.Collec
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Game_Status(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Game",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Game_players(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
@@ -1919,6 +1991,47 @@ func (ec *executionContext) _Mutation_joinPlayerToGame(ctx context.Context, fiel
 	res := resTmp.(*Player)
 	fc.Result = res
 	return ec.marshalNPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐPlayer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_startGameByCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_startGameByCode_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().StartGameByCode(rctx, args["code"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Game)
+	fc.Result = res
+	return ec.marshalNGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋgraphqlᚐGame(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Player_UUID(ctx context.Context, field graphql.CollectedField, obj *Player) (ret graphql.Marshaler) {
@@ -4200,6 +4313,11 @@ func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "Status":
+			out.Values[i] = ec._Game_Status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "players":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -4294,6 +4412,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "joinPlayerToGame":
 			out.Values[i] = ec._Mutation_joinPlayerToGame(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "startGameByCode":
+			out.Values[i] = ec._Mutation_startGameByCode(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

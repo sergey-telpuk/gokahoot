@@ -18,6 +18,7 @@ type BroadcastPlayer struct {
 type Game struct {
 	Test    *Test     `json:"test"`
 	Code    string    `json:"CODE"`
+	Status  int       `json:"Status"`
 	Players []*Player `json:"players"`
 }
 

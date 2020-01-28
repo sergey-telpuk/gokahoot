@@ -1,6 +1,8 @@
 package graphql
 
 import (
+	"errors"
+	"fmt"
 	guuid "github.com/google/uuid"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/repositories"
@@ -33,6 +35,20 @@ func (s *GameService) IsWaitingForJoining(code string) (bool, error) {
 	}
 
 	return models.GameInWaitingPlayers == m.Status, err
+}
+
+func (s *GameService) GetGameByCode(code string) (*models.Game, error) {
+	game, err := s.FindByCode(code)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if game == nil {
+		return nil, errors.New(fmt.Sprintf("Game model error: %s", "not a such game"))
+	}
+
+	return game, nil
 }
 
 func (s *GameService) IsPlayingGame(code string) (bool, error) {

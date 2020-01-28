@@ -54,7 +54,8 @@ func (r *queryResolver) TestByID(ctx context.Context, id int) (*Test, error) {
 func (r *queryResolver) TestByUUID(ctx context.Context, id string) (*Test, error) {
 	service := r.Di.Container.Get(ContainerNameTestService).(*TestService)
 
-	mTest, err := service.FindByUuid(id)
+	mTest, err := service.GetTestByUUID(id)
+
 	if err != nil {
 		return nil, err
 	}
