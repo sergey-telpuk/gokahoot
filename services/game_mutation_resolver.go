@@ -1,4 +1,4 @@
-package graphql
+package services
 
 import (
 	"context"
@@ -48,9 +48,9 @@ func (r *mutationResolver) StartGameByCode(ctx context.Context, code string) (*G
 		return nil, err
 	}
 
-	//if game.Status == models.GameInPlaying {
-	//	return nil, errors.New(fmt.Sprintf("A starting game messsage: %v", "The game has already started."))
-	//}
+	if status, err := gameService.IsPlayingGame(game.Code); status || err != nil {
+		return nil, errors.New(fmt.Sprintf("A statring player messsage: %v or error %v", "a game has already started", err))
+	}
 
 	game.Status = models.GameInPlaying
 
@@ -119,4 +119,20 @@ func (r *mutationResolver) DeletePlayerFromGame(ctx context.Context, gameCode st
 	}
 
 	return &Status{Success: true}, nil
+}
+
+func (r *mutationResolver) AnswerQuestionByUUID(ctx context.Context, playerUUID string, questionUUID string, rightAnswer int) (bool, error) {
+	questionService := r.Di.Container.Get(ContainerNameQuestionService).(*QuestionService)
+
+	question, err := questionService.GetQuestionByUUID(questionUUID)
+
+	if err != nil {
+		return false, err
+	}
+
+	if question.RightAnswer == rightAnswer {
+		return true, nil
+	}
+
+	return false, nil
 }

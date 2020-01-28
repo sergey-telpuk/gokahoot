@@ -1,6 +1,8 @@
-package graphql
+package services
 
 import (
+	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/sergey-telpuk/gokahoot/db"
@@ -78,6 +80,20 @@ func (s *QuestionService) UpdateByUUID(m *models.Question) (*models.Question, er
 
 func (s *QuestionService) FindAnswersBelongToQuestion(id int) ([]*models.Answer, error) {
 	return s.ra.FindByQuestionID(id)
+}
+
+func (s *QuestionService) GetQuestionByUUID(code string) (*models.Question, error) {
+	m, err := s.FindByUuid(code)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if m == nil {
+		return nil, errors.New(fmt.Sprintf("Question model error: %s", "not a such question"))
+	}
+
+	return m, nil
 }
 
 func (s *QuestionService) FindQuestionBelongToTest(id int) ([]*models.Question, error) {

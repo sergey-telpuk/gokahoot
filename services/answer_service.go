@@ -1,4 +1,4 @@
-package graphql
+package services
 
 import (
 	"github.com/sergey-telpuk/gokahoot/models"

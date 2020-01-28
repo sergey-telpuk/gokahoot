@@ -28,7 +28,8 @@ func (r QuestionRepository) Create(model *models.Question) {
 func (r QuestionRepository) FindOne(query interface{}, args ...interface{}) (*models.Question, error) {
 	var model models.Question
 
-	if err := r.db.GetConn().Where(query, args).First(&model).Error; err != nil {
+	if err := r.db.GetConn().Preload("Answers").
+		Where(query, args).First(&model).Error; err != nil {
 		return nil, errorQuestion(err)
 	}
 
@@ -46,7 +47,10 @@ func (r QuestionRepository) Delete(query interface{}, args ...interface{}) error
 func (r QuestionRepository) Find(query interface{}, args ...interface{}) ([]*models.Question, error) {
 	var _models []*models.Question
 
-	if err := r.db.GetConn().Where(query, args...).Find(&_models).Limit(10000).Error; err != nil {
+	if err := r.db.GetConn().
+		Preload("Answers").
+		Where(query, args...).
+		Find(&_models).Limit(10000).Error; err != nil {
 		return nil, errorQuestion(err)
 	}
 
@@ -69,7 +73,9 @@ func (r QuestionRepository) Update(m *models.Question) (*models.Question, error)
 func (r QuestionRepository) FindAll() ([]*models.Question, error) {
 	var _models []*models.Question
 
-	if err := r.db.GetConn().Find(&_models).Limit(10000).Error; err != nil {
+	if err := r.db.GetConn().
+		Preload("Answers").
+		Find(&_models).Limit(10000).Error; err != nil {
 		return nil, errorQuestion(err)
 	}
 
