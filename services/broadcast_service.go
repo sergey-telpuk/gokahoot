@@ -180,7 +180,7 @@ func (s *BroadcastService) PlayGame(game models.Game) {
 		countQuestions := len(_questions)
 		currentTimer := 0
 		broadcastTimer := TimeForAnsweringSec
-		currentQuestion := questions[0]
+		currentQuestion := _questions[0]
 
 		for {
 			select {
