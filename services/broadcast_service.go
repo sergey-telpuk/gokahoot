@@ -210,6 +210,9 @@ func (s *BroadcastService) PlayGame(game models.Game) {
 		defer _cancel()
 
 		countQuestions := len(game.Test.Questions)
+		if countQuestions == 0 {
+			return
+		}
 		currentTimer := 0
 		broadcastTimer := TimeForAnsweringSec
 		currentQuestion := game.Test.Questions[0]

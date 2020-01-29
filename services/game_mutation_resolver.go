@@ -48,9 +48,9 @@ func (r *mutationResolver) StartGameByCode(ctx context.Context, code string) (*G
 		return nil, err
 	}
 
-	if status, err := gameService.IsPlayingGame(game.Code); status || err != nil {
-		return nil, errors.New(fmt.Sprintf("A statring player messsage: %v or error %v", "a game has already started", err))
-	}
+	//if status, err := gameService.IsPlayingGame(game.Code); status || err != nil {
+	//	return nil, errors.New(fmt.Sprintf("A statring player messsage: %v or error %v", "a game has already started", err))
+	//}
 
 	game.Status = models.GameInPlaying
 
