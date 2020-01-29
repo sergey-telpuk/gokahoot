@@ -1,0 +1,53 @@
+#inputs
+input NewTest {
+    name: String!
+}
+input InputAnswer {
+    sequential: Int!
+    text: String!
+    imgURL: String
+}
+
+input NewQuestion {
+    testUUID: String!
+    text: String!
+    imgURL: String
+    rightAnswer: Int!
+    answers: [InputAnswer!]!
+}
+
+#============= input updates
+input UpdateTest{
+    UUID: String!
+    name: String!
+    questions:[UpdateQuestion!]
+}
+
+input UpdateAnswer {
+    ID: Int!
+    sequential: Int
+    text: String
+    imgURL: String
+}
+
+input UpdateQuestion {
+    UUID: String!
+    text: String
+    imgURL: String
+    rightAnswer: Int
+    answers: [UpdateAnswer!]
+}
+
+
+
+#Input Player
+input InputJoinPlayer {
+    gameCode: String!
+    name: String!
+}
+
+enum GameStatus {
+    WAIT_FOR_PLAYERS
+    PLAYING
+    FINISHED
+}

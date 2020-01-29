@@ -1,0 +1,57 @@
+type Question {
+    ID: Int!
+    UUID: String!
+    testID: Int!
+    text: String!
+    imgURL: String
+    rightAnswer: Int!
+    answers: [Answer!]!
+}
+
+type Test {
+    ID: Int!
+    UUID: String!
+    name: String!
+    questions: [Question!]
+}
+
+type Answer {
+    ID: Int!
+    text: String!
+    sequential: Int!
+    imgURL: String
+}
+
+
+#Game
+type Game {
+    test: Test!
+    CODE: String!
+    Status: Int!
+    players: [Player!]
+}
+
+type Player {
+    UUID: String!
+    game: Game!
+    name: String!
+}
+
+type Status {
+    success: Boolean!
+}
+
+
+type BroadcastPlayingGame  {
+    timer: Int!
+    gameCode:  String!
+    currentQuestionUUID: String!
+    gameStatusEnum: GameStatus!
+}
+
+#Broadcast
+type BroadcastPlayer  {
+    UUID: String!
+    gameCode:  String!
+    name: String!
+}

@@ -5,97 +5,8 @@
 schema {
     query: Query
     mutation: Mutation
+    subscription: Subscription
 }
-
-type Question {
-    ID: Int!
-    UUID: String!
-    testID: Int!
-    text: String!
-    imgURL: String
-    rightAnswer: Int!
-    answers: [Answer!]!
-}
-
-type Test {
-    ID: Int!
-    UUID: String!
-    name: String!
-    questions: [Question!]
-}
-
-type Answer {
-    ID: Int!
-    text: String!
-    sequential: Int!
-    imgURL: String
-}
-
-
-#Game
-type Game {
-    test: Test!
-    CODE: String!
-    Status: Int!
-    players: [Player!]
-}
-
-type Player {
-    UUID: String!
-    game: Game!
-    name: String!
-}
-
-type Status {
-    success: Boolean!
-}
-
-#inputs
-input NewTest {
-    name: String!
-}
-input InputAnswer {
-    sequential: Int!
-    text: String!
-    imgURL: String
-}
-
-input NewQuestion {
-    testUUID: String!
-    text: String!
-    imgURL: String
-    rightAnswer: Int!
-    answers: [InputAnswer!]!
-}
-
-#============= input updates
-input UpdateTest{
-    UUID: String!
-    name: String!
-    questions:[UpdateQuestion!]
-}
-
-input UpdateAnswer {
-    ID: Int!
-    sequential: Int
-    text: String
-    imgURL: String
-}
-
-input UpdateQuestion {
-    UUID: String!
-    text: String
-    imgURL: String
-    rightAnswer: Int
-    answers: [UpdateAnswer!]
-}
-
-#Input Player
-input InputJoinPlayer {
-    gameCode: String!
-    name: String!
-}
-
 
 type Query {
     tests: [Test!]!
@@ -128,26 +39,6 @@ type Mutation {
 }
 
 #Subscriptions
-
-#Broadcast
-type BroadcastPlayer  {
-    UUID: String!
-    gameCode:  String!
-    name: String!
-}
-enum GameStatus {
-    WAIT_FOR_PLAYERS
-    PLAYING
-    FINISHED
-}
-type BroadcastPlayingGame  {
-    timer: Int!
-    gameCode:  String!
-    currentQuestionUUID: String!
-    gameStatusEnum: GameStatus!
-}
-
-
 type Subscription {
     onJoiningPlayerToGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
     onDeletePlayerFromGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
