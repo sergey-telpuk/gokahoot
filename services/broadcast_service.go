@@ -88,6 +88,38 @@ func (s *BroadcastService) BroadcastForWaitForJoiningGame(gameCode string, playe
 	return nil
 }
 
+func (s *BroadcastService) BroadcastForWaitForStartingGame(gameCode string, playerUUID string) error {
+	players, err := s.broadcastRepository.GetPlayersWaitForStartingGame(gameCode)
+
+	if err != nil {
+		return err
+	}
+
+	player, err := s.playerService.FindByUuid(playerUUID)
+
+	if err != nil {
+		return err
+	}
+
+	for _, broadcastPlayer := range players {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		go func(_stPlayer *StoragePlayer, _player *models.Player, _ctx context.Context, _cancel context.CancelFunc) {
+			select {
+			case _stPlayer.EventStartGame <- &StartGame{
+				GameCode: _player.Game.Code,
+			}:
+			case <-_ctx.Done():
+				return
+			}
+
+			defer _cancel()
+
+		}(broadcastPlayer, player, ctx, cancel)
+	}
+
+	return nil
+}
+
 func (s *BroadcastService) BroadcastForDeletingPlayerGame(gameCode string, playerUUID string) error {
 	players, err := s.broadcastRepository.GetPlayersForDeletingGame(gameCode)
 

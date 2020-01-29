@@ -118,14 +118,19 @@ type ComplexityRoot struct {
 		UUID        func(childComplexity int) int
 	}
 
+	StartGame struct {
+		GameCode func(childComplexity int) int
+	}
+
 	Status struct {
 		Success func(childComplexity int) int
 	}
 
 	Subscription struct {
-		OnDeletePlayerFromGame func(childComplexity int, gameCode string, playerUUID string) int
-		OnJoiningPlayerToGame  func(childComplexity int, gameCode string, playerUUID string) int
-		OnPlayingGame          func(childComplexity int, gameCode string, playerUUID string) int
+		OnDeletePlayerFromGame       func(childComplexity int, gameCode string, playerUUID string) int
+		OnPlayingGame                func(childComplexity int, gameCode string, playerUUID string) int
+		OnWaitForJoiningPlayerToGame func(childComplexity int, gameCode string, playerUUID string) int
+		OnWaitForStartingGame        func(childComplexity int, gameCode string, playerUUID string) int
 	}
 
 	Test struct {
@@ -169,7 +174,8 @@ type QuestionResolver interface {
 	Answers(ctx context.Context, obj *Question) ([]*Answer, error)
 }
 type SubscriptionResolver interface {
-	OnJoiningPlayerToGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayer, error)
+	OnWaitForJoiningPlayerToGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayer, error)
+	OnWaitForStartingGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *StartGame, error)
 	OnDeletePlayerFromGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayer, error)
 	OnPlayingGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayingGame, error)
 }
@@ -621,6 +627,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Question.UUID(childComplexity), true
 
+	case "StartGame.gameCode":
+		if e.complexity.StartGame.GameCode == nil {
+			break
+		}
+
+		return e.complexity.StartGame.GameCode(childComplexity), true
+
 	case "Status.success":
 		if e.complexity.Status.Success == nil {
 			break
@@ -640,18 +653,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Subscription.OnDeletePlayerFromGame(childComplexity, args["gameCode"].(string), args["playerUUID"].(string)), true
 
-	case "Subscription.onJoiningPlayerToGame":
-		if e.complexity.Subscription.OnJoiningPlayerToGame == nil {
-			break
-		}
-
-		args, err := ec.field_Subscription_onJoiningPlayerToGame_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Subscription.OnJoiningPlayerToGame(childComplexity, args["gameCode"].(string), args["playerUUID"].(string)), true
-
 	case "Subscription.onPlayingGame":
 		if e.complexity.Subscription.OnPlayingGame == nil {
 			break
@@ -663,6 +664,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Subscription.OnPlayingGame(childComplexity, args["gameCode"].(string), args["playerUUID"].(string)), true
+
+	case "Subscription.onWaitForJoiningPlayerToGame":
+		if e.complexity.Subscription.OnWaitForJoiningPlayerToGame == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_onWaitForJoiningPlayerToGame_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.OnWaitForJoiningPlayerToGame(childComplexity, args["gameCode"].(string), args["playerUUID"].(string)), true
+
+	case "Subscription.onWaitForStartingGame":
+		if e.complexity.Subscription.OnWaitForStartingGame == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_onWaitForStartingGame_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.OnWaitForStartingGame(childComplexity, args["gameCode"].(string), args["playerUUID"].(string)), true
 
 	case "Test.ID":
 		if e.complexity.Test.ID == nil {
@@ -860,11 +885,15 @@ type Question {
 	rightAnswer: Int!
 	answers: [Answer!]!
 }
+type StartGame {
+	gameCode: String!
+}
 type Status {
 	success: Boolean!
 }
 type Subscription {
-	onJoiningPlayerToGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
+	onWaitForJoiningPlayerToGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
+	onWaitForStartingGame(gameCode: String!, playerUUID: String!): StartGame!
 	onDeletePlayerFromGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
 	onPlayingGame(gameCode: String!, playerUUID: String!): BroadcastPlayingGame!
 }
@@ -1255,7 +1284,7 @@ func (ec *executionContext) field_Subscription_onDeletePlayerFromGame_args(ctx c
 	return args, nil
 }
 
-func (ec *executionContext) field_Subscription_onJoiningPlayerToGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Subscription_onPlayingGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -1277,7 +1306,29 @@ func (ec *executionContext) field_Subscription_onJoiningPlayerToGame_args(ctx co
 	return args, nil
 }
 
-func (ec *executionContext) field_Subscription_onPlayingGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Subscription_onWaitForJoiningPlayerToGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["gameCode"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["gameCode"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["playerUUID"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["playerUUID"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Subscription_onWaitForStartingGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -3133,6 +3184,40 @@ func (ec *executionContext) _Question_answers(ctx context.Context, field graphql
 	return ec.marshalNAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐAnswerᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _StartGame_gameCode(ctx context.Context, field graphql.CollectedField, obj *StartGame) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "StartGame",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GameCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Status_success(ctx context.Context, field graphql.CollectedField, obj *Status) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3167,7 +3252,7 @@ func (ec *executionContext) _Status_success(ctx context.Context, field graphql.C
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Subscription_onJoiningPlayerToGame(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+func (ec *executionContext) _Subscription_onWaitForJoiningPlayerToGame(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3183,7 +3268,7 @@ func (ec *executionContext) _Subscription_onJoiningPlayerToGame(ctx context.Cont
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Subscription_onJoiningPlayerToGame_args(ctx, rawArgs)
+	args, err := ec.field_Subscription_onWaitForJoiningPlayerToGame_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return nil
@@ -3191,7 +3276,7 @@ func (ec *executionContext) _Subscription_onJoiningPlayerToGame(ctx context.Cont
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Subscription().OnJoiningPlayerToGame(rctx, args["gameCode"].(string), args["playerUUID"].(string))
+		return ec.resolvers.Subscription().OnWaitForJoiningPlayerToGame(rctx, args["gameCode"].(string), args["playerUUID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3213,6 +3298,57 @@ func (ec *executionContext) _Subscription_onJoiningPlayerToGame(ctx context.Cont
 			graphql.MarshalString(field.Alias).MarshalGQL(w)
 			w.Write([]byte{':'})
 			ec.marshalNBroadcastPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastPlayer(ctx, field.Selections, res).MarshalGQL(w)
+			w.Write([]byte{'}'})
+		})
+	}
+}
+
+func (ec *executionContext) _Subscription_onWaitForStartingGame(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Subscription",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Subscription_onWaitForStartingGame_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().OnWaitForStartingGame(rctx, args["gameCode"].(string), args["playerUUID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func() graphql.Marshaler {
+		res, ok := <-resTmp.(<-chan *StartGame)
+		if !ok {
+			return nil
+		}
+		return graphql.WriterFunc(func(w io.Writer) {
+			w.Write([]byte{'{'})
+			graphql.MarshalString(field.Alias).MarshalGQL(w)
+			w.Write([]byte{':'})
+			ec.marshalNStartGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐStartGame(ctx, field.Selections, res).MarshalGQL(w)
 			w.Write([]byte{'}'})
 		})
 	}
@@ -5233,6 +5369,33 @@ func (ec *executionContext) _Question(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var startGameImplementors = []string{"StartGame"}
+
+func (ec *executionContext) _StartGame(ctx context.Context, sel ast.SelectionSet, obj *StartGame) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, startGameImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StartGame")
+		case "gameCode":
+			out.Values[i] = ec._StartGame_gameCode(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var statusImplementors = []string{"Status"}
 
 func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, obj *Status) graphql.Marshaler {
@@ -5273,8 +5436,10 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 	}
 
 	switch fields[0].Name {
-	case "onJoiningPlayerToGame":
-		return ec._Subscription_onJoiningPlayerToGame(ctx, fields[0])
+	case "onWaitForJoiningPlayerToGame":
+		return ec._Subscription_onWaitForJoiningPlayerToGame(ctx, fields[0])
+	case "onWaitForStartingGame":
+		return ec._Subscription_onWaitForStartingGame(ctx, fields[0])
 	case "onDeletePlayerFromGame":
 		return ec._Subscription_onDeletePlayerFromGame(ctx, fields[0])
 	case "onPlayingGame":
@@ -5880,6 +6045,20 @@ func (ec *executionContext) marshalNQuestion2ᚖgithubᚗcomᚋsergeyᚑtelpuk�
 		return graphql.Null
 	}
 	return ec._Question(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNStartGame2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐStartGame(ctx context.Context, sel ast.SelectionSet, v StartGame) graphql.Marshaler {
+	return ec._StartGame(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStartGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐStartGame(ctx context.Context, sel ast.SelectionSet, v *StartGame) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._StartGame(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNStatus2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐStatus(ctx context.Context, sel ast.SelectionSet, v Status) graphql.Marshaler {

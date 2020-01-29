@@ -40,7 +40,8 @@ type Mutation {
 
 #Subscriptions
 type Subscription {
-    onJoiningPlayerToGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
+    onWaitForJoiningPlayerToGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
+    onWaitForStartingGame(gameCode: String!, playerUUID: String!): StartGame!
     onDeletePlayerFromGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
     onPlayingGame(gameCode: String!, playerUUID: String!): BroadcastPlayingGame!
 }

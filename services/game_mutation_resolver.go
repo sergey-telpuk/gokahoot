@@ -64,6 +64,10 @@ func (r *mutationResolver) StartGameByCode(ctx context.Context, code string) (*G
 		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
 	}
 
+	if err := broadcastService.StartBroadcastGameIsBeingPlayed(game.Code); err != nil {
+		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
+	}
+
 	return mapGame(*game)
 }
 

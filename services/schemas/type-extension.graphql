@@ -55,3 +55,7 @@ type BroadcastPlayer  {
     gameCode:  String!
     name: String!
 }
+
+type StartGame  {
+    gameCode:  String!
+}
