@@ -113,7 +113,7 @@ func (r *subscriptionResolver) OnDeletePlayerFromGame(ctx context.Context, gameC
 		return nil, errors.New(fmt.Sprintf("A playing game messsage: %v or error %v", "a palyer isnt belonged to game", err))
 	}
 
-	if status, err := gameService.IsPlayingGame(gameCode); !status || err != nil {
+	if status, err := gameService.IsPlayingGame(gameCode); status || err != nil {
 		return nil, errors.New(fmt.Sprintf("A joinging player messsage: %v or error %v", "a game isnt acivated", err))
 	}
 
