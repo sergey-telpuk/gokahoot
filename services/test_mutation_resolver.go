@@ -19,7 +19,7 @@ func (r *mutationResolver) CreateNewTest(ctx context.Context, input NewTest) (*T
 		return nil, err
 	}
 
-	return mapTest(test)
+	return mapTest(*test)
 }
 
 func (r *mutationResolver) UpdateTestByUUIDs(ctx context.Context, input []*UpdateTest) ([]*Test, error) {
@@ -43,7 +43,7 @@ func (r *mutationResolver) UpdateTestByUUIDs(ctx context.Context, input []*Updat
 			return nil, err
 		}
 
-		mapped, err := mapTest(mTest)
+		mapped, err := mapTest(*mTest)
 		if err != nil {
 			return nil, err
 		}

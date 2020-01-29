@@ -40,7 +40,7 @@ func (r *queryResolver) ActivatedGames(ctx context.Context) ([]*Game, error) {
 	}
 
 	for _, m := range games {
-		mapped, _ := mapGame(m)
+		mapped, _ := mapGame(*m)
 		rGames = append(rGames, mapped)
 	}
 
@@ -56,5 +56,5 @@ func (r *queryResolver) ActivatedGameByCode(ctx context.Context, code string) (*
 		return nil, err
 	}
 
-	return mapGame(game)
+	return mapGame(*game)
 }

@@ -33,7 +33,7 @@ func (r *queryResolver) Tests(ctx context.Context) ([]*Test, error) {
 	}
 
 	for _, test := range mTests {
-		mapped, _ := mapTest(test)
+		mapped, _ := mapTest(*test)
 		rTests = append(rTests, mapped)
 	}
 
@@ -48,7 +48,7 @@ func (r *queryResolver) TestByID(ctx context.Context, id int) (*Test, error) {
 		return nil, err
 	}
 
-	return mapTest(mTest)
+	return mapTest(*mTest)
 }
 
 func (r *queryResolver) TestByUUID(ctx context.Context, id string) (*Test, error) {
@@ -60,5 +60,5 @@ func (r *queryResolver) TestByUUID(ctx context.Context, id string) (*Test, error
 		return nil, err
 	}
 
-	return mapTest(mTest)
+	return mapTest(*mTest)
 }

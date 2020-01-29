@@ -28,7 +28,7 @@ func (r *mutationResolver) ActivateGame(ctx context.Context, testUUID string) (*
 		return nil, err
 	}
 
-	return mapGame(game)
+	return mapGame(*game)
 }
 func (r *mutationResolver) DeactivateGameByCODEs(ctx context.Context, codes []string) (*Status, error) {
 	service := r.Di.Container.Get(ContainerNameGameService).(*GameService)
@@ -64,7 +64,7 @@ func (r *mutationResolver) StartGameByCode(ctx context.Context, code string) (*G
 		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
 	}
 
-	return mapGame(game)
+	return mapGame(*game)
 }
 
 func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input InputJoinPlayer) (*Player, error) {

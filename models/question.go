@@ -5,6 +5,7 @@ type Question struct {
 	UUID    string `gorm:"unique_index"`
 	TestID  int    `gorm:"type:integer REFERENCES tests(id) ON DELETE CASCADE ON UPDATE CASCADE;not null"`
 	Answers []Answer
+	Test    Test
 
 	Text        string `gorm:"not null"`
 	ImgURL      *string

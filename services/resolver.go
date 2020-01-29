@@ -2,8 +2,6 @@ package services
 
 //go:generate go run github.com/99designs/gqlgen
 import (
-	"errors"
-	"fmt"
 	"github.com/sergey-telpuk/gokahoot/models"
 ) // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
@@ -49,10 +47,6 @@ func (r *Resolver) Subscription() SubscriptionResolver {
 
 func mapQuestion(m *models.Question) (*Question, error) {
 
-	if m.ID == 0 {
-		return nil, errors.New(fmt.Sprintf("Not a such item"))
-	}
-
 	return &Question{
 		ID:          m.ID,
 		UUID:        m.UUID,
@@ -65,10 +59,6 @@ func mapQuestion(m *models.Question) (*Question, error) {
 
 func mapAnswer(m *models.Answer) (*Answer, error) {
 
-	if m.ID == 0 {
-		return nil, errors.New(fmt.Sprintf("Not a such item"))
-	}
-
 	return &Answer{
 		ID:         m.ID,
 		Text:       m.Text,
@@ -77,11 +67,7 @@ func mapAnswer(m *models.Answer) (*Answer, error) {
 	}, nil
 }
 
-func mapTest(m *models.Test) (*Test, error) {
-
-	if m.ID == 0 {
-		return nil, errors.New(fmt.Sprintf("Not a such item"))
-	}
+func mapTest(m models.Test) (*Test, error) {
 
 	return &Test{
 		ID:   m.ID,
@@ -91,12 +77,7 @@ func mapTest(m *models.Test) (*Test, error) {
 
 }
 
-func mapGame(m *models.Game) (*Game, error) {
-
-	if m.ID == 0 {
-		return nil, errors.New(fmt.Sprintf("Not a such item"))
-	}
-
+func mapGame(m models.Game) (*Game, error) {
 	test, _ := mapTest(m.Test)
 
 	return &Game{
@@ -107,11 +88,6 @@ func mapGame(m *models.Game) (*Game, error) {
 
 }
 func mapPlayer(m *models.Player) (*Player, error) {
-
-	if m.ID == 0 {
-		return nil, errors.New(fmt.Sprintf("Not a such item"))
-	}
-
 	game, _ := mapGame(m.Game)
 
 	return &Player{
