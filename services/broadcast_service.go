@@ -214,9 +214,10 @@ func (s *BroadcastService) PlayGame(game models.Game) {
 		for {
 			select {
 			case <-time.After(1 * time.Second):
-				if currentTimer <= countQuestions*TimeForAnsweringSec {
+				index := currentTimer / TimeForAnsweringSec
+				if currentTimer <= countQuestions*TimeForAnsweringSec && index < countQuestions {
 					if currentTimer%TimeForAnsweringSec == 0 {
-						currentQuestion = game.Test.Questions[currentTimer/TimeForAnsweringSec]
+						currentQuestion = game.Test.Questions[index]
 						broadcastTimer = TimeForAnsweringSec
 					}
 
