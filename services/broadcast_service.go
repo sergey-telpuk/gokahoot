@@ -55,7 +55,7 @@ func (s *BroadcastService) StartBroadcastGameIsBeingPlayed(gameCode string) erro
 }
 
 func (s *BroadcastService) BroadcastForWaitForJoiningGame(gameCode string, playerUUID string) error {
-	players, err := s.broadcastRepository.GetPlayersForPlayingGame(gameCode)
+	players, err := s.broadcastRepository.GetPlayersWaitForJoiningGame(gameCode)
 
 	if err != nil {
 		return err

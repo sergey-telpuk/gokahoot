@@ -10,20 +10,20 @@ import (
 )
 
 func main() {
-	services, err := services.New()
+	s, err := services.New()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	migrate(services)
+	migrate(s)
 
-	if err := server.Run(services); err != nil {
+	if err := server.Run(s); err != nil {
 		log.Fatal(err)
 	}
 	os.Exit(0)
 
-	defer services.Clean()
+	defer s.Clean()
 }
 
 func migrate(di *services.DI) {
