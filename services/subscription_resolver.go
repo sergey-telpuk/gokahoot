@@ -145,7 +145,6 @@ func (r *subscriptionResolver) OnDeletePlayerFromGame(ctx context.Context, gameC
 func (r *subscriptionResolver) OnWaitForStartingGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *StartGame, error) {
 	broadcastService := r.Di.Container.Get(ContainerNameBroadcastService).(*BroadcastService)
 	playerService := r.Di.Container.Get(ContainerNamePlayerService).(*PlayerService)
-	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
 
 	mPlayer, err := playerService.GetPlayerByUUID(playerUUID)
 
@@ -155,10 +154,6 @@ func (r *subscriptionResolver) OnWaitForStartingGame(ctx context.Context, gameCo
 
 	if mPlayer.Game.Code != gameCode {
 		return nil, errors.New(fmt.Sprintf("A playing game messsage: %v or error %v", "a palyer isnt belonged to game", err))
-	}
-
-	if status, err := gameService.IsPlayingGame(gameCode); status || err != nil {
-		return nil, errors.New(fmt.Sprintf("A joinging player messsage: %v or error %v", "a game isnt acivated", err))
 	}
 
 	uuid := guuid.New()
