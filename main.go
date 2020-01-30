@@ -29,10 +29,6 @@ func main() {
 func migrate(di *services.DI) {
 	sDB := di.Container.Get(db.ContainerName).(*db.Db)
 
-	if err := sDB.GetConn().Exec("PRAGMA foreign_keys=ON").Error; err != nil {
-		log.Fatalf("Connection was failed %v", err)
-	}
-
 	sDB.GetConn().AutoMigrate(
 		&models.Test{},
 		&models.Question{},

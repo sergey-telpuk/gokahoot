@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: go-kahoot-db
+    restart: always
+    environment:
+      - POSTGRES_USER=gokahoot
+      - POSTGRES_PASSWORD=gokahoot
+      - POSTGRES_DB=gokahoot
+      - PGDATA=/data/postgres
+    ports:
+      - 5433:5432
+    volumes:
+      - ./storage/postgres:/data/postgres
