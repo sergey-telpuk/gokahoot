@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/joho/godotenv"
 	"github.com/sergey-telpuk/gokahoot/db"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/server"
@@ -10,6 +11,7 @@ import (
 )
 
 func main() {
+	_ = godotenv.Load()
 	s, err := services.New()
 
 	if err != nil {

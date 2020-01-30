@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"log"
 	"os"
 	"time"
@@ -27,15 +28,17 @@ func Init() (*Db, error) {
 	var con *gorm.DB
 	var err error
 	driverDb := os.Getenv("DRIVER_DB")
+	databaseUrl := os.Getenv("DATABASE_URL")
+
 	if driverDb == "" {
 		driverDb = DefaultDriverDb
 	}
 
-	switch DefaultDriverDb {
+	switch driverDb {
 	case "sqlite3":
 		con, err = sqlite3()
 	default:
-		con, err = gorm.Open("postgres", "host=localhost port=5433 user=gokahoot dbname=gokahoot password=gokahoot sslmode=disable")
+		con, err = gorm.Open("postgres", databaseUrl)
 	}
 
 	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
