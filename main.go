@@ -37,5 +37,6 @@ func migrate(di *services.DI) {
 		&models.Answer{},
 		&models.Game{},
 		&models.Player{},
+		&models.PlayerAnswer{},
 	)
 }

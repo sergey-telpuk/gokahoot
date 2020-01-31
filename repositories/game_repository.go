@@ -41,7 +41,7 @@ func (r GameRepository) FindOne(query interface{}, args ...interface{}) (*models
 	return &model, nil
 }
 
-func (r *GameRepository) FindPlayers(m *models.Game) (*models.Game, error) {
+func (r GameRepository) FindPlayers(m *models.Game) (*models.Game, error) {
 
 	if err := r.db.GetConn().Preload("Players").
 		Find(&m).Error; err != nil {
@@ -51,7 +51,7 @@ func (r *GameRepository) FindPlayers(m *models.Game) (*models.Game, error) {
 
 	return m, nil
 }
-func (r *GameRepository) AddRelationsQuestionsAndPlayers(m *models.Game) (*models.Game, error) {
+func (r GameRepository) AddRelationsQuestionsAndPlayers(m *models.Game) (*models.Game, error) {
 
 	if err := r.db.GetConn().Preload("Players").
 		Preload("Test").

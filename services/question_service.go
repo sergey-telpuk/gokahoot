@@ -18,7 +18,7 @@ type QuestionService struct {
 	db *db.Db
 }
 
-func (s *QuestionService) CreateNewQuestion(
+func (s QuestionService) CreateNewQuestion(
 	uuid uuid.UUID,
 	testID int,
 	text string,
@@ -56,33 +56,33 @@ func (s *QuestionService) CreateNewQuestion(
 	})
 }
 
-func (s *QuestionService) FindByUuid(id string) (*models.Question, error) {
+func (s QuestionService) FindByUuid(id string) (*models.Question, error) {
 	return s.rq.FindOne("uuid = ?", id)
 }
 
-func (s *QuestionService) FindByID(id int) (*models.Question, error) {
+func (s QuestionService) FindByID(id int) (*models.Question, error) {
 	return s.rq.FindOne("id = ?", id)
 }
-func (s *QuestionService) DeleteByIDs(id ...int) error {
+func (s QuestionService) DeleteByIDs(id ...int) error {
 	return s.rq.Delete("id IN (?)", id)
 }
-func (s *QuestionService) DeleteByUUIDs(id ...string) error {
+func (s QuestionService) DeleteByUUIDs(id ...string) error {
 	return s.rq.Delete("uuid IN (?)", id)
 }
 
-func (s *QuestionService) FindAll() ([]*models.Question, error) {
+func (s QuestionService) FindAll() ([]*models.Question, error) {
 	return s.rq.FindAll()
 }
 
-func (s *QuestionService) UpdateByUUID(m *models.Question) (*models.Question, error) {
+func (s QuestionService) UpdateByUUID(m *models.Question) (*models.Question, error) {
 	return s.rq.Update(m)
 }
 
-func (s *QuestionService) FindAnswersBelongToQuestion(id int) ([]*models.Answer, error) {
+func (s QuestionService) FindAnswersBelongToQuestion(id int) ([]*models.Answer, error) {
 	return s.ra.FindByQuestionID(id)
 }
 
-func (s *QuestionService) GetQuestionByUUID(code string) (*models.Question, error) {
+func (s QuestionService) GetQuestionByUUID(code string) (*models.Question, error) {
 	m, err := s.FindByUuid(code)
 
 	if err != nil {
@@ -96,7 +96,7 @@ func (s *QuestionService) GetQuestionByUUID(code string) (*models.Question, erro
 	return m, nil
 }
 
-func (s *QuestionService) FindQuestionBelongToTest(id int) ([]*models.Question, error) {
+func (s QuestionService) FindQuestionBelongToTest(id int) ([]*models.Question, error) {
 	return s.rq.FindQuestionBelongToTest(id)
 }
 

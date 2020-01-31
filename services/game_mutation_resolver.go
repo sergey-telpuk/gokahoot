@@ -48,9 +48,9 @@ func (r *mutationResolver) StartGameByCode(ctx context.Context, code string) (*G
 		return nil, err
 	}
 
-	//if status, err := gameService.IsPlayingGame(game.Code); status || err != nil {
-	//	return nil, errors.New(fmt.Sprintf("A statring player messsage: %v or error %v", "a game has already started", err))
-	//}
+	if status, err := gameService.IsPlayingGame(game.Code); status || err != nil {
+		return nil, errors.New(fmt.Sprintf("A statring player messsage: %v or error %v", "a game has already started", err))
+	}
 
 	game.Status = models.GameInPlaying
 
@@ -125,18 +125,48 @@ func (r *mutationResolver) DeletePlayerFromGame(ctx context.Context, gameCode st
 	return &Status{Success: true}, nil
 }
 
-func (r *mutationResolver) AnswerQuestionByUUID(ctx context.Context, playerUUID string, questionUUID string, rightAnswer int) (bool, error) {
+func (r *mutationResolver) AnswerQuestionByUUID(ctx context.Context, playerUUID string, questionUUID string, answerID int) (*bool, error) {
 	questionService := r.Di.Container.Get(ContainerNameQuestionService).(*QuestionService)
+	playerService := r.Di.Container.Get(ContainerNamePlayerService).(*PlayerService)
+	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
+	answerService := r.Di.Container.Get(ContainerNameAnswerService).(*AnswerService)
+	right := true
+
+	player, err := playerService.GetPlayerByUUID(playerUUID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	ok, err := gameService.IsPlayingGame(player.Game.Code)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !ok {
+		return nil, errors.New(fmt.Sprintf("Game: %s", "such a game isnt being played"))
+	}
 
 	question, err := questionService.GetQuestionByUUID(questionUUID)
 
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	if question.RightAnswer == rightAnswer {
-		return true, nil
+	answer, err := answerService.GetAnswerByID(answerID)
+
+	if err != nil {
+		return nil, err
 	}
 
-	return false, nil
+	if question.RightAnswer == answer.Sequential {
+		right = true
+	}
+
+	if err := playerService.CreateNewPlayerAnswer(player.ID, player.Game.ID, question.ID, answer.ID, right); err != nil {
+		return nil, err
+	}
+
+	return &right, nil
 }

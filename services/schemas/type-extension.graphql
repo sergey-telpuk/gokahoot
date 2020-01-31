@@ -60,3 +60,19 @@ type BroadcastPlayer  {
 type StartGame  {
     gameCode:  String!
 }
+#report game
+
+type ReportGame {
+    code: String!
+    players: [ReportPlayer!]
+}
+
+type ReportPlayer {
+    Player: Player!
+    Answers: ReportAnswer!
+}
+
+type ReportAnswer {
+    Answer: Answer!
+    right: Boolean!
+}

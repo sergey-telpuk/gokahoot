@@ -69,3 +69,7 @@ func (r *queryResolver) ActivatedGameByCode(ctx context.Context, code string) (*
 
 	return mapGame(*game)
 }
+func (r *queryResolver) ReportGameByCode(ctx context.Context, code string) (*ReportGame, error) {
+
+	return nil, nil
+}

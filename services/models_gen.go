@@ -75,6 +75,21 @@ type Question struct {
 	Answers     []*Answer `json:"answers"`
 }
 
+type ReportAnswer struct {
+	Answer *Answer `json:"Answer"`
+	Right  bool    `json:"right"`
+}
+
+type ReportGame struct {
+	Code    string          `json:"code"`
+	Players []*ReportPlayer `json:"players"`
+}
+
+type ReportPlayer struct {
+	Player  *Player       `json:"Player"`
+	Answers *ReportAnswer `json:"Answers"`
+}
+
 type StartGame struct {
 	GameCode string `json:"gameCode"`
 }

@@ -84,6 +84,15 @@ func New() (*DI, error) {
 	}
 
 	if err := builder.Add(di.Def{
+		Name: repositories.ContainerNamePlayerAnswerRepository,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return repositories.InitPlayerAnswerRepository(ctn.Get(db.ContainerName).(*db.Db)), nil
+		},
+	}); err != nil {
+		return nil, errorsDI(err)
+	}
+
+	if err := builder.Add(di.Def{
 		Name: ContainerNameTestService,
 		Build: func(ctn di.Container) (interface{}, error) {
 			return InitTestService(ctn.Get(repositories.ContainerNameTestRepository).(*repositories.TestRepository)), nil
@@ -132,6 +141,7 @@ func New() (*DI, error) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			return InitPlayerService(
 				ctn.Get(repositories.ContainerNamePlayerRepository).(*repositories.PlayerRepository),
+				ctn.Get(repositories.ContainerNamePlayerAnswerRepository).(*repositories.PlayerAnswerRepository),
 			), nil
 		},
 	}); err != nil {

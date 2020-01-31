@@ -16,6 +16,7 @@ type Query {
     questionByUUID(id: String!): Question!
     activatedGames: [Game!]!
     activatedGameByCode(code: String!): Game!
+    reportGameByCode(code: String!): ReportGame!
 }
 
 
@@ -35,7 +36,7 @@ type Mutation {
     joinPlayerToGame(input: InputJoinPlayer!): Player!
     deletePlayerFromGame(gameCode: String!, playerUUID: String!): Status!
     startGameByCode(code: String!): Game!
-    answerQuestionByUUID(playerUUID: String!, questionUUID: String!, rightAnswer: Int!): Boolean!
+    answerQuestionByUUID(playerUUID: String!, questionUUID: String!, answerID: Int!): Boolean
 }
 
 #Subscriptions

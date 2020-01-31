@@ -77,7 +77,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		ActivateGame           func(childComplexity int, testUUID string) int
-		AnswerQuestionByUUID   func(childComplexity int, playerUUID string, questionUUID string, rightAnswer int) int
+		AnswerQuestionByUUID   func(childComplexity int, playerUUID string, questionUUID string, answerID int) int
 		CreateNewQuestion      func(childComplexity int, input NewQuestion) int
 		CreateNewTest          func(childComplexity int, input NewTest) int
 		DeactivateGameByCODEs  func(childComplexity int, codes []string) int
@@ -104,6 +104,7 @@ type ComplexityRoot struct {
 		ActivatedGames      func(childComplexity int) int
 		QuestionByID        func(childComplexity int, id int) int
 		QuestionByUUID      func(childComplexity int, id string) int
+		ReportGameByCode    func(childComplexity int, code string) int
 		TestByID            func(childComplexity int, id int) int
 		TestByUUID          func(childComplexity int, id string) int
 		Tests               func(childComplexity int) int
@@ -117,6 +118,21 @@ type ComplexityRoot struct {
 		TestID      func(childComplexity int) int
 		Text        func(childComplexity int) int
 		UUID        func(childComplexity int) int
+	}
+
+	ReportAnswer struct {
+		Answer func(childComplexity int) int
+		Right  func(childComplexity int) int
+	}
+
+	ReportGame struct {
+		Code    func(childComplexity int) int
+		Players func(childComplexity int) int
+	}
+
+	ReportPlayer struct {
+		Answers func(childComplexity int) int
+		Player  func(childComplexity int) int
 	}
 
 	StartGame struct {
@@ -160,7 +176,7 @@ type MutationResolver interface {
 	JoinPlayerToGame(ctx context.Context, input InputJoinPlayer) (*Player, error)
 	DeletePlayerFromGame(ctx context.Context, gameCode string, playerUUID string) (*Status, error)
 	StartGameByCode(ctx context.Context, code string) (*Game, error)
-	AnswerQuestionByUUID(ctx context.Context, playerUUID string, questionUUID string, rightAnswer int) (bool, error)
+	AnswerQuestionByUUID(ctx context.Context, playerUUID string, questionUUID string, answerID int) (*bool, error)
 }
 type QueryResolver interface {
 	Tests(ctx context.Context) ([]*Test, error)
@@ -170,6 +186,7 @@ type QueryResolver interface {
 	QuestionByUUID(ctx context.Context, id string) (*Question, error)
 	ActivatedGames(ctx context.Context) ([]*Game, error)
 	ActivatedGameByCode(ctx context.Context, code string) (*Game, error)
+	ReportGameByCode(ctx context.Context, code string) (*ReportGame, error)
 }
 type QuestionResolver interface {
 	Answers(ctx context.Context, obj *Question) ([]*Answer, error)
@@ -333,7 +350,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AnswerQuestionByUUID(childComplexity, args["playerUUID"].(string), args["questionUUID"].(string), args["rightAnswer"].(int)), true
+		return e.complexity.Mutation.AnswerQuestionByUUID(childComplexity, args["playerUUID"].(string), args["questionUUID"].(string), args["answerID"].(int)), true
 
 	case "Mutation.createNewQuestion":
 		if e.complexity.Mutation.CreateNewQuestion == nil {
@@ -555,6 +572,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.QuestionByUUID(childComplexity, args["id"].(string)), true
 
+	case "Query.reportGameByCode":
+		if e.complexity.Query.ReportGameByCode == nil {
+			break
+		}
+
+		args, err := ec.field_Query_reportGameByCode_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ReportGameByCode(childComplexity, args["code"].(string)), true
+
 	case "Query.testByID":
 		if e.complexity.Query.TestByID == nil {
 			break
@@ -634,6 +663,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Question.UUID(childComplexity), true
+
+	case "ReportAnswer.Answer":
+		if e.complexity.ReportAnswer.Answer == nil {
+			break
+		}
+
+		return e.complexity.ReportAnswer.Answer(childComplexity), true
+
+	case "ReportAnswer.right":
+		if e.complexity.ReportAnswer.Right == nil {
+			break
+		}
+
+		return e.complexity.ReportAnswer.Right(childComplexity), true
+
+	case "ReportGame.code":
+		if e.complexity.ReportGame.Code == nil {
+			break
+		}
+
+		return e.complexity.ReportGame.Code(childComplexity), true
+
+	case "ReportGame.players":
+		if e.complexity.ReportGame.Players == nil {
+			break
+		}
+
+		return e.complexity.ReportGame.Players(childComplexity), true
+
+	case "ReportPlayer.Answers":
+		if e.complexity.ReportPlayer.Answers == nil {
+			break
+		}
+
+		return e.complexity.ReportPlayer.Answers(childComplexity), true
+
+	case "ReportPlayer.Player":
+		if e.complexity.ReportPlayer.Player == nil {
+			break
+		}
+
+		return e.complexity.ReportPlayer.Player(childComplexity), true
 
 	case "StartGame.gameCode":
 		if e.complexity.StartGame.GameCode == nil {
@@ -859,7 +930,7 @@ type Mutation {
 	joinPlayerToGame(input: InputJoinPlayer!): Player!
 	deletePlayerFromGame(gameCode: String!, playerUUID: String!): Status!
 	startGameByCode(code: String!): Game!
-	answerQuestionByUUID(playerUUID: String!, questionUUID: String!, rightAnswer: Int!): Boolean!
+	answerQuestionByUUID(playerUUID: String!, questionUUID: String!, answerID: Int!): Boolean
 }
 input NewQuestion {
 	testUUID: String!
@@ -884,6 +955,7 @@ type Query {
 	questionByUUID(id: String!): Question!
 	activatedGames: [Game!]!
 	activatedGameByCode(code: String!): Game!
+	reportGameByCode(code: String!): ReportGame!
 }
 type Question {
 	ID: Int!
@@ -893,6 +965,18 @@ type Question {
 	imgURL: String
 	rightAnswer: Int!
 	answers: [Answer!]!
+}
+type ReportAnswer {
+	Answer: Answer!
+	right: Boolean!
+}
+type ReportGame {
+	code: String!
+	players: [ReportPlayer!]
+}
+type ReportPlayer {
+	Player: Player!
+	Answers: ReportAnswer!
 }
 type StartGame {
 	gameCode: String!
@@ -971,13 +1055,13 @@ func (ec *executionContext) field_Mutation_answerQuestionByUUID_args(ctx context
 	}
 	args["questionUUID"] = arg1
 	var arg2 int
-	if tmp, ok := rawArgs["rightAnswer"]; ok {
+	if tmp, ok := rawArgs["answerID"]; ok {
 		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["rightAnswer"] = arg2
+	args["answerID"] = arg2
 	return args, nil
 }
 
@@ -1240,6 +1324,20 @@ func (ec *executionContext) field_Query_questionByUUID_args(ctx context.Context,
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_reportGameByCode_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["code"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["code"] = arg0
 	return args, nil
 }
 
@@ -2531,21 +2629,18 @@ func (ec *executionContext) _Mutation_answerQuestionByUUID(ctx context.Context, 
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AnswerQuestionByUUID(rctx, args["playerUUID"].(string), args["questionUUID"].(string), args["rightAnswer"].(int))
+		return ec.resolvers.Mutation().AnswerQuestionByUUID(rctx, args["playerUUID"].(string), args["questionUUID"].(string), args["answerID"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Player_UUID(ctx context.Context, field graphql.CollectedField, obj *Player) (ret graphql.Marshaler) {
@@ -2923,6 +3018,47 @@ func (ec *executionContext) _Query_activatedGameByCode(ctx context.Context, fiel
 	return ec.marshalNGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐGame(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_reportGameByCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_reportGameByCode_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ReportGameByCode(rctx, args["code"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ReportGame)
+	fc.Result = res
+	return ec.marshalNReportGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportGame(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3225,6 +3361,207 @@ func (ec *executionContext) _Question_answers(ctx context.Context, field graphql
 	res := resTmp.([]*Answer)
 	fc.Result = res
 	return ec.marshalNAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐAnswerᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ReportAnswer_Answer(ctx context.Context, field graphql.CollectedField, obj *ReportAnswer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "ReportAnswer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Answer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Answer)
+	fc.Result = res
+	return ec.marshalNAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐAnswer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ReportAnswer_right(ctx context.Context, field graphql.CollectedField, obj *ReportAnswer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "ReportAnswer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Right, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ReportGame_code(ctx context.Context, field graphql.CollectedField, obj *ReportGame) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "ReportGame",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Code, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ReportGame_players(ctx context.Context, field graphql.CollectedField, obj *ReportGame) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "ReportGame",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Players, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ReportPlayer)
+	fc.Result = res
+	return ec.marshalOReportPlayer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayerᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ReportPlayer_Player(ctx context.Context, field graphql.CollectedField, obj *ReportPlayer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "ReportPlayer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Player, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Player)
+	fc.Result = res
+	return ec.marshalNPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐPlayer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ReportPlayer_Answers(ctx context.Context, field graphql.CollectedField, obj *ReportPlayer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "ReportPlayer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Answers, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ReportAnswer)
+	fc.Result = res
+	return ec.marshalNReportAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportAnswer(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _StartGame_gameCode(ctx context.Context, field graphql.CollectedField, obj *StartGame) (ret graphql.Marshaler) {
@@ -5175,9 +5512,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "answerQuestionByUUID":
 			out.Values[i] = ec._Mutation_answerQuestionByUUID(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5339,6 +5673,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "reportGameByCode":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_reportGameByCode(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -5406,6 +5754,99 @@ func (ec *executionContext) _Question(ctx context.Context, sel ast.SelectionSet,
 				}
 				return res
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var reportAnswerImplementors = []string{"ReportAnswer"}
+
+func (ec *executionContext) _ReportAnswer(ctx context.Context, sel ast.SelectionSet, obj *ReportAnswer) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, reportAnswerImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ReportAnswer")
+		case "Answer":
+			out.Values[i] = ec._ReportAnswer_Answer(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "right":
+			out.Values[i] = ec._ReportAnswer_right(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var reportGameImplementors = []string{"ReportGame"}
+
+func (ec *executionContext) _ReportGame(ctx context.Context, sel ast.SelectionSet, obj *ReportGame) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, reportGameImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ReportGame")
+		case "code":
+			out.Values[i] = ec._ReportGame_code(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "players":
+			out.Values[i] = ec._ReportGame_players(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var reportPlayerImplementors = []string{"ReportPlayer"}
+
+func (ec *executionContext) _ReportPlayer(ctx context.Context, sel ast.SelectionSet, obj *ReportPlayer) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, reportPlayerImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ReportPlayer")
+		case "Player":
+			out.Values[i] = ec._ReportPlayer_Player(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "Answers":
+			out.Values[i] = ec._ReportPlayer_Answers(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6095,6 +6536,48 @@ func (ec *executionContext) marshalNQuestion2ᚖgithubᚗcomᚋsergeyᚑtelpuk�
 	return ec._Question(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNReportAnswer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportAnswer(ctx context.Context, sel ast.SelectionSet, v ReportAnswer) graphql.Marshaler {
+	return ec._ReportAnswer(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNReportAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportAnswer(ctx context.Context, sel ast.SelectionSet, v *ReportAnswer) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._ReportAnswer(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNReportGame2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportGame(ctx context.Context, sel ast.SelectionSet, v ReportGame) graphql.Marshaler {
+	return ec._ReportGame(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNReportGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportGame(ctx context.Context, sel ast.SelectionSet, v *ReportGame) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._ReportGame(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNReportPlayer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayer(ctx context.Context, sel ast.SelectionSet, v ReportPlayer) graphql.Marshaler {
+	return ec._ReportPlayer(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNReportPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayer(ctx context.Context, sel ast.SelectionSet, v *ReportPlayer) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._ReportPlayer(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNStartGame2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐStartGame(ctx context.Context, sel ast.SelectionSet, v StartGame) graphql.Marshaler {
 	return ec._StartGame(ctx, sel, &v)
 }
@@ -6653,6 +7136,46 @@ func (ec *executionContext) marshalOQuestion2ᚕᚖgithubᚗcomᚋsergeyᚑtelpu
 				defer wg.Done()
 			}
 			ret[i] = ec.marshalNQuestion2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐQuestion(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOReportPlayer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayerᚄ(ctx context.Context, sel ast.SelectionSet, v []*ReportPlayer) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNReportPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayer(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
