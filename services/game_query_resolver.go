@@ -71,7 +71,7 @@ func (r *queryResolver) ActivatedGameByCode(ctx context.Context, code string) (*
 }
 func (r *queryResolver) ReportGameByCode(ctx context.Context, code string) (*ReportGame, error) {
 	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
-	playerService := r.Di.Container.Get(ContainerNameGameService).(*PlayerService)
+	playerService := r.Di.Container.Get(ContainerNamePlayerService).(*PlayerService)
 
 	game, err := gameService.GetGameByCode(code)
 

@@ -76,6 +76,7 @@ func (r PlayerRepository) Find(query interface{}, args ...interface{}) ([]models
 
 	if err := r.db.GetConn().Preload("Game").
 		Preload("Game.Test").
+		Preload("PlayerAnswers").
 		Where(query, args...).Find(&_models).Limit(10000).Error; err != nil {
 		return nil, errorPlayer(err)
 	}
