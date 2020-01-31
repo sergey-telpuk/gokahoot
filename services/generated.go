@@ -664,7 +664,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Question.UUID(childComplexity), true
 
-	case "ReportAnswer.Answer":
+	case "ReportAnswer.answer":
 		if e.complexity.ReportAnswer.Answer == nil {
 			break
 		}
@@ -692,14 +692,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ReportGame.Players(childComplexity), true
 
-	case "ReportPlayer.Answers":
+	case "ReportPlayer.answers":
 		if e.complexity.ReportPlayer.Answers == nil {
 			break
 		}
 
 		return e.complexity.ReportPlayer.Answers(childComplexity), true
 
-	case "ReportPlayer.Player":
+	case "ReportPlayer.player":
 		if e.complexity.ReportPlayer.Player == nil {
 			break
 		}
@@ -967,7 +967,7 @@ type Question {
 	answers: [Answer!]!
 }
 type ReportAnswer {
-	Answer: Answer!
+	answer: Answer!
 	right: Boolean!
 }
 type ReportGame {
@@ -975,8 +975,8 @@ type ReportGame {
 	players: [ReportPlayer!]!
 }
 type ReportPlayer {
-	Player: Player!
-	Answers: [ReportAnswer!]!
+	player: Player!
+	answers: [ReportAnswer!]!
 }
 type StartGame {
 	gameCode: String!
@@ -3363,7 +3363,7 @@ func (ec *executionContext) _Question_answers(ctx context.Context, field graphql
 	return ec.marshalNAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐAnswerᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ReportAnswer_Answer(ctx context.Context, field graphql.CollectedField, obj *ReportAnswer) (ret graphql.Marshaler) {
+func (ec *executionContext) _ReportAnswer_answer(ctx context.Context, field graphql.CollectedField, obj *ReportAnswer) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3499,7 +3499,7 @@ func (ec *executionContext) _ReportGame_players(ctx context.Context, field graph
 	return ec.marshalNReportPlayer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayerᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ReportPlayer_Player(ctx context.Context, field graphql.CollectedField, obj *ReportPlayer) (ret graphql.Marshaler) {
+func (ec *executionContext) _ReportPlayer_player(ctx context.Context, field graphql.CollectedField, obj *ReportPlayer) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3533,7 +3533,7 @@ func (ec *executionContext) _ReportPlayer_Player(ctx context.Context, field grap
 	return ec.marshalNPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐPlayer(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ReportPlayer_Answers(ctx context.Context, field graphql.CollectedField, obj *ReportPlayer) (ret graphql.Marshaler) {
+func (ec *executionContext) _ReportPlayer_answers(ctx context.Context, field graphql.CollectedField, obj *ReportPlayer) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -5779,8 +5779,8 @@ func (ec *executionContext) _ReportAnswer(ctx context.Context, sel ast.Selection
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ReportAnswer")
-		case "Answer":
-			out.Values[i] = ec._ReportAnswer_Answer(ctx, field, obj)
+		case "answer":
+			out.Values[i] = ec._ReportAnswer_answer(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -5843,13 +5843,13 @@ func (ec *executionContext) _ReportPlayer(ctx context.Context, sel ast.Selection
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ReportPlayer")
-		case "Player":
-			out.Values[i] = ec._ReportPlayer_Player(ctx, field, obj)
+		case "player":
+			out.Values[i] = ec._ReportPlayer_player(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "Answers":
-			out.Values[i] = ec._ReportPlayer_Answers(ctx, field, obj)
+		case "answers":
+			out.Values[i] = ec._ReportPlayer_answers(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

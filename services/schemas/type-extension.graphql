@@ -68,11 +68,11 @@ type ReportGame {
 }
 
 type ReportPlayer {
-    Player: Player!
-    Answers: [ReportAnswer!]!
+    player: Player!
+    answers: [ReportAnswer!]!
 }
 
 type ReportAnswer {
-    Answer: Answer!
+    answer: Answer!
     right: Boolean!
 }
