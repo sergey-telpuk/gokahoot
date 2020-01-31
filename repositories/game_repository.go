@@ -54,6 +54,7 @@ func (r *GameRepository) FindPlayers(m *models.Game) (*models.Game, error) {
 func (r *GameRepository) AddRelationsQuestionsAndPlayers(m *models.Game) (*models.Game, error) {
 
 	if err := r.db.GetConn().Preload("Players").
+		Preload("Test").
 		Preload("Test.Questions").
 		Preload("Test.Questions.Answers").
 		Find(&m).Error; err != nil {
@@ -81,10 +82,27 @@ func (r GameRepository) Delete(query interface{}, args ...interface{}) error {
 	return nil
 }
 
+func (r GameRepository) Find(query interface{}, args ...interface{}) ([]*models.Game, error) {
+	var _models []*models.Game
+
+	if err := r.db.GetConn().Preload("Players").
+		Preload("Test").
+		Preload("Test.Questions").
+		Preload("Test.Questions.Answers").
+		Where(query, args...).Find(&_models).Limit(10000).Error; err != nil {
+		return nil, errorPlayer(err)
+	}
+
+	return _models, nil
+}
+
 func (r GameRepository) FindAll() ([]*models.Game, error) {
 	var _models []*models.Game
 
-	if err := r.db.GetConn().Preload("Test").
+	if err := r.db.GetConn().Preload("Players").
+		Preload("Test").
+		Preload("Test.Questions").
+		Preload("Test.Questions.Answers").
 		Find(&_models).Limit(1000).Error; err != nil {
 		return nil, errorGame(err)
 	}

@@ -99,6 +99,10 @@ func (s *GameService) FindAll() ([]*models.Game, error) {
 	return s.r.FindAll()
 }
 
+func (s *GameService) FindAllWitchAreWaitingForJoining() ([]*models.Game, error) {
+	return s.r.Find("games.status = ?", models.GameInWaitingPlayers)
+}
+
 func InitGameService(r *repositories.GameRepository) *GameService {
 	return &GameService{
 		r: r,

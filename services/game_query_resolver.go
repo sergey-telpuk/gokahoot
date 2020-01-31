@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 )
 
 func (r *gameResolver) Players(ctx context.Context, game *Game) ([]*Player, error) {
@@ -33,7 +34,7 @@ func (r *queryResolver) ActivatedGames(ctx context.Context) ([]*Game, error) {
 	var rGames []*Game
 	service := r.Di.Container.Get(ContainerNameGameService).(*GameService)
 
-	games, err := service.FindAll()
+	games, err := service.FindAllWitchAreWaitingForJoining()
 
 	if err != nil {
 		return nil, err
@@ -54,6 +55,16 @@ func (r *queryResolver) ActivatedGameByCode(ctx context.Context, code string) (*
 
 	if err != nil {
 		return nil, err
+	}
+
+	ok, err := service.IsWaitingForJoining(game.Code)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !ok {
+		return nil, errors.New("such a game isnt waiting")
 	}
 
 	return mapGame(*game)
