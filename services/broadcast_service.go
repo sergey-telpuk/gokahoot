@@ -251,7 +251,8 @@ func (s *BroadcastService) BroadcastTimerPlayers(timer int, gameCode string, que
 	for _, player := range players {
 		select {
 		case player.EventPlayingGame <- &BroadcastPlayingGame{
-			Timer:               timer,
+			CurrentTimeSec:      timer,
+			StartTimeSec:        TimeForAnsweringSec,
 			GameCode:            gameCode,
 			GameStatusEnum:      status,
 			CurrentQuestionUUID: questionUUID,

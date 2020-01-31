@@ -43,8 +43,9 @@ type Status {
 
 
 type BroadcastPlayingGame  {
-    timer: Int!
+    currentTimeSec: Int!
     gameCode:  String!
+    startTimeSec:  Int!
     currentQuestionUUID: String!
     gameStatusEnum: GameStatus!
 }

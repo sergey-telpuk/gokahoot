@@ -22,8 +22,9 @@ type BroadcastPlayer struct {
 }
 
 type BroadcastPlayingGame struct {
-	Timer               int        `json:"timer"`
+	CurrentTimeSec      int        `json:"currentTimeSec"`
 	GameCode            string     `json:"gameCode"`
+	StartTimeSec        int        `json:"startTimeSec"`
 	CurrentQuestionUUID string     `json:"currentQuestionUUID"`
 	GameStatusEnum      GameStatus `json:"gameStatusEnum"`
 }
