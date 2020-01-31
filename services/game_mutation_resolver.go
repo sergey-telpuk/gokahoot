@@ -130,7 +130,7 @@ func (r *mutationResolver) AnswerQuestionByUUID(ctx context.Context, playerUUID 
 	playerService := r.Di.Container.Get(ContainerNamePlayerService).(*PlayerService)
 	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
 	answerService := r.Di.Container.Get(ContainerNameAnswerService).(*AnswerService)
-	right := true
+	right := false
 
 	player, err := playerService.GetPlayerByUUID(playerUUID)
 
