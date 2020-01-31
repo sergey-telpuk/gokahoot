@@ -45,7 +45,7 @@ func (r *Resolver) Subscription() SubscriptionResolver {
 	return &subscriptionResolver{r}
 }
 
-func mapQuestion(m *models.Question) (*Question, error) {
+func mapQuestion(m models.Question) (*Question, error) {
 
 	return &Question{
 		ID:          m.ID,
@@ -57,7 +57,7 @@ func mapQuestion(m *models.Question) (*Question, error) {
 	}, nil
 }
 
-func mapAnswer(m *models.Answer) (*Answer, error) {
+func mapAnswer(m models.Answer) (*Answer, error) {
 
 	return &Answer{
 		ID:         m.ID,
@@ -87,13 +87,42 @@ func mapGame(m models.Game) (*Game, error) {
 	}, nil
 
 }
-func mapPlayer(m *models.Player) (*Player, error) {
+func mapPlayer(m models.Player) (*Player, error) {
 	game, _ := mapGame(m.Game)
 
 	return &Player{
 		UUID: m.UUID,
 		Name: m.Name,
 		Game: game,
+	}, nil
+
+}
+
+func mapReport(m models.Game) (*ReportGame, error) {
+	game, _ := mapGame(m)
+	var players []*ReportPlayer
+
+	for _, _p := range m.Players {
+		var ra []*ReportAnswer
+
+		_mapPl, _ := mapPlayer(_p)
+		for _, _pa := range _p.PlayerAnswers {
+			_mapAns, _ := mapAnswer(_pa.Answer)
+			ra = append(ra, &ReportAnswer{
+				Answer: _mapAns,
+				Right:  _pa.WasRight,
+			})
+		}
+
+		players = append(players, &ReportPlayer{
+			Player:  _mapPl,
+			Answers: ra,
+		})
+	}
+
+	return &ReportGame{
+		Code:    game.Code,
+		Players: players,
 	}, nil
 
 }

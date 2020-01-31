@@ -972,11 +972,11 @@ type ReportAnswer {
 }
 type ReportGame {
 	code: String!
-	players: [ReportPlayer!]
+	players: [ReportPlayer!]!
 }
 type ReportPlayer {
 	Player: Player!
-	Answers: ReportAnswer!
+	Answers: [ReportAnswer!]!
 }
 type StartGame {
 	gameCode: String!
@@ -3489,11 +3489,14 @@ func (ec *executionContext) _ReportGame_players(ctx context.Context, field graph
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.([]*ReportPlayer)
 	fc.Result = res
-	return ec.marshalOReportPlayer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayerᚄ(ctx, field.Selections, res)
+	return ec.marshalNReportPlayer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ReportPlayer_Player(ctx context.Context, field graphql.CollectedField, obj *ReportPlayer) (ret graphql.Marshaler) {
@@ -3559,9 +3562,9 @@ func (ec *executionContext) _ReportPlayer_Answers(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*ReportAnswer)
+	res := resTmp.([]*ReportAnswer)
 	fc.Result = res
-	return ec.marshalNReportAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportAnswer(ctx, field.Selections, res)
+	return ec.marshalNReportAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportAnswerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _StartGame_gameCode(ctx context.Context, field graphql.CollectedField, obj *StartGame) (ret graphql.Marshaler) {
@@ -5815,6 +5818,9 @@ func (ec *executionContext) _ReportGame(ctx context.Context, sel ast.SelectionSe
 			}
 		case "players":
 			out.Values[i] = ec._ReportGame_players(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6540,6 +6546,43 @@ func (ec *executionContext) marshalNReportAnswer2githubᚗcomᚋsergeyᚑtelpuk�
 	return ec._ReportAnswer(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNReportAnswer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportAnswerᚄ(ctx context.Context, sel ast.SelectionSet, v []*ReportAnswer) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNReportAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportAnswer(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalNReportAnswer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportAnswer(ctx context.Context, sel ast.SelectionSet, v *ReportAnswer) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -6566,6 +6609,43 @@ func (ec *executionContext) marshalNReportGame2ᚖgithubᚗcomᚋsergeyᚑtelpuk
 
 func (ec *executionContext) marshalNReportPlayer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayer(ctx context.Context, sel ast.SelectionSet, v ReportPlayer) graphql.Marshaler {
 	return ec._ReportPlayer(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNReportPlayer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayerᚄ(ctx context.Context, sel ast.SelectionSet, v []*ReportPlayer) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNReportPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayer(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) marshalNReportPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayer(ctx context.Context, sel ast.SelectionSet, v *ReportPlayer) graphql.Marshaler {
@@ -7136,46 +7216,6 @@ func (ec *executionContext) marshalOQuestion2ᚕᚖgithubᚗcomᚋsergeyᚑtelpu
 				defer wg.Done()
 			}
 			ret[i] = ec.marshalNQuestion2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐQuestion(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
-func (ec *executionContext) marshalOReportPlayer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayerᚄ(ctx context.Context, sel ast.SelectionSet, v []*ReportPlayer) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNReportPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportPlayer(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)

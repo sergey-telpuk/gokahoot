@@ -14,7 +14,7 @@ func (r *testResolver) Questions(ctx context.Context, obj *Test) ([]*Question, e
 	}
 
 	for _, q := range mQuestion {
-		mapped, _ := mapQuestion(q)
+		mapped, _ := mapQuestion(*q)
 		rQuestion = append(rQuestion, mapped)
 	}
 

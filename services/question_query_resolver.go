@@ -14,7 +14,7 @@ func (r *questionResolver) Answers(ctx context.Context, obj *Question) ([]*Answe
 	}
 
 	for _, answer := range mAnswer {
-		mapped, _ := mapAnswer(answer)
+		mapped, _ := mapAnswer(*answer)
 		rAnswer = append(rAnswer, mapped)
 	}
 
@@ -30,7 +30,7 @@ func (r *queryResolver) QuestionByID(ctx context.Context, id int) (*Question, er
 		return nil, err
 	}
 
-	return mapQuestion(mQuestion)
+	return mapQuestion(*mQuestion)
 }
 
 func (r *queryResolver) QuestionByUUID(ctx context.Context, id string) (*Question, error) {
@@ -42,5 +42,5 @@ func (r *queryResolver) QuestionByUUID(ctx context.Context, id string) (*Questio
 		return nil, err
 	}
 
-	return mapQuestion(mQuestion)
+	return mapQuestion(*mQuestion)
 }

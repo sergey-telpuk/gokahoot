@@ -86,8 +86,8 @@ type ReportGame struct {
 }
 
 type ReportPlayer struct {
-	Player  *Player       `json:"Player"`
-	Answers *ReportAnswer `json:"Answers"`
+	Player  *Player         `json:"Player"`
+	Answers []*ReportAnswer `json:"Answers"`
 }
 
 type StartGame struct {

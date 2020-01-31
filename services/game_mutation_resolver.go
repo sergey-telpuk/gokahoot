@@ -101,7 +101,7 @@ func (r *mutationResolver) JoinPlayerToGame(ctx context.Context, input InputJoin
 		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
 	}
 
-	return mapPlayer(player)
+	return mapPlayer(*player)
 }
 
 func (r *mutationResolver) DeletePlayerFromGame(ctx context.Context, gameCode string, playerUUID string) (*Status, error) {

@@ -44,7 +44,7 @@ func (r *mutationResolver) CreateNewQuestion(ctx context.Context, input NewQuest
 		return nil, err
 	}
 
-	return mapQuestion(question)
+	return mapQuestion(*question)
 }
 
 func (r *mutationResolver) DeleteQuestionByID(ctx context.Context, ids []int) (*Status, error) {
@@ -95,7 +95,7 @@ func (r *mutationResolver) UpdateQuestionsByUUIDs(ctx context.Context, testUUID 
 		if _, err := questionService.UpdateByUUID(mQuestion); err != nil {
 			return nil, err
 		}
-		mapped, err := mapQuestion(mQuestion)
+		mapped, err := mapQuestion(*mQuestion)
 
 		if err != nil {
 			return nil, err
@@ -147,7 +147,7 @@ func (r *mutationResolver) UpdateAnswersByIDs(ctx context.Context, questionUUID 
 			return nil, err
 		}
 
-		mapped, err := mapAnswer(mAnswer)
+		mapped, err := mapAnswer(*mAnswer)
 
 		result = append(result, mapped)
 	}

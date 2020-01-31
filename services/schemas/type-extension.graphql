@@ -64,12 +64,12 @@ type StartGame  {
 
 type ReportGame {
     code: String!
-    players: [ReportPlayer!]
+    players: [ReportPlayer!]!
 }
 
 type ReportPlayer {
     Player: Player!
-    Answers: ReportAnswer!
+    Answers: [ReportAnswer!]!
 }
 
 type ReportAnswer {
