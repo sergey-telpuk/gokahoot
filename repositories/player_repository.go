@@ -59,8 +59,8 @@ func (r PlayerRepository) Delete(query interface{}, args ...interface{}) error {
 	return nil
 }
 
-func (r PlayerRepository) FindAll() ([]*models.Player, error) {
-	var _models []*models.Player
+func (r PlayerRepository) FindAll() ([]models.Player, error) {
+	var _models []models.Player
 
 	if err := r.db.GetConn().Preload("Game").
 		Preload("Game.Test").
@@ -71,8 +71,8 @@ func (r PlayerRepository) FindAll() ([]*models.Player, error) {
 	return _models, nil
 }
 
-func (r PlayerRepository) Find(query interface{}, args ...interface{}) ([]*models.Player, error) {
-	var _models []*models.Player
+func (r PlayerRepository) Find(query interface{}, args ...interface{}) ([]models.Player, error) {
+	var _models []models.Player
 
 	if err := r.db.GetConn().Preload("Game").
 		Preload("Game.Test").
@@ -83,7 +83,7 @@ func (r PlayerRepository) Find(query interface{}, args ...interface{}) ([]*model
 	return _models, nil
 }
 
-func (r PlayerRepository) FindQuestionBelongToGame(id int) ([]*models.Player, error) {
+func (r PlayerRepository) FindQuestionBelongToGame(id int) ([]models.Player, error) {
 	return r.Find("players.game_id = ?", id)
 }
 

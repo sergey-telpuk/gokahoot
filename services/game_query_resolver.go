@@ -23,7 +23,7 @@ func (r *gameResolver) Players(ctx context.Context, game *Game) ([]*Player, erro
 	}
 
 	for _, m := range mPlayers {
-		mapped, _ := mapPlayer(*m)
+		mapped, _ := mapPlayer(m)
 		rModels = append(rModels, mapped)
 	}
 
@@ -71,6 +71,7 @@ func (r *queryResolver) ActivatedGameByCode(ctx context.Context, code string) (*
 }
 func (r *queryResolver) ReportGameByCode(ctx context.Context, code string) (*ReportGame, error) {
 	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
+	playerService := r.Di.Container.Get(ContainerNameGameService).(*PlayerService)
 
 	game, err := gameService.GetGameByCode(code)
 
@@ -87,6 +88,14 @@ func (r *queryResolver) ReportGameByCode(ctx context.Context, code string) (*Rep
 	if !ok {
 		return nil, errors.New("such a game isnt finished")
 	}
+
+	players, err := playerService.FindPlayersBelongToGame(game.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	game.Players = players
 
 	return mapReport(*game)
 }

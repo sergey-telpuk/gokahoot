@@ -71,11 +71,11 @@ func (s PlayerService) DeleteByIDs(id ...int) error {
 	return s.rpl.Delete("players.id IN (?)", id)
 }
 
-func (s PlayerService) FindAll() ([]*models.Player, error) {
+func (s PlayerService) FindAll() ([]models.Player, error) {
 	return s.rpl.FindAll()
 }
 
-func (s PlayerService) FindPlayersBelongToGame(id int) ([]*models.Player, error) {
+func (s PlayerService) FindPlayersBelongToGame(id int) ([]models.Player, error) {
 	return s.rpl.FindQuestionBelongToGame(id)
 }
 
