@@ -171,6 +171,31 @@ func (r *mutationResolver) AnswerQuestionByUUID(ctx context.Context, playerUUID 
 	return &right, nil
 }
 
-func (r *mutationResolver) SendMessageToChat(ctx context.Context, gameCode string, playerUUID string, message string) (*Message, error) {
-	return nil, nil
+func (r *mutationResolver) SendMessageToChat(ctx context.Context, playerUUID string, message string) (*ChatMessage, error) {
+	playerService := r.Di.Container.Get(ContainerNamePlayerService).(*PlayerService)
+	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
+	broadcastService := r.Di.Container.Get(ContainerNameBroadcastService).(*BroadcastService)
+	uuid := guuid.New()
+
+	player, err := playerService.GetPlayerByUUID(playerUUID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err := gameService.CreateNewMessageOfChat(uuid, player.GameID, player.ID, message); err != nil {
+		return nil, err
+	}
+
+	chatMessage, err := gameService.GetChatMessageByUUID(uuid.String())
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err := broadcastService.BroadcastMessageToChatOFGame(chatMessage); err != nil {
+		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
+	}
+
+	return mapChatMessage(*chatMessage)
 }

@@ -59,7 +59,7 @@ func migrate(di *services.DI) {
 
 				question := &models.Question{
 					UUID:        guuid.New().String(),
-					Text:        "FFFFF",
+					Text:        "Question",
 					TestID:      test.ID,
 					RightAnswer: 0,
 				}

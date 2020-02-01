@@ -60,7 +60,9 @@ func (r TestRepository) Delete(query interface{}, args ...interface{}) error {
 func (r TestRepository) FindAll() ([]*models.Test, error) {
 	var _models []*models.Test
 
-	if err := r.db.GetConn().Find(&_models).Limit(1000).Error; err != nil {
+	if err := r.db.GetConn().
+		Limit(10000).
+		Find(&_models).Error; err != nil {
 		return nil, errorTest(err)
 	}
 

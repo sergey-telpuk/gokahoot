@@ -92,7 +92,9 @@ func (r PlayerAnswerRepository) Find(query interface{}, args ...interface{}) ([]
 		Preload("Game").
 		Preload("Question").
 		Preload("Answer").
-		Where(query, args...).Find(&_models).Limit(10000).Error; err != nil {
+		Where(query, args...).
+		Limit(10000).
+		Find(&_models).Error; err != nil {
 		return nil, errorPlayerAnswerRepository(err)
 	}
 
@@ -106,7 +108,8 @@ func (r PlayerAnswerRepository) FindAll() ([]*models.PlayerAnswer, error) {
 		Preload("Game").
 		Preload("Question").
 		Preload("Answer").
-		Find(&_models).Limit(1000).Error; err != nil {
+		Limit(10000).
+		Find(&_models).Error; err != nil {
 		return nil, errorPlayerAnswerRepository(err)
 	}
 

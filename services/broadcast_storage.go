@@ -138,6 +138,23 @@ func (r *BroadcastRepository) GetPlayersForDeletingGame(gameCode string) ([]*Sto
 
 	return players, nil
 }
+func (r *BroadcastRepository) GetPlayersForSendingToChatOfGame(gameCode string) ([]*StoragePlayer, error) {
+	var players []*StoragePlayer
+	game, err := r.GetGame(gameCode)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, _player := range game.Players {
+		if _player.EventChatGame == nil {
+			continue
+		}
+		players = append(players, _player)
+	}
+
+	return players, nil
+}
 
 func (r *BroadcastRepository) DeleteGame(gameCode string) {
 	_, ok := r.Games[gameCode]

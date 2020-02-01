@@ -50,7 +50,8 @@ func (r QuestionRepository) Find(query interface{}, args ...interface{}) ([]*mod
 	if err := r.db.GetConn().
 		Preload("Answers").
 		Where(query, args...).
-		Find(&_models).Limit(10000).Error; err != nil {
+		Limit(10000).
+		Find(&_models).Error; err != nil {
 		return nil, errorQuestion(err)
 	}
 
@@ -75,7 +76,8 @@ func (r QuestionRepository) FindAll() ([]*models.Question, error) {
 
 	if err := r.db.GetConn().
 		Preload("Answers").
-		Find(&_models).Limit(10000).Error; err != nil {
+		Limit(10000).
+		Find(&_models).Error; err != nil {
 		return nil, errorQuestion(err)
 	}
 

@@ -17,6 +17,7 @@ type Query {
     activatedGames: [Game!]!
     activatedGameByCode(code: String!): Game!
     reportGameByCode(code: String!): ReportGame!
+    chatMessagesOfGameByCode(code: String!, offset: Int! = 0, limit: Int! = 100): [ChatMessage!]!
 }
 
 
@@ -37,7 +38,7 @@ type Mutation {
     deletePlayerFromGame(gameCode: String!, playerUUID: String!): Status!
     startGameByCode(code: String!): Game!
     answerQuestionByUUID(playerUUID: String!, questionUUID: String!, answerID: Int!): Boolean
-    sendMessageToChat(gameCode: String!, playerUUID: String!, message: String!): Message!
+    sendMessageToChat(playerUUID: String!, message: String!): ChatMessage!
 }
 
 #Subscriptions

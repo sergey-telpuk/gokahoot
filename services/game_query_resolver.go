@@ -99,3 +99,27 @@ func (r *queryResolver) ReportGameByCode(ctx context.Context, code string) (*Rep
 
 	return mapReport(*game)
 }
+
+func (r *queryResolver) ChatMessagesOfGameByCode(ctx context.Context, code string, offset int, limit int) ([]*ChatMessage, error) {
+	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
+	var rChatMessage []*ChatMessage
+
+	game, err := gameService.GetGameByCode(code)
+
+	if err != nil {
+		return nil, err
+	}
+
+	messages, err := gameService.FindChatMessagesByGameCode(game.Code, offset, limit)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, m := range messages {
+		mapped, _ := mapChatMessage(*m)
+		rChatMessage = append(rChatMessage, mapped)
+	}
+
+	return rChatMessage, nil
+}

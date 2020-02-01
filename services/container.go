@@ -93,6 +93,15 @@ func New() (*DI, error) {
 	}
 
 	if err := builder.Add(di.Def{
+		Name: repositories.ContainerNameChatMessageRepository,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return repositories.InitChatMessageRepository(ctn.Get(db.ContainerName).(*db.Db)), nil
+		},
+	}); err != nil {
+		return nil, errorsDI(err)
+	}
+
+	if err := builder.Add(di.Def{
 		Name: ContainerNameTestService,
 		Build: func(ctn di.Container) (interface{}, error) {
 			return InitTestService(ctn.Get(repositories.ContainerNameTestRepository).(*repositories.TestRepository)), nil
@@ -130,6 +139,7 @@ func New() (*DI, error) {
 		Build: func(ctn di.Container) (interface{}, error) {
 			return InitGameService(
 				ctn.Get(repositories.ContainerNameGameRepository).(*repositories.GameRepository),
+				ctn.Get(repositories.ContainerNameChatMessageRepository).(*repositories.ChatMessageRepository),
 			), nil
 		},
 	}); err != nil {

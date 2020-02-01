@@ -87,6 +87,7 @@ func mapGame(m models.Game) (*Game, error) {
 	}, nil
 
 }
+
 func mapPlayer(m models.Player) (*Player, error) {
 	game, _ := mapGame(m.Game)
 
@@ -94,6 +95,20 @@ func mapPlayer(m models.Player) (*Player, error) {
 		UUID: m.UUID,
 		Name: m.Name,
 		Game: game,
+	}, nil
+
+}
+
+func mapChatMessage(m models.ChatMessage) (*ChatMessage, error) {
+	game, _ := mapGame(m.Game)
+	player, _ := mapPlayer(m.Player)
+
+	return &ChatMessage{
+		UUID:    m.UUID,
+		Message: m.Message,
+		Player:  player,
+		Game:    game,
+		Time:    m.CreatedAt.String(),
 	}, nil
 
 }

@@ -64,7 +64,8 @@ func (r PlayerRepository) FindAll() ([]models.Player, error) {
 
 	if err := r.db.GetConn().Preload("Game").
 		Preload("Game.Test").
-		Find(&_models).Limit(1000).Error; err != nil {
+		Limit(10000).
+		Find(&_models).Error; err != nil {
 		return nil, errorPlayer(err)
 	}
 
@@ -77,7 +78,9 @@ func (r PlayerRepository) Find(query interface{}, args ...interface{}) ([]models
 	if err := r.db.GetConn().Preload("Game").
 		Preload("Game.Test").
 		Preload("PlayerAnswers").
-		Where(query, args...).Find(&_models).Limit(10000).Error; err != nil {
+		Where(query, args...).
+		Limit(10000).
+		Find(&_models).Error; err != nil {
 		return nil, errorPlayer(err)
 	}
 

@@ -11,7 +11,8 @@ import (
 const ContainerNameGameService = "ContainerNameGameService"
 
 type GameService struct {
-	r *repositories.GameRepository
+	rg  *repositories.GameRepository
+	rch *repositories.ChatMessageRepository
 }
 
 func (s *GameService) CreateNewGame(testID int, code guuid.UUID) error {
@@ -20,23 +21,34 @@ func (s *GameService) CreateNewGame(testID int, code guuid.UUID) error {
 		TestID: testID,
 	}
 
-	return s.r.Create(model)
+	return s.rg.Create(model)
+}
+
+func (s *GameService) CreateNewMessageOfChat(uuid guuid.UUID, gameID int, playerID int, message string) error {
+	model := &models.ChatMessage{
+		UUID:     uuid.String(),
+		Message:  message,
+		GameID:   gameID,
+		PlayerID: playerID,
+	}
+
+	return s.rch.Create(model)
 }
 
 func (s *GameService) FindByCode(code string) (*models.Game, error) {
-	return s.r.FindOne("games.code = ?", code)
+	return s.rg.FindOne("games.code = ?", code)
 }
 
 func (s *GameService) JoinPlayers(m *models.Game) (*models.Game, error) {
-	return s.r.FindPlayers(m)
+	return s.rg.FindPlayers(m)
 }
 
 func (s *GameService) AddRelationsQuestionsAndPlayers(m *models.Game) (*models.Game, error) {
-	return s.r.AddRelationsQuestionsAndPlayers(m)
+	return s.rg.AddRelationsQuestionsAndPlayers(m)
 }
 
 func (s *GameService) IsWaitingForJoining(code string) (bool, error) {
-	m, err := s.r.FindOne("games.code = ?", code)
+	m, err := s.rg.FindOne("games.code = ?", code)
 
 	if m == nil {
 		return false, nil
@@ -59,8 +71,36 @@ func (s *GameService) GetGameByCode(code string) (*models.Game, error) {
 	return game, nil
 }
 
+func (s *GameService) GetChatMessageByUUID(uuid string) (*models.ChatMessage, error) {
+	message, err := s.rch.FindOne("chat_messages.uuid = ?", uuid)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if message == nil {
+		return nil, errors.New(fmt.Sprintf("ChatMessage model error: %s", "not a such message"))
+	}
+
+	return message, nil
+}
+
+func (s *GameService) FindChatMessagesByGameCode(code string, offset int, limit int) ([]*models.ChatMessage, error) {
+	messages, err := s.rch.Find(offset, limit, "games.code = ?", code)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if messages == nil {
+		return nil, errors.New(fmt.Sprintf("ChatMessage model error: %s", "not a such message"))
+	}
+
+	return messages, nil
+}
+
 func (s *GameService) IsPlayingGame(code string) (bool, error) {
-	m, err := s.r.FindOne("games.code = ?", code)
+	m, err := s.rg.FindOne("games.code = ?", code)
 
 	if m == nil {
 		return false, nil
@@ -70,7 +110,7 @@ func (s *GameService) IsPlayingGame(code string) (bool, error) {
 }
 
 func (s *GameService) IsFinishedGame(code string) (bool, error) {
-	m, err := s.r.FindOne("games.code = ?", code)
+	m, err := s.rg.FindOne("games.code = ?", code)
 
 	if m == nil {
 		return false, nil
@@ -80,31 +120,32 @@ func (s *GameService) IsFinishedGame(code string) (bool, error) {
 }
 
 func (s *GameService) FindByID(id int) (*models.Game, error) {
-	return s.r.FindOne("games.id = ?", id)
+	return s.rg.FindOne("games.id = ?", id)
 }
 
 func (s *GameService) Update(m *models.Game) (*models.Game, error) {
-	return s.r.Update(m)
+	return s.rg.Update(m)
 }
 
 func (s *GameService) DeleteByCODEs(id ...string) error {
-	return s.r.Delete("games.code IN (?)", id)
+	return s.rg.Delete("games.code IN (?)", id)
 }
 
 func (s *GameService) DeleteByIDs(id ...int) error {
-	return s.r.Delete("games.id IN (?)", id)
+	return s.rg.Delete("games.id IN (?)", id)
 }
 
 func (s *GameService) FindAll() ([]*models.Game, error) {
-	return s.r.FindAll()
+	return s.rg.FindAll()
 }
 
 func (s *GameService) FindAllWitchAreWaitingForJoining() ([]*models.Game, error) {
-	return s.r.Find("games.status = ?", models.GameInWaitingPlayers)
+	return s.rg.Find("games.status = ?", models.GameInWaitingPlayers)
 }
 
-func InitGameService(r *repositories.GameRepository) *GameService {
+func InitGameService(rg *repositories.GameRepository, rch *repositories.ChatMessageRepository) *GameService {
 	return &GameService{
-		r: r,
+		rg:  rg,
+		rch: rch,
 	}
 }

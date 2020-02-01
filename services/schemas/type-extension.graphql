@@ -41,8 +41,9 @@ type Status {
     success: Boolean!
 }
 
-type Message {
-    text: String!
+type ChatMessage {
+    UUID: String!
+    message: String!
     player: Player!
     game: Game!
     time: String!
@@ -57,6 +58,7 @@ type BroadcastPlayingGame  {
 }
 
 type BroadcasChatGame  {
+    UUID: String!
     message: String!
     player:  BroadcastPlayer!
     time:  String!

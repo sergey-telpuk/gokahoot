@@ -141,6 +141,37 @@ func (s *BroadcastService) BroadcastForDeletingPlayerGame(gameCode string, playe
 	return nil
 }
 
+func (s *BroadcastService) BroadcastMessageToChatOFGame(message *models.ChatMessage) error {
+	players, err := s.broadcastRepository.GetPlayersForSendingToChatOfGame(message.Game.Code)
+	if err != nil {
+		return err
+	}
+
+	for _, broadcastPlayer := range players {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		go func(_stPlayer *StoragePlayer, _ctx context.Context, _cancel context.CancelFunc) {
+			defer _cancel()
+
+			select {
+			case _stPlayer.EventChatGame <- &BroadcasChatGame{
+				UUID:    message.UUID,
+				Message: message.Message,
+				Player: &BroadcastPlayer{
+					Name:     message.Player.Name,
+					UUID:     message.Player.UUID,
+					GameCode: message.Player.Game.Code,
+				},
+				Time: message.CreatedAt.String(),
+			}:
+			case <-_ctx.Done():
+				return
+			}
+		}(broadcastPlayer, ctx, cancel)
+	}
+
+	return nil
+}
+
 func (s *BroadcastService) AddPlayerToGame(uuid guuid.UUID, gameCode string, playerUUID string) (*StoragePlayer, error) {
 	ok := s.broadcastRepository.HasGame(gameCode)
 

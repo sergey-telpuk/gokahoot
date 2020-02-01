@@ -16,6 +16,7 @@ type Answer struct {
 }
 
 type BroadcasChatGame struct {
+	UUID    string           `json:"UUID"`
 	Message string           `json:"message"`
 	Player  *BroadcastPlayer `json:"player"`
 	Time    string           `json:"time"`
@@ -35,6 +36,14 @@ type BroadcastPlayingGame struct {
 	GameStatusEnum      GameStatus `json:"gameStatusEnum"`
 }
 
+type ChatMessage struct {
+	UUID    string  `json:"UUID"`
+	Message string  `json:"message"`
+	Player  *Player `json:"player"`
+	Game    *Game   `json:"game"`
+	Time    string  `json:"time"`
+}
+
 type Game struct {
 	Test    *Test     `json:"test"`
 	Code    string    `json:"CODE"`
@@ -51,13 +60,6 @@ type InputAnswer struct {
 type InputJoinPlayer struct {
 	GameCode string `json:"gameCode"`
 	Name     string `json:"name"`
-}
-
-type Message struct {
-	Text   string  `json:"text"`
-	Player *Player `json:"player"`
-	Game   *Game   `json:"game"`
-	Time   string  `json:"time"`
 }
 
 type NewQuestion struct {

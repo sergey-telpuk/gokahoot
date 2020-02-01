@@ -58,6 +58,7 @@ type ComplexityRoot struct {
 		Message func(childComplexity int) int
 		Player  func(childComplexity int) int
 		Time    func(childComplexity int) int
+		UUID    func(childComplexity int) int
 	}
 
 	BroadcastPlayer struct {
@@ -74,18 +75,19 @@ type ComplexityRoot struct {
 		StartTimeSec        func(childComplexity int) int
 	}
 
+	ChatMessage struct {
+		Game    func(childComplexity int) int
+		Message func(childComplexity int) int
+		Player  func(childComplexity int) int
+		Time    func(childComplexity int) int
+		UUID    func(childComplexity int) int
+	}
+
 	Game struct {
 		Code    func(childComplexity int) int
 		Players func(childComplexity int) int
 		Status  func(childComplexity int) int
 		Test    func(childComplexity int) int
-	}
-
-	Message struct {
-		Game   func(childComplexity int) int
-		Player func(childComplexity int) int
-		Text   func(childComplexity int) int
-		Time   func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -100,7 +102,7 @@ type ComplexityRoot struct {
 		DeleteTestByID         func(childComplexity int, id []int) int
 		DeleteTestByUUID       func(childComplexity int, id []string) int
 		JoinPlayerToGame       func(childComplexity int, input InputJoinPlayer) int
-		SendMessageToChat      func(childComplexity int, gameCode string, playerUUID string, message string) int
+		SendMessageToChat      func(childComplexity int, playerUUID string, message string) int
 		StartGameByCode        func(childComplexity int, code string) int
 		UpdateAnswersByIDs     func(childComplexity int, questionUUID string, input []*UpdateAnswer) int
 		UpdateQuestionsByUUIDs func(childComplexity int, testUUID string, input []*UpdateQuestion) int
@@ -114,14 +116,15 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		ActivatedGameByCode func(childComplexity int, code string) int
-		ActivatedGames      func(childComplexity int) int
-		QuestionByID        func(childComplexity int, id int) int
-		QuestionByUUID      func(childComplexity int, id string) int
-		ReportGameByCode    func(childComplexity int, code string) int
-		TestByID            func(childComplexity int, id int) int
-		TestByUUID          func(childComplexity int, id string) int
-		Tests               func(childComplexity int) int
+		ActivatedGameByCode      func(childComplexity int, code string) int
+		ActivatedGames           func(childComplexity int) int
+		ChatMessagesOfGameByCode func(childComplexity int, code string, offset int, limit int) int
+		QuestionByID             func(childComplexity int, id int) int
+		QuestionByUUID           func(childComplexity int, id string) int
+		ReportGameByCode         func(childComplexity int, code string) int
+		TestByID                 func(childComplexity int, id int) int
+		TestByUUID               func(childComplexity int, id string) int
+		Tests                    func(childComplexity int) int
 	}
 
 	Question struct {
@@ -192,7 +195,7 @@ type MutationResolver interface {
 	DeletePlayerFromGame(ctx context.Context, gameCode string, playerUUID string) (*Status, error)
 	StartGameByCode(ctx context.Context, code string) (*Game, error)
 	AnswerQuestionByUUID(ctx context.Context, playerUUID string, questionUUID string, answerID int) (*bool, error)
-	SendMessageToChat(ctx context.Context, gameCode string, playerUUID string, message string) (*Message, error)
+	SendMessageToChat(ctx context.Context, playerUUID string, message string) (*ChatMessage, error)
 }
 type QueryResolver interface {
 	Tests(ctx context.Context) ([]*Test, error)
@@ -203,6 +206,7 @@ type QueryResolver interface {
 	ActivatedGames(ctx context.Context) ([]*Game, error)
 	ActivatedGameByCode(ctx context.Context, code string) (*Game, error)
 	ReportGameByCode(ctx context.Context, code string) (*ReportGame, error)
+	ChatMessagesOfGameByCode(ctx context.Context, code string, offset int, limit int) ([]*ChatMessage, error)
 }
 type QuestionResolver interface {
 	Answers(ctx context.Context, obj *Question) ([]*Answer, error)
@@ -282,6 +286,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.BroadcasChatGame.Time(childComplexity), true
 
+	case "BroadcasChatGame.UUID":
+		if e.complexity.BroadcasChatGame.UUID == nil {
+			break
+		}
+
+		return e.complexity.BroadcasChatGame.UUID(childComplexity), true
+
 	case "BroadcastPlayer.gameCode":
 		if e.complexity.BroadcastPlayer.GameCode == nil {
 			break
@@ -338,6 +349,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.BroadcastPlayingGame.StartTimeSec(childComplexity), true
 
+	case "ChatMessage.game":
+		if e.complexity.ChatMessage.Game == nil {
+			break
+		}
+
+		return e.complexity.ChatMessage.Game(childComplexity), true
+
+	case "ChatMessage.message":
+		if e.complexity.ChatMessage.Message == nil {
+			break
+		}
+
+		return e.complexity.ChatMessage.Message(childComplexity), true
+
+	case "ChatMessage.player":
+		if e.complexity.ChatMessage.Player == nil {
+			break
+		}
+
+		return e.complexity.ChatMessage.Player(childComplexity), true
+
+	case "ChatMessage.time":
+		if e.complexity.ChatMessage.Time == nil {
+			break
+		}
+
+		return e.complexity.ChatMessage.Time(childComplexity), true
+
+	case "ChatMessage.UUID":
+		if e.complexity.ChatMessage.UUID == nil {
+			break
+		}
+
+		return e.complexity.ChatMessage.UUID(childComplexity), true
+
 	case "Game.CODE":
 		if e.complexity.Game.Code == nil {
 			break
@@ -365,34 +411,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Game.Test(childComplexity), true
-
-	case "Message.game":
-		if e.complexity.Message.Game == nil {
-			break
-		}
-
-		return e.complexity.Message.Game(childComplexity), true
-
-	case "Message.player":
-		if e.complexity.Message.Player == nil {
-			break
-		}
-
-		return e.complexity.Message.Player(childComplexity), true
-
-	case "Message.text":
-		if e.complexity.Message.Text == nil {
-			break
-		}
-
-		return e.complexity.Message.Text(childComplexity), true
-
-	case "Message.time":
-		if e.complexity.Message.Time == nil {
-			break
-		}
-
-		return e.complexity.Message.Time(childComplexity), true
 
 	case "Mutation.activateGame":
 		if e.complexity.Mutation.ActivateGame == nil {
@@ -536,7 +554,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SendMessageToChat(childComplexity, args["gameCode"].(string), args["playerUUID"].(string), args["message"].(string)), true
+		return e.complexity.Mutation.SendMessageToChat(childComplexity, args["playerUUID"].(string), args["message"].(string)), true
 
 	case "Mutation.startGameByCode":
 		if e.complexity.Mutation.StartGameByCode == nil {
@@ -625,6 +643,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.ActivatedGames(childComplexity), true
+
+	case "Query.chatMessagesOfGameByCode":
+		if e.complexity.Query.ChatMessagesOfGameByCode == nil {
+			break
+		}
+
+		args, err := ec.field_Query_chatMessagesOfGameByCode_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ChatMessagesOfGameByCode(childComplexity, args["code"].(string), args["offset"].(int), args["limit"].(int)), true
 
 	case "Query.questionByID":
 		if e.complexity.Query.QuestionByID == nil {
@@ -974,6 +1004,7 @@ var parsedSchema = gqlparser.MustLoadSchema(
 	imgURL: String
 }
 type BroadcasChatGame {
+	UUID: String!
 	message: String!
 	player: BroadcastPlayer!
 	time: String!
@@ -989,6 +1020,13 @@ type BroadcastPlayingGame {
 	startTimeSec: Int!
 	currentQuestionUUID: String!
 	gameStatusEnum: GameStatus!
+}
+type ChatMessage {
+	UUID: String!
+	message: String!
+	player: Player!
+	game: Game!
+	time: String!
 }
 type Game {
 	test: Test!
@@ -1010,12 +1048,6 @@ input InputJoinPlayer {
 	gameCode: String!
 	name: String!
 }
-type Message {
-	text: String!
-	player: Player!
-	game: Game!
-	time: String!
-}
 type Mutation {
 	createNewTest(input: NewTest!): Test!
 	updateTestByUUIDs(input: [UpdateTest!]!): [Test!]!
@@ -1032,7 +1064,7 @@ type Mutation {
 	deletePlayerFromGame(gameCode: String!, playerUUID: String!): Status!
 	startGameByCode(code: String!): Game!
 	answerQuestionByUUID(playerUUID: String!, questionUUID: String!, answerID: Int!): Boolean
-	sendMessageToChat(gameCode: String!, playerUUID: String!, message: String!): Message!
+	sendMessageToChat(playerUUID: String!, message: String!): ChatMessage!
 }
 input NewQuestion {
 	testUUID: String!
@@ -1058,6 +1090,7 @@ type Query {
 	activatedGames: [Game!]!
 	activatedGameByCode(code: String!): Game!
 	reportGameByCode(code: String!): ReportGame!
+	chatMessagesOfGameByCode(code: String!, offset: Int! = 0, limit: Int! = 100): [ChatMessage!]!
 }
 type Question {
 	ID: Int!
@@ -1306,29 +1339,21 @@ func (ec *executionContext) field_Mutation_sendMessageToChat_args(ctx context.Co
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["gameCode"]; ok {
+	if tmp, ok := rawArgs["playerUUID"]; ok {
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["gameCode"] = arg0
+	args["playerUUID"] = arg0
 	var arg1 string
-	if tmp, ok := rawArgs["playerUUID"]; ok {
+	if tmp, ok := rawArgs["message"]; ok {
 		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["playerUUID"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["message"]; ok {
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["message"] = arg2
+	args["message"] = arg1
 	return args, nil
 }
 
@@ -1429,6 +1454,36 @@ func (ec *executionContext) field_Query_activatedGameByCode_args(ctx context.Con
 		}
 	}
 	args["code"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_chatMessagesOfGameByCode_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["code"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["code"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["offset"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["offset"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg2
 	return args, nil
 }
 
@@ -1779,6 +1834,40 @@ func (ec *executionContext) _Answer_imgURL(ctx context.Context, field graphql.Co
 	res := resTmp.(*string)
 	fc.Result = res
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BroadcasChatGame_UUID(ctx context.Context, field graphql.CollectedField, obj *BroadcasChatGame) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "BroadcasChatGame",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UUID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _BroadcasChatGame_message(ctx context.Context, field graphql.CollectedField, obj *BroadcasChatGame) (ret graphql.Marshaler) {
@@ -2155,6 +2244,176 @@ func (ec *executionContext) _BroadcastPlayingGame_gameStatusEnum(ctx context.Con
 	return ec.marshalNGameStatus2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐGameStatus(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _ChatMessage_UUID(ctx context.Context, field graphql.CollectedField, obj *ChatMessage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "ChatMessage",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UUID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChatMessage_message(ctx context.Context, field graphql.CollectedField, obj *ChatMessage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "ChatMessage",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChatMessage_player(ctx context.Context, field graphql.CollectedField, obj *ChatMessage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "ChatMessage",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Player, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Player)
+	fc.Result = res
+	return ec.marshalNPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐPlayer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChatMessage_game(ctx context.Context, field graphql.CollectedField, obj *ChatMessage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "ChatMessage",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Game, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Game)
+	fc.Result = res
+	return ec.marshalNGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐGame(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ChatMessage_time(ctx context.Context, field graphql.CollectedField, obj *ChatMessage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "ChatMessage",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Time, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Game_test(ctx context.Context, field graphql.CollectedField, obj *Game) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2286,142 +2545,6 @@ func (ec *executionContext) _Game_players(ctx context.Context, field graphql.Col
 	res := resTmp.([]*Player)
 	fc.Result = res
 	return ec.marshalOPlayer2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐPlayerᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Message_text(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Message",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Text, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Message_player(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Message",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Player, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*Player)
-	fc.Result = res
-	return ec.marshalNPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐPlayer(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Message_game(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Message",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Game, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*Game)
-	fc.Result = res
-	return ec.marshalNGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐGame(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Message_time(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Message",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Time, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createNewTest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3060,7 +3183,7 @@ func (ec *executionContext) _Mutation_sendMessageToChat(ctx context.Context, fie
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SendMessageToChat(rctx, args["gameCode"].(string), args["playerUUID"].(string), args["message"].(string))
+		return ec.resolvers.Mutation().SendMessageToChat(rctx, args["playerUUID"].(string), args["message"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3072,9 +3195,9 @@ func (ec *executionContext) _Mutation_sendMessageToChat(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Message)
+	res := resTmp.(*ChatMessage)
 	fc.Result = res
-	return ec.marshalNMessage2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐMessage(ctx, field.Selections, res)
+	return ec.marshalNChatMessage2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐChatMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Player_UUID(ctx context.Context, field graphql.CollectedField, obj *Player) (ret graphql.Marshaler) {
@@ -3491,6 +3614,47 @@ func (ec *executionContext) _Query_reportGameByCode(ctx context.Context, field g
 	res := resTmp.(*ReportGame)
 	fc.Result = res
 	return ec.marshalNReportGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐReportGame(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_chatMessagesOfGameByCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_chatMessagesOfGameByCode_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ChatMessagesOfGameByCode(rctx, args["code"].(string), args["offset"].(int), args["limit"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ChatMessage)
+	fc.Result = res
+	return ec.marshalNChatMessage2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐChatMessageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5792,6 +5956,11 @@ func (ec *executionContext) _BroadcasChatGame(ctx context.Context, sel ast.Selec
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("BroadcasChatGame")
+		case "UUID":
+			out.Values[i] = ec._BroadcasChatGame_UUID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "message":
 			out.Values[i] = ec._BroadcasChatGame_message(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -5902,6 +6071,53 @@ func (ec *executionContext) _BroadcastPlayingGame(ctx context.Context, sel ast.S
 	return out
 }
 
+var chatMessageImplementors = []string{"ChatMessage"}
+
+func (ec *executionContext) _ChatMessage(ctx context.Context, sel ast.SelectionSet, obj *ChatMessage) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, chatMessageImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ChatMessage")
+		case "UUID":
+			out.Values[i] = ec._ChatMessage_UUID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "message":
+			out.Values[i] = ec._ChatMessage_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "player":
+			out.Values[i] = ec._ChatMessage_player(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "game":
+			out.Values[i] = ec._ChatMessage_game(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "time":
+			out.Values[i] = ec._ChatMessage_time(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var gameImplementors = []string{"Game"}
 
 func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj *Game) graphql.Marshaler {
@@ -5939,48 +6155,6 @@ func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj
 				res = ec._Game_players(ctx, field, obj)
 				return res
 			})
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var messageImplementors = []string{"Message"}
-
-func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, obj *Message) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, messageImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Message")
-		case "text":
-			out.Values[i] = ec._Message_text(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "player":
-			out.Values[i] = ec._Message_player(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "game":
-			out.Values[i] = ec._Message_game(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "time":
-			out.Values[i] = ec._Message_time(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6254,6 +6428,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_reportGameByCode(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "chatMessagesOfGameByCode":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_chatMessagesOfGameByCode(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -6915,6 +7103,57 @@ func (ec *executionContext) marshalNBroadcastPlayingGame2ᚖgithubᚗcomᚋserge
 	return ec._BroadcastPlayingGame(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNChatMessage2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐChatMessage(ctx context.Context, sel ast.SelectionSet, v ChatMessage) graphql.Marshaler {
+	return ec._ChatMessage(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNChatMessage2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐChatMessageᚄ(ctx context.Context, sel ast.SelectionSet, v []*ChatMessage) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNChatMessage2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐChatMessage(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNChatMessage2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐChatMessage(ctx context.Context, sel ast.SelectionSet, v *ChatMessage) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._ChatMessage(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNGame2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐGame(ctx context.Context, sel ast.SelectionSet, v Game) graphql.Marshaler {
 	return ec._Game(ctx, sel, &v)
 }
@@ -7052,20 +7291,6 @@ func (ec *executionContext) marshalNInt2ᚕintᚄ(ctx context.Context, sel ast.S
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNMessage2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐMessage(ctx context.Context, sel ast.SelectionSet, v Message) graphql.Marshaler {
-	return ec._Message(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNMessage2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐMessage(ctx context.Context, sel ast.SelectionSet, v *Message) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Message(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNNewQuestion2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐNewQuestion(ctx context.Context, v interface{}) (NewQuestion, error) {
