@@ -37,6 +37,7 @@ type Mutation {
     deletePlayerFromGame(gameCode: String!, playerUUID: String!): Status!
     startGameByCode(code: String!): Game!
     answerQuestionByUUID(playerUUID: String!, questionUUID: String!, answerID: Int!): Boolean
+    sendMessageToChat(gameCode: String!, playerUUID: String!, message: String!): Message!
 }
 
 #Subscriptions
@@ -45,4 +46,5 @@ type Subscription {
     onWaitForStartingGame(gameCode: String!, playerUUID: String!): StartGame!
     onDeletePlayerFromGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
     onPlayingGame(gameCode: String!, playerUUID: String!): BroadcastPlayingGame!
+    onChatGame(gameCode: String!, playerUUID: String!): BroadcasChatGame!
 }

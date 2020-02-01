@@ -170,3 +170,7 @@ func (r *mutationResolver) AnswerQuestionByUUID(ctx context.Context, playerUUID 
 
 	return &right, nil
 }
+
+func (r *mutationResolver) SendMessageToChat(ctx context.Context, gameCode string, playerUUID string, message string) (*Message, error) {
+	return nil, nil
+}

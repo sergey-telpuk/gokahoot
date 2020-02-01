@@ -15,6 +15,12 @@ type Answer struct {
 	ImgURL     *string `json:"imgURL"`
 }
 
+type BroadcasChatGame struct {
+	Message string           `json:"message"`
+	Player  *BroadcastPlayer `json:"player"`
+	Time    string           `json:"time"`
+}
+
 type BroadcastPlayer struct {
 	UUID     string `json:"UUID"`
 	GameCode string `json:"gameCode"`
@@ -45,6 +51,13 @@ type InputAnswer struct {
 type InputJoinPlayer struct {
 	GameCode string `json:"gameCode"`
 	Name     string `json:"name"`
+}
+
+type Message struct {
+	Text   string  `json:"text"`
+	Player *Player `json:"player"`
+	Game   *Game   `json:"game"`
+	Time   string  `json:"time"`
 }
 
 type NewQuestion struct {

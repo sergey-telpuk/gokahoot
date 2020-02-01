@@ -41,6 +41,12 @@ type Status {
     success: Boolean!
 }
 
+type Message {
+    text: String!
+    player: Player!
+    game: Game!
+    time: String!
+}
 
 type BroadcastPlayingGame  {
     currentTimeSec: Int!
@@ -48,6 +54,12 @@ type BroadcastPlayingGame  {
     startTimeSec:  Int!
     currentQuestionUUID: String!
     gameStatusEnum: GameStatus!
+}
+
+type BroadcasChatGame  {
+    message: String!
+    player:  BroadcastPlayer!
+    time:  String!
 }
 
 #Broadcast

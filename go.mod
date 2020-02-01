@@ -24,5 +24,6 @@ require (
 	github.com/vektah/gqlparser v1.2.1
 	golang.org/x/sys v0.0.0-20200124204421-9fbb57f87de9 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
+	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )

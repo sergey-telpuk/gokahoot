@@ -26,6 +26,7 @@ type (
 		EventDeletingPlayerFromGame chan *BroadcastPlayer
 		EventPlayingGame            chan *BroadcastPlayingGame
 		EventStartGame              chan *StartGame
+		EventChatGame               chan *BroadcasChatGame
 	}
 )
 
@@ -58,6 +59,24 @@ func (r *BroadcastRepository) GetPlayersForPlayingGame(gameCode string) ([]*Stor
 
 	for _, _player := range game.Players {
 		if _player.EventPlayingGame == nil {
+			continue
+		}
+		players = append(players, _player)
+	}
+
+	return players, nil
+}
+
+func (r *BroadcastRepository) GetPlayersForChattingGame(gameCode string) ([]*StoragePlayer, error) {
+	var players []*StoragePlayer
+	game, err := r.GetGame(gameCode)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, _player := range game.Players {
+		if _player.EventChatGame == nil {
 			continue
 		}
 		players = append(players, _player)
