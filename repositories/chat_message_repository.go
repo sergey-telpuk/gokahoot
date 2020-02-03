@@ -50,7 +50,11 @@ func (r ChatMessageRepository) Find(offset int, limit int, query interface{}, ar
 		Joins("left join games on games.id = chat_messages.game_id").
 		Preload("Player").
 		Preload("Player.Game").
-		Where(query, args...).Limit(limit).Offset(offset).Find(&_models).Error; err != nil {
+		Where(query, args...).
+		Order("chat_messages.created_at desc").
+		Limit(limit).
+		Offset(offset).
+		Find(&_models).Error; err != nil {
 		return nil, errorChatMessageGame(err)
 	}
 
@@ -63,7 +67,7 @@ func (r ChatMessageRepository) FindAll(offset int, limit int) ([]*models.ChatMes
 	if err := r.db.GetConn().Preload("Game").
 		Preload("Player").
 		Preload("Player.Game").
-		Limit(limit).Find(&_models).Error; err != nil {
+		Limit(limit).Limit(limit).Offset(offset).Find(&_models).Error; err != nil {
 		return nil, errorChatMessageGame(err)
 	}
 
