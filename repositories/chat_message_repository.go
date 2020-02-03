@@ -67,7 +67,10 @@ func (r ChatMessageRepository) FindAll(offset int, limit int) ([]*models.ChatMes
 	if err := r.db.GetConn().Preload("Game").
 		Preload("Player").
 		Preload("Player.Game").
-		Limit(limit).Limit(limit).Offset(offset).Find(&_models).Error; err != nil {
+		Order("chat_messages.created_at desc").
+		Limit(limit).
+		Offset(offset).
+		Find(&_models).Error; err != nil {
 		return nil, errorChatMessageGame(err)
 	}
 
