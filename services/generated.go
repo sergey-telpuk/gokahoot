@@ -118,7 +118,7 @@ type ComplexityRoot struct {
 	Query struct {
 		ActivatedGameByCode      func(childComplexity int, code string) int
 		ActivatedGames           func(childComplexity int) int
-		ChatMessagesOfGameByCode func(childComplexity int, code string, offset int, limit int) int
+		ChatMessagesOfGameByCode func(childComplexity int, code string, offset int, limit int, order ChatTimeOrder) int
 		QuestionByID             func(childComplexity int, id int) int
 		QuestionByUUID           func(childComplexity int, id string) int
 		ReportGameByCode         func(childComplexity int, code string) int
@@ -206,7 +206,7 @@ type QueryResolver interface {
 	ActivatedGames(ctx context.Context) ([]*Game, error)
 	ActivatedGameByCode(ctx context.Context, code string) (*Game, error)
 	ReportGameByCode(ctx context.Context, code string) (*ReportGame, error)
-	ChatMessagesOfGameByCode(ctx context.Context, code string, offset int, limit int) ([]*ChatMessage, error)
+	ChatMessagesOfGameByCode(ctx context.Context, code string, offset int, limit int, order ChatTimeOrder) ([]*ChatMessage, error)
 }
 type QuestionResolver interface {
 	Answers(ctx context.Context, obj *Question) ([]*Answer, error)
@@ -654,7 +654,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.ChatMessagesOfGameByCode(childComplexity, args["code"].(string), args["offset"].(int), args["limit"].(int)), true
+		return e.complexity.Query.ChatMessagesOfGameByCode(childComplexity, args["code"].(string), args["offset"].(int), args["limit"].(int), args["order"].(ChatTimeOrder)), true
 
 	case "Query.questionByID":
 		if e.complexity.Query.QuestionByID == nil {
@@ -1028,6 +1028,10 @@ type ChatMessage {
 	game: Game!
 	time: String!
 }
+enum ChatTimeOrder {
+	DESC
+	ASC
+}
 type Game {
 	test: Test!
 	CODE: String!
@@ -1090,7 +1094,7 @@ type Query {
 	activatedGames: [Game!]!
 	activatedGameByCode(code: String!): Game!
 	reportGameByCode(code: String!): ReportGame!
-	chatMessagesOfGameByCode(code: String!, offset: Int! = 0, limit: Int! = 100): [ChatMessage!]!
+	chatMessagesOfGameByCode(code: String!, offset: Int! = 0, limit: Int! = 100, order: ChatTimeOrder! = ASC): [ChatMessage!]!
 }
 type Question {
 	ID: Int!
@@ -1484,6 +1488,14 @@ func (ec *executionContext) field_Query_chatMessagesOfGameByCode_args(ctx contex
 		}
 	}
 	args["limit"] = arg2
+	var arg3 ChatTimeOrder
+	if tmp, ok := rawArgs["order"]; ok {
+		arg3, err = ec.unmarshalNChatTimeOrder2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐChatTimeOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["order"] = arg3
 	return args, nil
 }
 
@@ -3640,7 +3652,7 @@ func (ec *executionContext) _Query_chatMessagesOfGameByCode(ctx context.Context,
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ChatMessagesOfGameByCode(rctx, args["code"].(string), args["offset"].(int), args["limit"].(int))
+		return ec.resolvers.Query().ChatMessagesOfGameByCode(rctx, args["code"].(string), args["offset"].(int), args["limit"].(int), args["order"].(ChatTimeOrder))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7152,6 +7164,15 @@ func (ec *executionContext) marshalNChatMessage2ᚖgithubᚗcomᚋsergeyᚑtelpu
 		return graphql.Null
 	}
 	return ec._ChatMessage(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNChatTimeOrder2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐChatTimeOrder(ctx context.Context, v interface{}) (ChatTimeOrder, error) {
+	var res ChatTimeOrder
+	return res, res.UnmarshalGQL(v)
+}
+
+func (ec *executionContext) marshalNChatTimeOrder2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐChatTimeOrder(ctx context.Context, sel ast.SelectionSet, v ChatTimeOrder) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNGame2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐGame(ctx context.Context, sel ast.SelectionSet, v Game) graphql.Marshaler {

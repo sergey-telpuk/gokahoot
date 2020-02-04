@@ -100,7 +100,7 @@ func (r *queryResolver) ReportGameByCode(ctx context.Context, code string) (*Rep
 	return mapReport(*game)
 }
 
-func (r *queryResolver) ChatMessagesOfGameByCode(ctx context.Context, code string, offset int, limit int) ([]*ChatMessage, error) {
+func (r *queryResolver) ChatMessagesOfGameByCode(ctx context.Context, code string, offset int, limit int, order ChatTimeOrder) ([]*ChatMessage, error) {
 	gameService := r.Di.Container.Get(ContainerNameGameService).(*GameService)
 	var rChatMessage []*ChatMessage
 
@@ -110,7 +110,7 @@ func (r *queryResolver) ChatMessagesOfGameByCode(ctx context.Context, code strin
 		return nil, err
 	}
 
-	messages, err := gameService.FindChatMessagesByGameCode(game.Code, offset, limit)
+	messages, err := gameService.FindChatMessagesByGameCode(game.Code, offset, limit, order)
 
 	if err != nil {
 		return nil, err

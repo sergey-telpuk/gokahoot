@@ -17,7 +17,7 @@ type Query {
     activatedGames: [Game!]!
     activatedGameByCode(code: String!): Game!
     reportGameByCode(code: String!): ReportGame!
-    chatMessagesOfGameByCode(code: String!, offset: Int! = 0, limit: Int! = 100): [ChatMessage!]!
+    chatMessagesOfGameByCode(code: String!, offset: Int! = 0, limit: Int! = 100, order: ChatTimeOrder! = ASC): [ChatMessage!]!
 }
 
 

@@ -85,8 +85,8 @@ func (s *GameService) GetChatMessageByUUID(uuid string) (*models.ChatMessage, er
 	return message, nil
 }
 
-func (s *GameService) FindChatMessagesByGameCode(code string, offset int, limit int) ([]*models.ChatMessage, error) {
-	messages, err := s.rch.Find(offset, limit, "games.code = ?", code)
+func (s *GameService) FindChatMessagesByGameCode(code string, offset int, limit int, order ChatTimeOrder) ([]*models.ChatMessage, error) {
+	messages, err := s.rch.Find(offset, limit, string(order), "games.code = ?", code)
 
 	if err != nil {
 		return nil, err

@@ -1,0 +1,10 @@
+enum GameStatus {
+    WAIT_FOR_PLAYERS
+    PLAYING
+    FINISHED
+}
+
+enum ChatTimeOrder{
+    DESC
+    ASC
+}

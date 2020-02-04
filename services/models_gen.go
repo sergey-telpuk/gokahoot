@@ -141,6 +141,47 @@ type UpdateTest struct {
 	Questions []*UpdateQuestion `json:"questions"`
 }
 
+type ChatTimeOrder string
+
+const (
+	ChatTimeOrderDesc ChatTimeOrder = "DESC"
+	ChatTimeOrderAsc  ChatTimeOrder = "ASC"
+)
+
+var AllChatTimeOrder = []ChatTimeOrder{
+	ChatTimeOrderDesc,
+	ChatTimeOrderAsc,
+}
+
+func (e ChatTimeOrder) IsValid() bool {
+	switch e {
+	case ChatTimeOrderDesc, ChatTimeOrderAsc:
+		return true
+	}
+	return false
+}
+
+func (e ChatTimeOrder) String() string {
+	return string(e)
+}
+
+func (e *ChatTimeOrder) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ChatTimeOrder(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ChatTimeOrder", str)
+	}
+	return nil
+}
+
+func (e ChatTimeOrder) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type GameStatus string
 
 const (

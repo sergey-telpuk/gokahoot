@@ -43,7 +43,7 @@ func (r ChatMessageRepository) FindOne(query interface{}, args ...interface{}) (
 	return &model, nil
 }
 
-func (r ChatMessageRepository) Find(offset int, limit int, query interface{}, args ...interface{}) ([]*models.ChatMessage, error) {
+func (r ChatMessageRepository) Find(offset int, limit int, order string, query interface{}, args ...interface{}) ([]*models.ChatMessage, error) {
 	var _models []*models.ChatMessage
 
 	if err := r.db.GetConn().Preload("Game").
@@ -51,7 +51,7 @@ func (r ChatMessageRepository) Find(offset int, limit int, query interface{}, ar
 		Preload("Player").
 		Preload("Player.Game").
 		Where(query, args...).
-		Order("chat_messages.created_at desc").
+		Order("chat_messages.created_at " + order).
 		Limit(limit).
 		Offset(offset).
 		Find(&_models).Error; err != nil {

@@ -45,9 +45,3 @@ input InputJoinPlayer {
     gameCode: String!
     name: String!
 }
-
-enum GameStatus {
-    WAIT_FOR_PLAYERS
-    PLAYING
-    FINISHED
-}
