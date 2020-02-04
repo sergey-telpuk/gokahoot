@@ -172,6 +172,32 @@ func (s *BroadcastService) BroadcastMessageToChatOFGame(message *models.ChatMess
 	return nil
 }
 
+func (s *BroadcastService) BroadcastIsTypingToChatOFGame(player *models.Player) error {
+	players, err := s.broadcastRepository.GetPlayersForChattingGame(player.Game.Code)
+	if err != nil {
+		return err
+	}
+
+	for _, broadcastPlayer := range players {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		go func(_stPlayer *StoragePlayer, _ctx context.Context, _cancel context.CancelFunc) {
+			defer _cancel()
+
+			select {
+			case _stPlayer.EventIsTypingPlayer <- &BroadcastPlayer{
+				UUID:     player.UUID,
+				GameCode: player.Game.Code,
+				Name:     player.Name,
+			}:
+			case <-_ctx.Done():
+				return
+			}
+		}(broadcastPlayer, ctx, cancel)
+	}
+
+	return nil
+}
+
 func (s *BroadcastService) AddPlayerToGame(uuid guuid.UUID, gameCode string, playerUUID string) (*StoragePlayer, error) {
 	ok := s.broadcastRepository.HasGame(gameCode)
 

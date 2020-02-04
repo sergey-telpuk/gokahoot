@@ -219,3 +219,42 @@ func (r *subscriptionResolver) OnChatGame(ctx context.Context, gameCode string, 
 
 	return event, nil
 }
+
+func (r *subscriptionResolver) OnIsTypingChatGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayer, error) {
+	broadcastService := r.Di.Container.Get(ContainerNameBroadcastService).(*BroadcastService)
+	playerService := r.Di.Container.Get(ContainerNamePlayerService).(*PlayerService)
+
+	mPlayer, err := playerService.GetPlayerByUUID(playerUUID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if mPlayer.Game.Code != gameCode {
+		return nil, errors.New(fmt.Sprintf("A playing game messsage: %v or error %v", "a palyer isnt belonged to game", err))
+	}
+
+	uuid := guuid.New()
+
+	if err := broadcastService.AddGame(gameCode); err != nil {
+		return nil, err
+	}
+
+	player, err := broadcastService.AddPlayerToGame(uuid, gameCode, playerUUID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	event := make(chan *BroadcastPlayer, 1)
+	player.EventIsTypingPlayer = event
+
+	go func(uuid guuid.UUID, gameCode string) {
+		<-ctx.Done()
+		mutex.Lock()
+		_ = broadcastService.DeletePlayerFromGame(gameCode, uuid)
+		mutex.Unlock()
+	}(uuid, gameCode)
+
+	return event, nil
+}

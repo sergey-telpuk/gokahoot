@@ -199,3 +199,20 @@ func (r *mutationResolver) SendMessageToChat(ctx context.Context, playerUUID str
 
 	return mapChatMessage(*chatMessage)
 }
+
+func (r *mutationResolver) PlayerIsTypingOfGameByUUID(ctx context.Context, playerUUID string) (bool, error) {
+	playerService := r.Di.Container.Get(ContainerNamePlayerService).(*PlayerService)
+	broadcastService := r.Di.Container.Get(ContainerNameBroadcastService).(*BroadcastService)
+
+	player, err := playerService.GetPlayerByUUID(playerUUID)
+
+	if err != nil {
+		return false, err
+	}
+
+	if err := broadcastService.BroadcastIsTypingToChatOFGame(player); err != nil {
+		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
+	}
+
+	return true, nil
+}

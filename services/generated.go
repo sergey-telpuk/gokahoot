@@ -91,22 +91,23 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		ActivateGame           func(childComplexity int, testUUID string) int
-		AnswerQuestionByUUID   func(childComplexity int, playerUUID string, questionUUID string, answerID int) int
-		CreateNewQuestion      func(childComplexity int, input NewQuestion) int
-		CreateNewTest          func(childComplexity int, input NewTest) int
-		DeactivateGameByCODEs  func(childComplexity int, codes []string) int
-		DeletePlayerFromGame   func(childComplexity int, gameCode string, playerUUID string) int
-		DeleteQuestionByID     func(childComplexity int, id []int) int
-		DeleteQuestionByUUID   func(childComplexity int, id []string) int
-		DeleteTestByID         func(childComplexity int, id []int) int
-		DeleteTestByUUID       func(childComplexity int, id []string) int
-		JoinPlayerToGame       func(childComplexity int, input InputJoinPlayer) int
-		SendMessageToChat      func(childComplexity int, playerUUID string, message string) int
-		StartGameByCode        func(childComplexity int, code string) int
-		UpdateAnswersByIDs     func(childComplexity int, questionUUID string, input []*UpdateAnswer) int
-		UpdateQuestionsByUUIDs func(childComplexity int, testUUID string, input []*UpdateQuestion) int
-		UpdateTestByUUIDs      func(childComplexity int, input []*UpdateTest) int
+		ActivateGame               func(childComplexity int, testUUID string) int
+		AnswerQuestionByUUID       func(childComplexity int, playerUUID string, questionUUID string, answerID int) int
+		CreateNewQuestion          func(childComplexity int, input NewQuestion) int
+		CreateNewTest              func(childComplexity int, input NewTest) int
+		DeactivateGameByCODEs      func(childComplexity int, codes []string) int
+		DeletePlayerFromGame       func(childComplexity int, gameCode string, playerUUID string) int
+		DeleteQuestionByID         func(childComplexity int, id []int) int
+		DeleteQuestionByUUID       func(childComplexity int, id []string) int
+		DeleteTestByID             func(childComplexity int, id []int) int
+		DeleteTestByUUID           func(childComplexity int, id []string) int
+		JoinPlayerToGame           func(childComplexity int, input InputJoinPlayer) int
+		PlayerIsTypingOfGameByUUID func(childComplexity int, playerUUID string) int
+		SendMessageToChat          func(childComplexity int, playerUUID string, message string) int
+		StartGameByCode            func(childComplexity int, code string) int
+		UpdateAnswersByIDs         func(childComplexity int, questionUUID string, input []*UpdateAnswer) int
+		UpdateQuestionsByUUIDs     func(childComplexity int, testUUID string, input []*UpdateQuestion) int
+		UpdateTestByUUIDs          func(childComplexity int, input []*UpdateTest) int
 	}
 
 	Player struct {
@@ -163,6 +164,7 @@ type ComplexityRoot struct {
 	Subscription struct {
 		OnChatGame                   func(childComplexity int, gameCode string, playerUUID string) int
 		OnDeletePlayerFromGame       func(childComplexity int, gameCode string, playerUUID string) int
+		OnIsTypingChatGame           func(childComplexity int, gameCode string, playerUUID string) int
 		OnPlayingGame                func(childComplexity int, gameCode string, playerUUID string) int
 		OnWaitForJoiningPlayerToGame func(childComplexity int, gameCode string, playerUUID string) int
 		OnWaitForStartingGame        func(childComplexity int, gameCode string, playerUUID string) int
@@ -196,6 +198,7 @@ type MutationResolver interface {
 	StartGameByCode(ctx context.Context, code string) (*Game, error)
 	AnswerQuestionByUUID(ctx context.Context, playerUUID string, questionUUID string, answerID int) (*bool, error)
 	SendMessageToChat(ctx context.Context, playerUUID string, message string) (*ChatMessage, error)
+	PlayerIsTypingOfGameByUUID(ctx context.Context, playerUUID string) (bool, error)
 }
 type QueryResolver interface {
 	Tests(ctx context.Context) ([]*Test, error)
@@ -217,6 +220,7 @@ type SubscriptionResolver interface {
 	OnDeletePlayerFromGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayer, error)
 	OnPlayingGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayingGame, error)
 	OnChatGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcasChatGame, error)
+	OnIsTypingChatGame(ctx context.Context, gameCode string, playerUUID string) (<-chan *BroadcastPlayer, error)
 }
 type TestResolver interface {
 	Questions(ctx context.Context, obj *Test) ([]*Question, error)
@@ -544,6 +548,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.JoinPlayerToGame(childComplexity, args["input"].(InputJoinPlayer)), true
 
+	case "Mutation.playerIsTypingOfGameByUUID":
+		if e.complexity.Mutation.PlayerIsTypingOfGameByUUID == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_playerIsTypingOfGameByUUID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PlayerIsTypingOfGameByUUID(childComplexity, args["playerUUID"].(string)), true
+
 	case "Mutation.sendMessageToChat":
 		if e.complexity.Mutation.SendMessageToChat == nil {
 			break
@@ -852,6 +868,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Subscription.OnDeletePlayerFromGame(childComplexity, args["gameCode"].(string), args["playerUUID"].(string)), true
 
+	case "Subscription.onIsTypingChatGame":
+		if e.complexity.Subscription.OnIsTypingChatGame == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_onIsTypingChatGame_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.OnIsTypingChatGame(childComplexity, args["gameCode"].(string), args["playerUUID"].(string)), true
+
 	case "Subscription.onPlayingGame":
 		if e.complexity.Subscription.OnPlayingGame == nil {
 			break
@@ -1069,6 +1097,7 @@ type Mutation {
 	startGameByCode(code: String!): Game!
 	answerQuestionByUUID(playerUUID: String!, questionUUID: String!, answerID: Int!): Boolean
 	sendMessageToChat(playerUUID: String!, message: String!): ChatMessage!
+	playerIsTypingOfGameByUUID(playerUUID: String!): Boolean!
 }
 input NewQuestion {
 	testUUID: String!
@@ -1129,6 +1158,7 @@ type Subscription {
 	onDeletePlayerFromGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
 	onPlayingGame(gameCode: String!, playerUUID: String!): BroadcastPlayingGame!
 	onChatGame(gameCode: String!, playerUUID: String!): BroadcasChatGame!
+	onIsTypingChatGame(gameCode: String!, playerUUID: String!): BroadcastPlayer!
 }
 type Test {
 	ID: Int!
@@ -1336,6 +1366,20 @@ func (ec *executionContext) field_Mutation_joinPlayerToGame_args(ctx context.Con
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_playerIsTypingOfGameByUUID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["playerUUID"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["playerUUID"] = arg0
 	return args, nil
 }
 
@@ -1592,6 +1636,28 @@ func (ec *executionContext) field_Subscription_onChatGame_args(ctx context.Conte
 }
 
 func (ec *executionContext) field_Subscription_onDeletePlayerFromGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["gameCode"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["gameCode"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["playerUUID"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["playerUUID"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Subscription_onIsTypingChatGame_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -3212,6 +3278,47 @@ func (ec *executionContext) _Mutation_sendMessageToChat(ctx context.Context, fie
 	return ec.marshalNChatMessage2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐChatMessage(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_playerIsTypingOfGameByUUID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_playerIsTypingOfGameByUUID_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().PlayerIsTypingOfGameByUUID(rctx, args["playerUUID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Player_UUID(ctx context.Context, field graphql.CollectedField, obj *Player) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4495,6 +4602,57 @@ func (ec *executionContext) _Subscription_onChatGame(ctx context.Context, field 
 			graphql.MarshalString(field.Alias).MarshalGQL(w)
 			w.Write([]byte{':'})
 			ec.marshalNBroadcasChatGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcasChatGame(ctx, field.Selections, res).MarshalGQL(w)
+			w.Write([]byte{'}'})
+		})
+	}
+}
+
+func (ec *executionContext) _Subscription_onIsTypingChatGame(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Subscription",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Subscription_onIsTypingChatGame_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().OnIsTypingChatGame(rctx, args["gameCode"].(string), args["playerUUID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func() graphql.Marshaler {
+		res, ok := <-resTmp.(<-chan *BroadcastPlayer)
+		if !ok {
+			return nil
+		}
+		return graphql.WriterFunc(func(w io.Writer) {
+			w.Write([]byte{'{'})
+			graphql.MarshalString(field.Alias).MarshalGQL(w)
+			w.Write([]byte{':'})
+			ec.marshalNBroadcastPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastPlayer(ctx, field.Selections, res).MarshalGQL(w)
 			w.Write([]byte{'}'})
 		})
 	}
@@ -6270,6 +6428,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "playerIsTypingOfGameByUUID":
+			out.Values[i] = ec._Mutation_playerIsTypingOfGameByUUID(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6710,6 +6873,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 		return ec._Subscription_onPlayingGame(ctx, fields[0])
 	case "onChatGame":
 		return ec._Subscription_onChatGame(ctx, fields[0])
+	case "onIsTypingChatGame":
+		return ec._Subscription_onIsTypingChatGame(ctx, fields[0])
 	default:
 		panic("unknown field " + strconv.Quote(fields[0].Name))
 	}
