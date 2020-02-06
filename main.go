@@ -244,7 +244,7 @@ func randomVerb(exclude string, verbs map[string]*verb) *verb {
 }
 
 func random(exclude int) int {
-	rand.Seed(time.Now().Unix())
+	rand.Seed(time.Now().UnixNano())
 	min := 1
 	max := 1000
 	n := rand.Intn(max-min) + min
