@@ -159,7 +159,7 @@ func createTest(di *services.DI) {
 			descriptions: descriptions,
 		}
 
-		if it > 20 {
+		if it > 30 {
 			break
 		}
 	}
