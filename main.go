@@ -150,7 +150,11 @@ func createTest(di *services.DI) {
 	for word, v := range jsonData {
 		it++
 		var descriptions []string
-		for _, d := range v["descriptions"].([]interface{}) {
+		s, ok := v["descriptions"].([]interface{})
+		if !ok {
+			continue
+		}
+		for _, d := range s {
 			descriptions = append(descriptions, d.(string))
 		}
 
@@ -159,7 +163,7 @@ func createTest(di *services.DI) {
 			descriptions: descriptions,
 		}
 
-		if it > 30 {
+		if it > 35 {
 			break
 		}
 	}
