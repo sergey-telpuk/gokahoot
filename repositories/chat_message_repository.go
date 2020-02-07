@@ -35,7 +35,7 @@ func (r ChatMessageRepository) FindOne(query interface{}, args ...interface{}) (
 	if err := r.db.GetConn().Preload("Game").
 		Preload("Player").
 		Preload("Player.Game").
-		Where(query, args).First(&model).Error; err != nil {
+		Where(query, args...).First(&model).Error; err != nil {
 
 		return nil, errorGame(err)
 	}

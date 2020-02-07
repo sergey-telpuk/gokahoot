@@ -32,7 +32,7 @@ func (r AnswerRepository) Create(m *models.Answer) error {
 func (r AnswerRepository) FindOne(query interface{}, args ...interface{}) (*models.Answer, error) {
 	var m models.Answer
 
-	if err := r.db.GetConn().Where(query, args).First(&m).Error; err != nil {
+	if err := r.db.GetConn().Where(query, args...).First(&m).Error; err != nil {
 		return nil, errorAnswer(err)
 	}
 

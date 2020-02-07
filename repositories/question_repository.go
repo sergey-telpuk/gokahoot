@@ -29,7 +29,7 @@ func (r QuestionRepository) FindOne(query interface{}, args ...interface{}) (*mo
 	var model models.Question
 
 	if err := r.db.GetConn().Preload("Answers").
-		Where(query, args).First(&model).Error; err != nil {
+		Where(query, args...).First(&model).Error; err != nil {
 		return nil, errorQuestion(err)
 	}
 

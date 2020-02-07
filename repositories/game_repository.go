@@ -33,7 +33,7 @@ func (r GameRepository) FindOne(query interface{}, args ...interface{}) (*models
 	var model models.Game
 
 	if err := r.db.GetConn().Preload("Test").
-		Where(query, args).First(&model).Error; err != nil {
+		Where(query, args...).First(&model).Error; err != nil {
 
 		return nil, errorGame(err)
 	}

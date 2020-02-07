@@ -34,7 +34,7 @@ func (r PlayerRepository) FindOne(query interface{}, args ...interface{}) (*mode
 
 	if err := r.db.GetConn().Preload("Game").
 		Preload("Game.Test").
-		Where(query, args).First(&model).Error; err != nil {
+		Where(query, args...).First(&model).Error; err != nil {
 
 		return nil, errorPlayer(err)
 	}

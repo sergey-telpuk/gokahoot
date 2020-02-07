@@ -36,7 +36,7 @@ func (r PlayerAnswerRepository) FindOne(query interface{}, args ...interface{}) 
 		Preload("Game").
 		Preload("Question").
 		Preload("Answer").
-		Where(query, args).First(&model).Error; err != nil {
+		Where(query, args...).First(&model).Error; err != nil {
 
 		return nil, errorPlayerAnswerRepository(err)
 	}

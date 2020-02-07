@@ -32,7 +32,7 @@ func (r TestRepository) Create(model *models.Test) error {
 func (r TestRepository) FindOne(query interface{}, args ...interface{}) (*models.Test, error) {
 	var model models.Test
 
-	if err := r.db.GetConn().Where(query, args).First(&model).Error; err != nil {
+	if err := r.db.GetConn().Where(query, args...).First(&model).Error; err != nil {
 
 		return nil, errorTest(err)
 	}
