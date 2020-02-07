@@ -11,7 +11,7 @@ import (
 
 const (
 	ContainerNameBroadcastService = "ContainerNameBroadcastService"
-	TimeForAnsweringSec           = 5
+	TimeForAnsweringSec           = 15
 )
 
 type BroadcastService struct {
