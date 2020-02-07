@@ -334,7 +334,7 @@ func (s *BroadcastService) buildBroadcastAnswerForChartGame(game models.Game, qu
 				GameCode: answer.Game.Code,
 				Name:     answer.Player.Name,
 			},
-			WasRight: false,
+			WasRight: answer.WasRight,
 		})
 	}
 
