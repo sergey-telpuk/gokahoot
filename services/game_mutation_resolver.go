@@ -154,6 +154,16 @@ func (r *mutationResolver) AnswerQuestionByUUID(ctx context.Context, playerUUID 
 		return nil, err
 	}
 
+	wasAnswered, err := playerService.FindOnePlayerAnswerByGameAndQuestion(player.Game, *player, *question)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if wasAnswered != nil {
+		return nil, errors.New(fmt.Sprintf("Game: %s", "you've aready answerd this question"))
+	}
+
 	answer, err := answerService.GetAnswerByID(answerID)
 
 	if err != nil {

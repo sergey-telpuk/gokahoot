@@ -45,6 +45,15 @@ func (s PlayerService) FindPlayerAnswersByGameAndQuestion(game models.Game, ques
 	return s.rpa.Find("player_answers.game_id = ? AND player_answers.question_id = ?", game.ID, question.ID)
 }
 
+func (s PlayerService) FindOnePlayerAnswerByGameAndQuestion(game models.Game, player models.Player, question models.Question) (*models.PlayerAnswer, error) {
+	return s.rpa.FindOne(
+		"player_answers.game_id = ? AND player_answers.question_id = ? AND player_answers.player_id = ?",
+		game.ID,
+		question.ID,
+		player.ID,
+	)
+}
+
 func (s PlayerService) GetPlayerByUUID(uuid string) (*models.Player, error) {
 	m, err := s.FindByUuid(uuid)
 
