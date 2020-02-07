@@ -47,7 +47,7 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 		go func(game *models.Game, ctx context.Context) {
 			for {
 				select {
-				case <-time.After(500 * time.Microsecond):
+				case <-time.After(1 * time.Second):
 					go b.joinPlayer(game.Code, faker.Name().Prefix()+" "+faker.Name().Name()+" "+faker.Name().FirstName()+" "+faker.Name().LastName())
 				case <-ctx.Done():
 					return
