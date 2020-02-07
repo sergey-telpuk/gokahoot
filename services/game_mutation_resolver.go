@@ -156,7 +156,7 @@ func (r *mutationResolver) AnswerQuestionByUUID(ctx context.Context, playerUUID 
 
 	wasAnswered, err := playerService.FindOnePlayerAnswerByGameAndQuestion(player.Game, *player, *question)
 
-	if err != nil {
+	if err != nil && err.Error() != "PlayerAnswer model error: record not found" {
 		return nil, err
 	}
 
