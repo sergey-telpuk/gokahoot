@@ -49,12 +49,24 @@ type ChatMessage {
     time: String!
 }
 
+
 type BroadcastPlayingGame  {
     currentTimeSec: Int!
     gameCode:  String!
     startTimeSec:  Int!
     currentQuestionUUID: String!
     gameStatusEnum: GameStatus!
+    answers: [BroadcastAnswerForChartGame!]!
+}
+
+type BroadcastAnswerForChartGame{
+    answerID: Int!
+    players:[BroadcastPlayersForChartGame!]!
+}
+
+type BroadcastPlayersForChartGame{
+    player: BroadcastPlayer!
+    wasRight: Boolean!
 }
 
 type BroadcasChatGame  {

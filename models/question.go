@@ -1,11 +1,12 @@
 package models
 
 type Question struct {
-	ID      int    `gorm:"primary_key"`
-	UUID    string `gorm:"unique_index"`
-	TestID  int    `gorm:"type:integer REFERENCES tests(id) ON DELETE CASCADE ON UPDATE CASCADE;not null"`
-	Answers []Answer
-	Test    Test
+	ID            int    `gorm:"primary_key"`
+	UUID          string `gorm:"unique_index"`
+	TestID        int    `gorm:"type:integer REFERENCES tests(id) ON DELETE CASCADE ON UPDATE CASCADE;not null"`
+	Answers       []Answer
+	PlayerAnswers []PlayerAnswer
+	Test          Test
 
 	Text        string `gorm:"not null"`
 	ImgURL      *string

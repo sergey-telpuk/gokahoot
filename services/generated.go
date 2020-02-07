@@ -61,13 +61,24 @@ type ComplexityRoot struct {
 		UUID    func(childComplexity int) int
 	}
 
+	BroadcastAnswerForChartGame struct {
+		AnswerID func(childComplexity int) int
+		Players  func(childComplexity int) int
+	}
+
 	BroadcastPlayer struct {
 		GameCode func(childComplexity int) int
 		Name     func(childComplexity int) int
 		UUID     func(childComplexity int) int
 	}
 
+	BroadcastPlayersForChartGame struct {
+		Player   func(childComplexity int) int
+		WasRight func(childComplexity int) int
+	}
+
 	BroadcastPlayingGame struct {
+		Answers             func(childComplexity int) int
 		CurrentQuestionUUID func(childComplexity int) int
 		CurrentTimeSec      func(childComplexity int) int
 		GameCode            func(childComplexity int) int
@@ -297,6 +308,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.BroadcasChatGame.UUID(childComplexity), true
 
+	case "BroadcastAnswerForChartGame.answerID":
+		if e.complexity.BroadcastAnswerForChartGame.AnswerID == nil {
+			break
+		}
+
+		return e.complexity.BroadcastAnswerForChartGame.AnswerID(childComplexity), true
+
+	case "BroadcastAnswerForChartGame.players":
+		if e.complexity.BroadcastAnswerForChartGame.Players == nil {
+			break
+		}
+
+		return e.complexity.BroadcastAnswerForChartGame.Players(childComplexity), true
+
 	case "BroadcastPlayer.gameCode":
 		if e.complexity.BroadcastPlayer.GameCode == nil {
 			break
@@ -317,6 +342,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BroadcastPlayer.UUID(childComplexity), true
+
+	case "BroadcastPlayersForChartGame.player":
+		if e.complexity.BroadcastPlayersForChartGame.Player == nil {
+			break
+		}
+
+		return e.complexity.BroadcastPlayersForChartGame.Player(childComplexity), true
+
+	case "BroadcastPlayersForChartGame.wasRight":
+		if e.complexity.BroadcastPlayersForChartGame.WasRight == nil {
+			break
+		}
+
+		return e.complexity.BroadcastPlayersForChartGame.WasRight(childComplexity), true
+
+	case "BroadcastPlayingGame.answers":
+		if e.complexity.BroadcastPlayingGame.Answers == nil {
+			break
+		}
+
+		return e.complexity.BroadcastPlayingGame.Answers(childComplexity), true
 
 	case "BroadcastPlayingGame.currentQuestionUUID":
 		if e.complexity.BroadcastPlayingGame.CurrentQuestionUUID == nil {
@@ -1037,10 +1083,18 @@ type BroadcasChatGame {
 	player: BroadcastPlayer!
 	time: String!
 }
+type BroadcastAnswerForChartGame {
+	answerID: Int!
+	players: [BroadcastPlayersForChartGame!]!
+}
 type BroadcastPlayer {
 	UUID: String!
 	gameCode: String!
 	name: String!
+}
+type BroadcastPlayersForChartGame {
+	player: BroadcastPlayer!
+	wasRight: Boolean!
 }
 type BroadcastPlayingGame {
 	currentTimeSec: Int!
@@ -1048,6 +1102,7 @@ type BroadcastPlayingGame {
 	startTimeSec: Int!
 	currentQuestionUUID: String!
 	gameStatusEnum: GameStatus!
+	answers: [BroadcastAnswerForChartGame!]!
 }
 type ChatMessage {
 	UUID: String!
@@ -2050,6 +2105,74 @@ func (ec *executionContext) _BroadcasChatGame_time(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _BroadcastAnswerForChartGame_answerID(ctx context.Context, field graphql.CollectedField, obj *BroadcastAnswerForChartGame) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "BroadcastAnswerForChartGame",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnswerID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BroadcastAnswerForChartGame_players(ctx context.Context, field graphql.CollectedField, obj *BroadcastAnswerForChartGame) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "BroadcastAnswerForChartGame",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Players, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*BroadcastPlayersForChartGame)
+	fc.Result = res
+	return ec.marshalNBroadcastPlayersForChartGame2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastPlayersForChartGameᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _BroadcastPlayer_UUID(ctx context.Context, field graphql.CollectedField, obj *BroadcastPlayer) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2150,6 +2273,74 @@ func (ec *executionContext) _BroadcastPlayer_name(ctx context.Context, field gra
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BroadcastPlayersForChartGame_player(ctx context.Context, field graphql.CollectedField, obj *BroadcastPlayersForChartGame) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "BroadcastPlayersForChartGame",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Player, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*BroadcastPlayer)
+	fc.Result = res
+	return ec.marshalNBroadcastPlayer2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastPlayer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BroadcastPlayersForChartGame_wasRight(ctx context.Context, field graphql.CollectedField, obj *BroadcastPlayersForChartGame) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "BroadcastPlayersForChartGame",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.WasRight, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _BroadcastPlayingGame_currentTimeSec(ctx context.Context, field graphql.CollectedField, obj *BroadcastPlayingGame) (ret graphql.Marshaler) {
@@ -2320,6 +2511,40 @@ func (ec *executionContext) _BroadcastPlayingGame_gameStatusEnum(ctx context.Con
 	res := resTmp.(GameStatus)
 	fc.Result = res
 	return ec.marshalNGameStatus2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐGameStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BroadcastPlayingGame_answers(ctx context.Context, field graphql.CollectedField, obj *BroadcastPlayingGame) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "BroadcastPlayingGame",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Answers, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*BroadcastAnswerForChartGame)
+	fc.Result = res
+	return ec.marshalNBroadcastAnswerForChartGame2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastAnswerForChartGameᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ChatMessage_UUID(ctx context.Context, field graphql.CollectedField, obj *ChatMessage) (ret graphql.Marshaler) {
@@ -6157,6 +6382,38 @@ func (ec *executionContext) _BroadcasChatGame(ctx context.Context, sel ast.Selec
 	return out
 }
 
+var broadcastAnswerForChartGameImplementors = []string{"BroadcastAnswerForChartGame"}
+
+func (ec *executionContext) _BroadcastAnswerForChartGame(ctx context.Context, sel ast.SelectionSet, obj *BroadcastAnswerForChartGame) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, broadcastAnswerForChartGameImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BroadcastAnswerForChartGame")
+		case "answerID":
+			out.Values[i] = ec._BroadcastAnswerForChartGame_answerID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "players":
+			out.Values[i] = ec._BroadcastAnswerForChartGame_players(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var broadcastPlayerImplementors = []string{"BroadcastPlayer"}
 
 func (ec *executionContext) _BroadcastPlayer(ctx context.Context, sel ast.SelectionSet, obj *BroadcastPlayer) graphql.Marshaler {
@@ -6180,6 +6437,38 @@ func (ec *executionContext) _BroadcastPlayer(ctx context.Context, sel ast.Select
 			}
 		case "name":
 			out.Values[i] = ec._BroadcastPlayer_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var broadcastPlayersForChartGameImplementors = []string{"BroadcastPlayersForChartGame"}
+
+func (ec *executionContext) _BroadcastPlayersForChartGame(ctx context.Context, sel ast.SelectionSet, obj *BroadcastPlayersForChartGame) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, broadcastPlayersForChartGameImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BroadcastPlayersForChartGame")
+		case "player":
+			out.Values[i] = ec._BroadcastPlayersForChartGame_player(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "wasRight":
+			out.Values[i] = ec._BroadcastPlayersForChartGame_wasRight(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -6227,6 +6516,11 @@ func (ec *executionContext) _BroadcastPlayingGame(ctx context.Context, sel ast.S
 			}
 		case "gameStatusEnum":
 			out.Values[i] = ec._BroadcastPlayingGame_gameStatusEnum(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "answers":
+			out.Values[i] = ec._BroadcastPlayingGame_answers(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -7252,6 +7546,57 @@ func (ec *executionContext) marshalNBroadcasChatGame2ᚖgithubᚗcomᚋsergeyᚑ
 	return ec._BroadcasChatGame(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNBroadcastAnswerForChartGame2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastAnswerForChartGame(ctx context.Context, sel ast.SelectionSet, v BroadcastAnswerForChartGame) graphql.Marshaler {
+	return ec._BroadcastAnswerForChartGame(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNBroadcastAnswerForChartGame2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastAnswerForChartGameᚄ(ctx context.Context, sel ast.SelectionSet, v []*BroadcastAnswerForChartGame) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBroadcastAnswerForChartGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastAnswerForChartGame(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNBroadcastAnswerForChartGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastAnswerForChartGame(ctx context.Context, sel ast.SelectionSet, v *BroadcastAnswerForChartGame) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._BroadcastAnswerForChartGame(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNBroadcastPlayer2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastPlayer(ctx context.Context, sel ast.SelectionSet, v BroadcastPlayer) graphql.Marshaler {
 	return ec._BroadcastPlayer(ctx, sel, &v)
 }
@@ -7264,6 +7609,57 @@ func (ec *executionContext) marshalNBroadcastPlayer2ᚖgithubᚗcomᚋsergeyᚑt
 		return graphql.Null
 	}
 	return ec._BroadcastPlayer(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNBroadcastPlayersForChartGame2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastPlayersForChartGame(ctx context.Context, sel ast.SelectionSet, v BroadcastPlayersForChartGame) graphql.Marshaler {
+	return ec._BroadcastPlayersForChartGame(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNBroadcastPlayersForChartGame2ᚕᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastPlayersForChartGameᚄ(ctx context.Context, sel ast.SelectionSet, v []*BroadcastPlayersForChartGame) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBroadcastPlayersForChartGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastPlayersForChartGame(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNBroadcastPlayersForChartGame2ᚖgithubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastPlayersForChartGame(ctx context.Context, sel ast.SelectionSet, v *BroadcastPlayersForChartGame) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._BroadcastPlayersForChartGame(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNBroadcastPlayingGame2githubᚗcomᚋsergeyᚑtelpukᚋgokahootᚋservicesᚐBroadcastPlayingGame(ctx context.Context, sel ast.SelectionSet, v BroadcastPlayingGame) graphql.Marshaler {

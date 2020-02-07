@@ -41,6 +41,10 @@ func (s PlayerService) FindByUuid(uuid string) (*models.Player, error) {
 	return s.rpl.FindOne("players.uuid = ?", uuid)
 }
 
+func (s PlayerService) FindPlayerAnswersByGameAndQuestion(game models.Game, question models.Question) ([]*models.PlayerAnswer, error) {
+	return s.rpa.Find("player_answers.game_id = ? && player_answers.questions_id", game.ID, question.ID)
+}
+
 func (s PlayerService) GetPlayerByUUID(uuid string) (*models.Player, error) {
 	m, err := s.FindByUuid(uuid)
 

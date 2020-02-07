@@ -22,18 +22,29 @@ type BroadcasChatGame struct {
 	Time    string           `json:"time"`
 }
 
+type BroadcastAnswerForChartGame struct {
+	AnswerID int                             `json:"answerID"`
+	Players  []*BroadcastPlayersForChartGame `json:"players"`
+}
+
 type BroadcastPlayer struct {
 	UUID     string `json:"UUID"`
 	GameCode string `json:"gameCode"`
 	Name     string `json:"name"`
 }
 
+type BroadcastPlayersForChartGame struct {
+	Player   *BroadcastPlayer `json:"player"`
+	WasRight bool             `json:"wasRight"`
+}
+
 type BroadcastPlayingGame struct {
-	CurrentTimeSec      int        `json:"currentTimeSec"`
-	GameCode            string     `json:"gameCode"`
-	StartTimeSec        int        `json:"startTimeSec"`
-	CurrentQuestionUUID string     `json:"currentQuestionUUID"`
-	GameStatusEnum      GameStatus `json:"gameStatusEnum"`
+	CurrentTimeSec      int                            `json:"currentTimeSec"`
+	GameCode            string                         `json:"gameCode"`
+	StartTimeSec        int                            `json:"startTimeSec"`
+	CurrentQuestionUUID string                         `json:"currentQuestionUUID"`
+	GameStatusEnum      GameStatus                     `json:"gameStatusEnum"`
+	Answers             []*BroadcastAnswerForChartGame `json:"answers"`
 }
 
 type ChatMessage struct {

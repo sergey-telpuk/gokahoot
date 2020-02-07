@@ -278,7 +278,7 @@ func (s *BroadcastService) PlayGame(game models.Game) {
 						broadcastTimer = TimeForAnsweringSec
 					}
 
-					s.BroadcastTimerPlayers(broadcastTimer, _game.Code, currentQuestion.UUID, gameStatus(_game.Status))
+					s.BroadcastTimerPlayers(broadcastTimer, _game, currentQuestion, gameStatus(_game.Status))
 
 					broadcastTimer--
 					currentTimer++
@@ -289,35 +289,64 @@ func (s *BroadcastService) PlayGame(game models.Game) {
 			case <-_ctx.Done():
 				_game.Status = models.GameInFinished
 				_, _ = s.gameService.Update(&_game)
-				s.BroadcastTimerPlayers(0, _game.Code, currentQuestion.UUID, gameStatus(_game.Status))
+				s.BroadcastTimerPlayers(0, _game, currentQuestion, gameStatus(_game.Status))
 				return
 			}
 		}
 	}(game, ctx, cancel)
 }
 
-func (s *BroadcastService) BroadcastTimerPlayers(timer int, gameCode string, questionUUID string, status GameStatus) {
-	players, err := s.broadcastRepository.GetPlayersForPlayingGame(gameCode)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+func (s *BroadcastService) BroadcastTimerPlayers(timer int, game models.Game, question models.Question, status GameStatus) {
+	players, err := s.broadcastRepository.GetPlayersForPlayingGame(game.Code)
 
 	if err != nil {
 		return
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	for _, player := range players {
 		select {
 		case player.EventPlayingGame <- &BroadcastPlayingGame{
 			CurrentTimeSec:      timer,
 			StartTimeSec:        TimeForAnsweringSec,
-			GameCode:            gameCode,
+			GameCode:            game.Code,
 			GameStatusEnum:      status,
-			CurrentQuestionUUID: questionUUID,
+			CurrentQuestionUUID: question.UUID,
+			Answers:             s.buildBroadcastAnswerForChartGame(game, question),
 		}:
 		case <-ctx.Done():
 			return
 		}
 	}
+}
+
+func (s *BroadcastService) buildBroadcastAnswerForChartGame(game models.Game, question models.Question) []*BroadcastAnswerForChartGame {
+	answers, _ := s.playerService.FindPlayerAnswersByGameAndQuestion(game, question)
+	mapAnswer := map[int][]*BroadcastPlayersForChartGame{}
+	var broadcastAnswerForChartGame []*BroadcastAnswerForChartGame
+
+	for _, answer := range answers {
+		mapAnswer[answer.AnswerID] = append(mapAnswer[answer.AnswerID], &BroadcastPlayersForChartGame{
+			Player: &BroadcastPlayer{
+				UUID:     answer.Player.UUID,
+				GameCode: answer.Game.Code,
+				Name:     answer.Player.Name,
+			},
+			WasRight: false,
+		})
+	}
+
+	for answerID, player := range mapAnswer {
+		broadcastAnswerForChartGame = append(broadcastAnswerForChartGame, &BroadcastAnswerForChartGame{
+			AnswerID: answerID,
+			Players:  player,
+		})
+	}
+
+	return broadcastAnswerForChartGame
+
 }
 
 func gameStatus(status int) GameStatus {
