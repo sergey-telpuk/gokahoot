@@ -26,4 +26,5 @@ require (
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/yaml.v2 v2.2.8 // indirect
+	syreclabs.com/go/faker v1.2.0
 )

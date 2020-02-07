@@ -7,6 +7,7 @@ import (
 	guuid "github.com/google/uuid"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/services"
+	"syreclabs.com/go/faker"
 	"time"
 )
 
@@ -47,7 +48,7 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 			for {
 				select {
 				case <-time.After(1 * time.Second):
-					go b.joinPlayer(game.Code, "Bot_Sergey")
+					go b.joinPlayer(game.Code, faker.App().Name())
 				case <-ctx.Done():
 					return
 				}
@@ -72,7 +73,7 @@ func (b Bot) joinPlayer(gameCode string, name string) {
 		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
 	}
 
-	_ = gameService.CreateNewMessageOfChat(uuid, player.GameID, player.ID, "Hello from Bot")
+	_ = gameService.CreateNewMessageOfChat(uuid, player.GameID, player.ID, faker.Lorem().Sentence(3))
 	chatMessage, _ := gameService.GetChatMessageByUUID(uuid.String())
 
 	if err := broadcastService.BroadcastMessageToChatOFGame(chatMessage); err != nil {
