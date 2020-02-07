@@ -42,7 +42,7 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 	}()
 
 	for _, game := range <-chGames {
-		ctx, _ := context.WithTimeout(context.Background(), 20*time.Second)
+		ctx, _ := context.WithTimeout(context.Background(), 120*time.Second)
 		go func(game *models.Game, ctx context.Context) {
 			for {
 				select {
@@ -69,6 +69,13 @@ func (b Bot) joinPlayer(gameCode string, name string) {
 	player, _ := playerService.GetPlayerByUUID(uuid.String())
 
 	if err := broadcastService.BroadcastForWaitForJoiningGame(game.Code, player.UUID); err != nil {
+		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
+	}
+
+	_ = gameService.CreateNewMessageOfChat(uuid, player.GameID, player.ID, "Hello from Bot")
+	chatMessage, _ := gameService.GetChatMessageByUUID(uuid.String())
+
+	if err := broadcastService.BroadcastMessageToChatOFGame(chatMessage); err != nil {
 		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
 	}
 
