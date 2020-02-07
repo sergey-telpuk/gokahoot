@@ -73,7 +73,7 @@ func (b Bot) joinPlayer(gameCode string, name string) {
 		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
 	}
 
-	_ = gameService.CreateNewMessageOfChat(uuid, player.GameID, player.ID, faker.Lorem().Sentence(3))
+	_ = gameService.CreateNewMessageOfChat(uuid, player.GameID, player.ID, faker.Lorem().Sentence(10))
 	chatMessage, _ := gameService.GetChatMessageByUUID(uuid.String())
 
 	if err := broadcastService.BroadcastMessageToChatOFGame(chatMessage); err != nil {
