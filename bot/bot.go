@@ -42,7 +42,7 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 	}()
 
 	for _, game := range <-chGames {
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, _ := context.WithTimeout(context.Background(), 20*time.Second)
 		go func(game *models.Game, ctx context.Context) {
 			for {
 				select {
