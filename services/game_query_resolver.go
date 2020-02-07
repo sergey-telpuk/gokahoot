@@ -34,7 +34,7 @@ func (r *queryResolver) ActivatedGames(ctx context.Context) ([]*Game, error) {
 	var rGames []*Game
 	service := r.Di.Container.Get(ContainerNameGameService).(*GameService)
 
-	games, err := service.FindAllWitchAreWaitingForJoining()
+	games, err := service.FindAllWhichAreWaitingForJoining()
 
 	if err != nil {
 		return nil, err

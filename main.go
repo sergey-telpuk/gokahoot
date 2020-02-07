@@ -5,6 +5,7 @@ import (
 	guuid "github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
+	"github.com/sergey-telpuk/gokahoot/bot"
 	"github.com/sergey-telpuk/gokahoot/db"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/server"
@@ -26,6 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	go bot.Init(s).Run()
 	migrate(s)
 	createTest(s)
 

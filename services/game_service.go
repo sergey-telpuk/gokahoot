@@ -139,8 +139,12 @@ func (s *GameService) FindAll() ([]*models.Game, error) {
 	return s.rg.FindAll()
 }
 
-func (s *GameService) FindAllWitchAreWaitingForJoining() ([]*models.Game, error) {
+func (s *GameService) FindAllWhichAreWaitingForJoining() ([]*models.Game, error) {
 	return s.rg.Find("games.status = ?", models.GameInWaitingPlayers)
+}
+
+func (s *GameService) FindAllWhichArePlaying() ([]*models.Game, error) {
+	return s.rg.Find("games.status = ?", models.GameInPlaying)
 }
 
 func InitGameService(rg *repositories.GameRepository, rch *repositories.ChatMessageRepository) *GameService {
