@@ -28,6 +28,7 @@ func (b Bot) Run() {
 func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 	gameService := b.di.Container.Get(services.ContainerNameGameService).(*services.GameService)
 	playerService := b.di.Container.Get(services.ContainerNamePlayerService).(*services.PlayerService)
+	broadcastService := b.di.Container.Get(services.ContainerNameBroadcastService).(*services.BroadcastService)
 
 	waitFoJoining := func() chan []*models.Game {
 		ch := make(chan []*models.Game)
@@ -103,6 +104,13 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 					}
 
 					_ = playerService.CreateNewPlayerAnswer(player.ID, player.Game.ID, question.ID, answer.ID, right)
+					uuid := guuid.New()
+					_ = gameService.CreateNewMessageOfChat(uuid, player.GameID, player.ID, faker.Lorem().Sentence(10))
+					chatMessage, _ := gameService.GetChatMessageByUUID(uuid.String())
+
+					if err := broadcastService.BroadcastMessageToChatOFGame(chatMessage); err != nil {
+						fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
+					}
 				}
 				time.Sleep(11 * time.Second)
 			}
