@@ -93,8 +93,9 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 
 			for _, question := range questions {
 				answers := question.Answers
-				time.Sleep(10)
+				time.Sleep(10 * time.Second)
 				for _, player := range players {
+					time.Sleep(1 * time.Second)
 					answer := randomAnswer(answers)
 					right := false
 					if question.RightAnswer == answer.Sequential {
@@ -103,7 +104,7 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 
 					_ = playerService.CreateNewPlayerAnswer(player.ID, player.Game.ID, question.ID, answer.ID, right)
 				}
-				time.Sleep(6)
+				time.Sleep(6 * time.Second)
 			}
 
 		}
