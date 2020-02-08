@@ -34,7 +34,7 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 			case <-time.After(1 * time.Second):
 				games, _ := gameService.FindAllWhichAreWaitingForJoining()
 
-				if len(games) > 1 {
+				if len(games) > 0 {
 					chGames <- games
 					return
 				}
