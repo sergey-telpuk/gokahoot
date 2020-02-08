@@ -95,7 +95,7 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 				answers := question.Answers
 				time.Sleep(5 * time.Second)
 				for _, player := range players {
-					time.Sleep(5 * time.Microsecond)
+					time.Sleep(50 * time.Microsecond)
 					answer := randomAnswer(answers)
 					right := false
 					if question.RightAnswer == answer.Sequential {
