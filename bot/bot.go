@@ -70,7 +70,7 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 
 	go func() {
 		for _, game := range <-waitFoJoining() {
-			ctx, _ := context.WithTimeout(context.Background(), 120*time.Second)
+			ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
 			go func(game *models.Game, ctx context.Context) {
 				for {
@@ -92,16 +92,19 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 			players, _ := playerService.FindPlayersBelongToGame(game.ID)
 
 			for _, question := range questions {
-				answers := question.Answers
-				for _, player := range players {
-					answer := randomAnswer(answers)
-					right := false
-					if question.RightAnswer == answer.Sequential {
-						right = true
-					}
+				go func(question models.Question) {
+					time.Sleep(5)
+					answers := question.Answers
+					for _, player := range players {
+						answer := randomAnswer(answers)
+						right := false
+						if question.RightAnswer == answer.Sequential {
+							right = true
+						}
 
-					_ = playerService.CreateNewPlayerAnswer(player.ID, player.Game.ID, question.ID, answer.ID, right)
-				}
+						_ = playerService.CreateNewPlayerAnswer(player.ID, player.Game.ID, question.ID, answer.ID, right)
+					}
+				}(question)
 
 			}
 
