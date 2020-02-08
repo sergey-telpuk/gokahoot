@@ -92,20 +92,18 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 			players, _ := playerService.FindPlayersBelongToGame(game.ID)
 
 			for _, question := range questions {
-				go func(question models.Question) {
-					time.Sleep(5)
-					answers := question.Answers
-					for _, player := range players {
-						answer := randomAnswer(answers)
-						right := false
-						if question.RightAnswer == answer.Sequential {
-							right = true
-						}
-
-						_ = playerService.CreateNewPlayerAnswer(player.ID, player.Game.ID, question.ID, answer.ID, right)
+				answers := question.Answers
+				time.Sleep(10)
+				for _, player := range players {
+					answer := randomAnswer(answers)
+					right := false
+					if question.RightAnswer == answer.Sequential {
+						right = true
 					}
-				}(question)
 
+					_ = playerService.CreateNewPlayerAnswer(player.ID, player.Game.ID, question.ID, answer.ID, right)
+				}
+				time.Sleep(6)
 			}
 
 		}
