@@ -7,6 +7,7 @@ import (
 	guuid "github.com/google/uuid"
 	"github.com/sergey-telpuk/gokahoot/models"
 	"github.com/sergey-telpuk/gokahoot/services"
+	"math/rand"
 	"syreclabs.com/go/faker"
 	"time"
 )
@@ -26,36 +27,87 @@ func (b Bot) Run() {
 
 func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 	gameService := b.di.Container.Get(services.ContainerNameGameService).(*services.GameService)
-	chGames := make(chan []*models.Game)
+	playerService := b.di.Container.Get(services.ContainerNamePlayerService).(*services.PlayerService)
 
-	go func() {
-		for {
-			select {
-			case <-time.After(1 * time.Second):
-				games, _ := gameService.FindAllWhichAreWaitingForJoining()
-
-				if len(games) > 0 {
-					chGames <- games
-					return
-				}
-			}
-		}
-	}()
-
-	for _, game := range <-chGames {
-		ctx, _ := context.WithTimeout(context.Background(), 120*time.Second)
-		go func(game *models.Game, ctx context.Context) {
+	waitFoJoining := func() chan []*models.Game {
+		ch := make(chan []*models.Game)
+		go func() {
 			for {
 				select {
 				case <-time.After(1 * time.Second):
-					go b.joinPlayer(game.Code, faker.Name().Prefix()+" "+faker.Name().Name()+" "+faker.Name().FirstName()+" "+faker.Name().LastName())
-				case <-ctx.Done():
-					return
+					games, _ := gameService.FindAllWhichAreWaitingForJoining()
+
+					if len(games) > 0 {
+						ch <- games
+						return
+					}
 				}
 			}
+		}()
 
-		}(game, ctx)
+		return ch
 	}
+
+	playingGames := func() chan []*models.Game {
+		ch := make(chan []*models.Game)
+
+		go func() {
+			for {
+				select {
+				case <-time.After(1 * time.Second):
+					games, _ := gameService.FindAllWhichArePlaying()
+
+					if len(games) > 0 {
+						ch <- games
+						return
+					}
+				}
+			}
+		}()
+
+		return ch
+	}
+
+	go func() {
+		for _, game := range <-waitFoJoining() {
+			ctx, _ := context.WithTimeout(context.Background(), 120*time.Second)
+
+			go func(game *models.Game, ctx context.Context) {
+				for {
+					select {
+					case <-time.After(1 * time.Second):
+						go b.joinPlayer(game.Code, faker.Name().Prefix()+" "+faker.Name().Name()+" "+faker.Name().FirstName()+" "+faker.Name().LastName())
+					case <-ctx.Done():
+						return
+					}
+				}
+
+			}(game, ctx)
+		}
+	}()
+
+	go func() {
+		for _, game := range <-playingGames() {
+			questions := game.Test.Questions
+			players, _ := playerService.FindPlayersBelongToGame(game.ID)
+
+			for _, question := range questions {
+				answers := question.Answers
+				for _, player := range players {
+					answer := randomAnswer(answers)
+					right := false
+					if question.RightAnswer == answer.Sequential {
+						right = true
+					}
+
+					_ = playerService.CreateNewPlayerAnswer(player.ID, player.Game.ID, question.ID, answer.ID, right)
+				}
+
+			}
+
+		}
+	}()
+
 }
 
 func (b Bot) joinPlayer(gameCode string, name string) {
@@ -80,6 +132,15 @@ func (b Bot) joinPlayer(gameCode string, name string) {
 		fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
 	}
 
+}
+
+func randomAnswer(answers []models.Answer) models.Answer {
+	rand.Seed(time.Now().UnixNano())
+	min := 0
+	max := len(answers)
+	n := rand.Intn(max-min) + min
+
+	return answers[n]
 }
 
 func (b Bot) joinToGame() {
