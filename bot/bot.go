@@ -94,25 +94,27 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 
 			for _, question := range questions {
 				answers := question.Answers
-				time.Sleep(5 * time.Second)
 				for _, player := range players {
-					time.Sleep(50 * time.Microsecond)
-					answer := randomAnswer(answers)
-					right := false
-					if question.RightAnswer == answer.Sequential {
-						right = true
-					}
+					go func(player models.Player) {
+						time.Sleep(50 * time.Microsecond)
+						answer := randomAnswer(answers)
+						right := false
+						if question.RightAnswer == answer.Sequential {
+							right = true
+						}
 
-					_ = playerService.CreateNewPlayerAnswer(player.ID, player.Game.ID, question.ID, answer.ID, right)
-					uuid := guuid.New()
-					_ = gameService.CreateNewMessageOfChat(uuid, player.GameID, player.ID, faker.Lorem().Sentence(10))
-					chatMessage, _ := gameService.GetChatMessageByUUID(uuid.String())
+						_ = playerService.CreateNewPlayerAnswer(player.ID, player.Game.ID, question.ID, answer.ID, right)
+						uuid := guuid.New()
+						_ = gameService.CreateNewMessageOfChat(uuid, player.GameID, player.ID, faker.Lorem().Sentence(10))
+						chatMessage, _ := gameService.GetChatMessageByUUID(uuid.String())
 
-					if err := broadcastService.BroadcastMessageToChatOFGame(chatMessage); err != nil {
-						fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
-					}
+						if err := broadcastService.BroadcastMessageToChatOFGame(chatMessage); err != nil {
+							fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
+						}
+					}(player)
+
 				}
-				time.Sleep(11 * time.Second)
+				time.Sleep(15 * time.Second)
 			}
 
 		}
