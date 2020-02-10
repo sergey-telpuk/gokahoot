@@ -55,7 +55,7 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 		go func() {
 			for {
 				select {
-				case <-time.After(1 * time.Second):
+				case <-time.After(30 * time.Second):
 					games, _ := gameService.FindAllWhichArePlaying()
 
 					if len(games) > 0 {
