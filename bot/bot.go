@@ -40,7 +40,6 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 
 					if len(games) > 0 {
 						ch <- games
-						return
 					}
 				}
 			}
@@ -60,7 +59,6 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 
 					if len(games) > 0 {
 						ch <- games
-						return
 					}
 				}
 			}
