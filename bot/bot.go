@@ -68,51 +68,56 @@ func (b Bot) tryToFindGameForWaitingForJoiningPlayers() {
 	}
 
 	go func() {
-		for _, game := range <-waitFoJoining() {
-			ctx, _ := context.WithTimeout(context.Background(), 60*time.Second)
+		for games := range waitFoJoining() {
+			for _, game := range games {
+				ctx, _ := context.WithTimeout(context.Background(), 60*time.Second)
 
-			go func(game *models.Game, ctx context.Context) {
-				for {
-					select {
-					case <-time.After(1 * time.Second):
-						go b.joinPlayer(game.Code, faker.Name().Prefix()+" "+faker.Name().Name()+" "+faker.Name().FirstName()+" "+faker.Name().LastName())
-					case <-ctx.Done():
-						return
+				go func(game *models.Game, ctx context.Context) {
+					for {
+						select {
+						case <-time.After(1 * time.Second):
+							go b.joinPlayer(game.Code, faker.Name().Prefix()+" "+faker.Name().Name()+" "+faker.Name().FirstName()+" "+faker.Name().LastName())
+						case <-ctx.Done():
+							return
+						}
 					}
-				}
 
-			}(game, ctx)
+				}(game, ctx)
+			}
+
 		}
 	}()
 
 	go func() {
-		for _, game := range <-playingGames() {
-			questions := game.Test.Questions
-			players, _ := playerService.FindPlayersBelongToGame(game.ID)
+		for games := range playingGames() {
+			for _, game := range games {
+				questions := game.Test.Questions
+				players, _ := playerService.FindPlayersBelongToGame(game.ID)
 
-			for _, question := range questions {
-				answers := question.Answers
-				for _, player := range players {
-					go func(player models.Player) {
-						time.Sleep(50 * time.Microsecond)
-						answer := randomAnswer(answers)
-						right := false
-						if question.RightAnswer == answer.Sequential {
-							right = true
-						}
+				for _, question := range questions {
+					answers := question.Answers
+					for _, player := range players {
+						go func(player models.Player) {
+							time.Sleep(50 * time.Microsecond)
+							answer := randomAnswer(answers)
+							right := false
+							if question.RightAnswer == answer.Sequential {
+								right = true
+							}
 
-						_ = playerService.CreateNewPlayerAnswer(player.ID, player.Game.ID, question.ID, answer.ID, right)
-						uuid := guuid.New()
-						_ = gameService.CreateNewMessageOfChat(uuid, player.GameID, player.ID, faker.Lorem().Sentence(10))
-						chatMessage, _ := gameService.GetChatMessageByUUID(uuid.String())
+							_ = playerService.CreateNewPlayerAnswer(player.ID, player.Game.ID, question.ID, answer.ID, right)
+							uuid := guuid.New()
+							_ = gameService.CreateNewMessageOfChat(uuid, player.GameID, player.ID, faker.Lorem().Sentence(10))
+							chatMessage, _ := gameService.GetChatMessageByUUID(uuid.String())
 
-						if err := broadcastService.BroadcastMessageToChatOFGame(chatMessage); err != nil {
-							fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
-						}
-					}(player)
+							if err := broadcastService.BroadcastMessageToChatOFGame(chatMessage); err != nil {
+								fmt.Println(errors.New(fmt.Sprintf("Broadcast error: %s", err)))
+							}
+						}(player)
 
+					}
+					time.Sleep(15 * time.Second)
 				}
-				time.Sleep(15 * time.Second)
 			}
 
 		}
