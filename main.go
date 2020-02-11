@@ -175,6 +175,7 @@ func randomVerb(exclude string, verbs map[string]*verb) *verb {
 	return verbs[verbsArray[n]]
 }
 
+//TODO
 func random(exclude int) int {
 	rand.Seed(time.Now().UnixNano())
 	min := 1
